@@ -1,5 +1,5 @@
 <template>
-  <section class="mt-[80px] grid gap-8 w-full" style="grid-template-columns: repeat(auto-fit, minmax(400px, 1fr))">
+  <section class="grid grid-cols-2 gap-8 w-full">
     <div class="action-card flex flex-col gap-8">
       <div class="flex gap-2 items-center">
         <img :src="urgenceIcon" alt="Urgence" class="w-5" />
@@ -8,9 +8,7 @@
         </h3>
       </div>
       <p class="text-[color:var(--color-neutral-600)] leading-[1.6] text-base">
-        En cas d'urgence pour votre animal, chaque minute compte. Nos
-        partenaires vétérinaires qualifiés sont là pour sauver la santé de vos
-        compagnons.
+        En cas d’urgence vétérinaire, il est recommandé de contacter d’abord votre vétérinaire habituel. Si celui-ci n’est pas disponible, les numéros 3115 et 112 Vétérinaire peuvent vous aider à trouver une assistance appropriée.
       </p>
       <button class="bg-primary-600 text-white px-4 py-3 rounded-md text-sm hover:bg-primary-600">
         Contacter maintenant

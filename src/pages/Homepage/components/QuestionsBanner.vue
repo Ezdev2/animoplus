@@ -1,22 +1,32 @@
 <template>
-  <div
-    class="w-full mb-[80px] px-6 py-[64px] bg-primary-600 rounded-[30px] flex justify-center items-center text-center"
-  >
-    <div class="flex flex-col gap-8 items-center">
-      <h1 class="text-white text-[40px] font-bold ">DES QUESTIONS ?</h1>
-      <p class="text-white text-[18px]">
+  <section
+    class="bg-primary-300 w-full flex text-white rounded-[30px] mx-auto mt-[80px] px-[64px] py-6 items-center justify-center">
+    <div class="p-8">
+      <img src="@/assets/images/DocPicto2.svg" alt="Docteur professionnel" class="w-auto object-contain" />
+    </div>
+    <div class="flex flex-col gap-2 items-center text-primary-600">
+      <div class="text-left">
+        <h1 class="text-[40px] font-bold text-center uppercase">DES<br />QUESTION ?
+        </h1>
+        <span class="">
+            <img :src="layerYellow" alt="layer green" />
+          </span>
+      </div>
+      <p class="text-[18px]">
         Contactez-nous via notre assistant virtuel intelligent
       </p>
       <button
-        class="bg-accent-500 text-white text-base px-6 py-4 rounded-[12px] shadow-[0_4px_12px_rgba(245,158,11,0.25)] flex items-center gap-2 hover:bg-accent-400 transition"
-      >
+        class="bg-primary-600 mt-6 text-white text-base px-6 py-4 rounded-[12px] flex items-center gap-2 hover:bg-accent-400 transition">
         <img :src="AskDiscussIcon" alt="Icône discussion" />
         DÉMARRER LA DISCUSSION
       </button>
     </div>
-  </div>
+
+  </section>
 </template>
 
 <script setup>
 import AskDiscussIcon from '@/assets/icons/Ask-Discuss.svg'
+import layerYellow from '@/assets/layers/layer-yellow.svg';
+
 </script>

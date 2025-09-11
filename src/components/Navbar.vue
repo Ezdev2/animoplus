@@ -1,6 +1,6 @@
 <template>
     <div class="
-        w-full flex justify-between items-center py-[24px] px-[44px]">
+        w-full flex justify-between items-center py-4 px-[44px] bg-primary-600">
         <router-link to="/">
             <img class="w-28 h-9" src="../assets/animoplus_header.png" />
         </router-link>

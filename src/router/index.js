@@ -15,6 +15,7 @@ import Accounting from '@/pages/Accounting/Accounting.vue'
 import StockPage from '@/pages/StockManagement/StockPage.vue'
 
 import { auth } from '@/stores/auth.js'
+import Specialist from '@/pages/Homepage/Specialist.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -24,6 +25,12 @@ const router = createRouter({
       name: 'home',
       component: Homepage,
       meta: { requiresGuest: true } // accessible seulement si NON connecté
+    },
+    {
+      path: '/specialist',
+      name: 'specialist',
+      component: Specialist,
+      meta: { requiresGuest: true }
     },
     {
       path: '/login',

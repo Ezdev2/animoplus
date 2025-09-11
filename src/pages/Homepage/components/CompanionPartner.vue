@@ -3,21 +3,24 @@
     <div class="w-full flex flex-col items-center gap-[80px]">
       <div class="relative">
         <h1 class="text-primary-600 text-center text-[40px] font-extrabold uppercase">
-          LE PARTENAIRE DE VOTRE COMPAGNON
+          L’ALLIE DE VOTRE COMPAGNON
         </h1>
-        <img :src="layerYellow" alt="layer yellow" class="absolute right-0" />
+        <img :src="layerYellow" alt="layer yellow" class="absolute left-0" />
       </div>
 
       <div class="w-full flex flex-col gap-2 mt-2 md:gap-12 md:flex-row md:justify-between md:items-start">
         <div
           v-for="(item, index) in features"
           :key="index"
-          class="flex flex-col items-center text-center gap-4 mt-8"
+          class="flex flex-col items-center text-center gap-4 mt-8 relative"
         >
           <img :src="item.icon" :alt="item.alt" />
           <h3 class="text-[20px] font-bold text-gray-900 uppercase">
             {{ item.title }}
           </h3>
+          <span class="absolute top-23">
+            <img :src="lineGreen" alt="layer green" />
+          </span>
           <p class="text-base text-gray-600">
             {{ item.description }}
           </p>
@@ -32,6 +35,7 @@ import careIcon from '@/assets/icons/care.svg'
 import followupIcon from '@/assets/icons/followup.svg'
 import certifiedIcon from '@/assets/icons/certified.svg'
 import layerYellow from '@/assets/layers/layer-yellow.svg'
+import lineGreen from '@/assets/layers/line-green.svg'
 
 const features = [
   {

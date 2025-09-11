@@ -22,7 +22,7 @@
         </ul>
 
         <button
-          class="mt-8 bg-primary-500 w-[fit-content] text-white px-6 py-3 rounded-lg text-base hover:bg-white hover:text-primary-600 transition"
+          class="mt-8 bg-primary-300 w-[fit-content] text-white px-6 py-3 rounded-lg text-base hover:bg-white hover:text-primary-600 transition"
         >
           En savoir plus sur nos solutions
         </button>
