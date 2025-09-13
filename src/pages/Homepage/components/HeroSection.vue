@@ -3,13 +3,13 @@
     <div class="mx-auto flex flex-col items-center gap-8">
       <div class="flex gap-[44px] flex-col items-center">
         <div class="relative flex flex-col items-center">
-          <img width="250" :src="logo" />
+          <!-- <img width="250" :src="logo" /> -->
           <!-- Titre principal -->
           <h1 class="text-white text-center font-bold text-[64px] leading-28 drop-shadow-md">
             BESOIN D'UN
             {{ typedText }}<span class="border-r-2 border-white animate-pulse"></span>
           </h1>
-          <span class="absolute top-54 right-4">
+          <span class="absolute top-24 right-4">
             <img :src="layerYellow" alt="layer green" />
           </span>
         </div>

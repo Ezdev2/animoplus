@@ -14,6 +14,7 @@
       <!-- <SpecialityList /> -->
       <OptiCare />
       <CompanionPartner />
+      <LostAnimal />
       <QuestionsBanner />
     </div>
   </div>
@@ -26,7 +27,7 @@ import SpecialityList from './components/SpecialityList.vue';
 import OptiCare from './components/OptiCare.vue';
 import CompanionPartner from './components/CompanionPartner.vue';
 import QuestionsBanner from './components/QuestionsBanner.vue';
-
+import LostAnimal from './components/LostAnimal.vue';
 
 import BubbleGreen from '@/assets/bubbles/1_green.vue';
 import BubbleYellow from '@/assets/bubbles/1_yellow.vue';

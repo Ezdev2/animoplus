@@ -6,7 +6,7 @@
     </div>
     <div class="flex flex-col gap-2 items-center text-primary-600">
       <div class="text-left">
-        <h1 class="text-[40px] font-bold text-center uppercase">DES<br />QUESTION ?
+        <h1 class="text-[40px] font-bold text-center uppercase">DES<br />QUESTIONS ?
         </h1>
         <span class="">
             <img :src="layerYellow" alt="layer green" />
