@@ -8,28 +8,27 @@
             <nav class="flex flex-col gap-8">
                 <RouterLink v-for="item in filteredMenuItems" :key="item.label" :to="item.link"
                     class="flex items-center gap-4 text-base hover:text-accent-400 transition"
-                    :class="route.path === item.link ? 'text-accent-400 font-bold' : 'text-white'"
-                    >
-                    <component :is="item.icon" :class="route.path === item.link ? 'text-accent-400 font-bold' : 'text-white'"/>
+                    :class="route.path === item.link ? 'text-accent-400 font-bold' : 'text-white'">
+                    <component :is="item.icon"
+                        :class="route.path === item.link ? 'text-accent-400 font-bold' : 'text-white'" />
                     <span>{{ item.label }}</span>
                 </RouterLink>
             </nav>
         </div>
 
-        <!-- Espace client -->
+        <!-- Bouton déconnexion -->
         <div>
-            <RouterLink to="/profil"
-                :class="route.name === 'profil' ? 'text-accent-400 font-bold' : 'text-white'"
-                class="flex items-center gap-4 text-white font-medium text-base hover:text-accent-400 transition">
-                <img :src="userIconWhite" alt="user profil" class="feature-icon w-6">
-                <span>Espace client</span>
-            </RouterLink>
+            <button @click="logout"
+                class="px-4 py-2 bg-white rounded-xl shadow outline outline-1 outline-gray-200 flex items-center gap-2 hover:bg-gray-50 transition">
+                <span class="text-red-500 text-base font-['League_Spartan']">Déconnexion</span>
+                <img :src="logoutIcon" alt="log out" class="feature-icon w-6">
+            </button>
         </div>
     </div>
 </template>
 
 <script setup>
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { auth } from '@/stores/auth.js'
 
 import dashboardIcon from '@/assets/icons/sidebar/DasboardIcon.vue';
@@ -41,11 +40,14 @@ import searchSpecial from '@/assets/icons/sidebar/SearchSpecial.vue';
 import stockIcon from '@/assets/icons/sidebar/StockIcon.vue';
 import sheetIcon from '@/assets/icons/sidebar/SheetIcon.vue';
 import taskIcon from '@/assets/icons/sidebar/TaskIcon.vue';
+import userIcon from '@/assets/icons/sidebar/UserIcon.vue';
+import lostAnimalIcon from '@/assets/icons/sidebar/LostAnimalIcon.vue';
 
-import userIconWhite from '@/assets/icons/user-profil-white.svg';
+import logoutIcon from '@/assets/icons/logout.svg';
+
 
 const route = useRoute();
-
+const router = useRouter()
 const props = defineProps({
     user: {
         type: String,
@@ -67,6 +69,12 @@ const menuItems = [
         link: "/appointment"
     },
     {
+        label: "Messagerie des patients",
+        icon: chatIcon,
+        user: "pro",
+        link: "/message"
+    },
+    {
         label: "Mes animaux",
         icon: animalIcon,
         user: "client",
@@ -85,16 +93,16 @@ const menuItems = [
         link: "/message"
     },
     {
+        label: "Gestion des patients",
+        icon: userIcon,
+        user: "pro",
+        link: "/animals"
+    },
+    {
         label: "Gestion des services",
         icon: animalIcon,
         user: "pro",
         link: "/services"
-    },
-    {
-        label: "Tâches",
-        icon: taskIcon,
-        user: "pro",
-        link: "/tasks"
     },
     {
         label: "Comptabilité",
@@ -103,13 +111,25 @@ const menuItems = [
         link: "/accounting"
     },
     {
+        label: "Tâches",
+        icon: taskIcon,
+        user: "pro",
+        link: "/tasks"
+    },
+    {
+        label: "Coopération",
+        icon: lostAnimalIcon,
+        user: "pro",
+        link: "/lost-animal"
+    },
+    {
         label: "Mes documents",
         icon: documentIcon,
         user: "client",
         link: "/documents"
     },
     {
-        label: "Documents professionnels",
+        label: "Mes documents",
         icon: documentIcon,
         user: "pro",
         link: "/documents"
@@ -126,10 +146,28 @@ const menuItems = [
         user: "pro",
         link: "/stockManagement"
     },
+    {
+        label: "Mon profil",
+        icon: userIcon,
+        user: ["client", "pro"],
+        link: "/profil"
+    },
+    {
+        label: "Animaux perdus",
+        icon: lostAnimalIcon,
+        user: "client",
+        link: "/lost-animal"
+    },
 ];
 
 const filteredMenuItems = menuItems.filter(item => {
     return item.user === "" || item.user === auth.role || (Array.isArray(item.user) && item.user.includes(auth.role));
 });
+
+function logout() {
+  auth.isAuthenticated = false
+  auth.role = null
+  router.push('/login')
+}
 
 </script>

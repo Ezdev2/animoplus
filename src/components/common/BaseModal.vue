@@ -55,8 +55,9 @@ defineProps({
   background: white;
   border-radius: 10px;
   padding: 1.5rem;
-  width: 450px;
+  width: 600px;
   max-width: 95%;
+  max-height: 80vh;
 }
 
 .modal-header {
@@ -67,6 +68,8 @@ defineProps({
 
 .modal-body {
   margin-top: 1rem;
+  overflow: scroll;
+  height: 70vh;
 }
 
 .modal-footer {
@@ -88,7 +91,6 @@ defineProps({
   background: transparent;
   border: none;
   color: #4B5563;
-  font-size: 13px;
   cursor: pointer;
   margin-right: 20px;
 }
@@ -99,7 +101,6 @@ defineProps({
   color: white;
   padding: 6px 12px;
   border-radius: 6px;
-  font-size: 13px;
   cursor: pointer;
 }
 </style>

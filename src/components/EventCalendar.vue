@@ -1,243 +1,282 @@
-<!-- EventCalendar.vue -->
 <template>
   <div class="event-calendar">
-    <!-- Calendar Header -->
     <div class="calendar-header">
-      <span class="calendar-month">{{ currentMonthName }}, {{ currentYear }}</span>
-      <div class="calendar-nav">
-        <button @click="previousMonth" class="nav-btn">‹</button>
-        <button @click="nextMonth" class="nav-btn">›</button>
-      </div>
+      <button @click="previousWeek" class="nav-btn">‹</button>
+      <span class="calendar-week">
+        Semaine du {{ formatDate(weekStart) }} au {{ formatDate(weekEnd) }}
+      </span>
+      <button @click="nextWeek" class="nav-btn">›</button>
     </div>
 
-    <!-- Calendar Table -->
     <table class="calendar-table">
       <thead>
         <tr>
-          <th class="week sunday">Dim</th>
-          <th class="week weekday">Lun</th>
-          <th class="week weekday">Mar</th>
-          <th class="week weekday">Mer</th>
-          <th class="week weekday">Jeu</th>
-          <th class="week weekday">Ven</th>
-          <th class="week saturday">Sam</th>
+          <th class="time-col">Heures</th>
+          <th v-for="day in currentWeekDays" :key="day.toDateString()">
+            {{ dayNames[day.getDay()] }}<br />
+            {{ day.getDate() }}/{{ day.getMonth() + 1 }}
+          </th>
         </tr>
       </thead>
 
       <tbody>
-        <tr v-for="(week, weekIndex) in calendarWeeks" :key="weekIndex">
-          <td 
-            v-for="(day, dayIndex) in week" 
-            :key="dayIndex"
-            :class="getDayClasses(day)"
-            @click="onDayClick(day)"
-          >
-            <template v-if="day.date">
-              {{ day.date }}
-              <div v-if="day.events.length > 0" class="events-container">
-                <span 
-                  v-for="(event, eventIndex) in day.events.slice(0, maxEventsPerDay)" 
-                  :key="eventIndex"
-                  :class="['event', event.type]"
-                  @click.stop="onEventClick(event)"
-                >
-                  {{ event.title }}
-                </span>
-                <span 
-                  v-if="day.events.length > maxEventsPerDay"
-                  class="event-more"
-                  @click.stop="onMoreEventsClick(day)"
-                >
-                  +{{ day.events.length - maxEventsPerDay }} plus
-                </span>
-              </div>
-            </template>
+        <tr v-for="hour in hours" :key="hour">
+          <td class="time-col">{{ hour }}:00</td>
+
+          <td v-for="day in currentWeekDays" 
+              :key="day.toISOString() + '-' + hour" 
+              class="time-slot"
+              :class="{ 
+                'selected': isSlotSelected(day, hour),
+                'selecting': isSelecting && isInSelectionRange(day, hour)
+              }"
+              @mousedown="startSelection(day, hour)"
+              @mouseover="updateSelection(day, hour)"
+              @mouseup="endSelection">
+            
+            <!-- Événements existants -->
+            <div v-for="event in getEventsForSlot(day, hour)" 
+                 :key="event.id" 
+                 class="event">
+              {{ event.title }}
+            </div>
           </td>
         </tr>
       </tbody>
     </table>
+
+    <!-- Bouton de confirmation si sélection active -->
+    <div v-if="selectedSlots.length > 0" class="selection-controls">
+      <div class="selection-info">
+        {{ selectedSlots.length }} créneau(x) sélectionné(s)
+        <span v-if="selectedSlots.length > 1">
+          ({{ formatSelectionDuration() }})
+        </span>
+      </div>
+      <button @click="confirmSelection" class="confirm-btn">
+        Créer un rendez-vous
+      </button>
+      <button @click="clearSelection" class="cancel-btn">
+        Annuler
+      </button>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 
 // Props
 const props = defineProps({
-  events: {
-    type: Array,
-    default: () => []
-  },
-  initialDate: {
-    type: Date,
-    default: () => new Date()
-  },
-  maxEventsPerDay: {
-    type: Number,
-    default: 3
-  },
-  footerText: {
-    type: String,
-    default: 'Liste des rendez-vous'
-  },
-  arrowDown: {
-    type: String,
-    required: false
-  }
+  events: { type: Array, default: () => [] },
+  initialDate: { type: Date, default: () => new Date() },
+  startHour: { type: Number, default: 8 },
+  endHour: { type: Number, default: 20 },
+  maxSelectionHours: { type: Number, default: 5 }
 })
 
 // Emits
-const emit = defineEmits([
-  'day-click',
-  'event-click',
-  'more-events-click',
-  'month-change'
-])
+const emit = defineEmits(['slot-click', 'slots-selected', 'event-click', 'week-change'])
 
-// Reactive data
+// Data
 const currentDate = ref(new Date(props.initialDate))
+const selectedSlots = ref([])
+const isSelecting = ref(false)
+const selectionStart = ref(null)
+const selectionEnd = ref(null)
 
-// Computed properties
-const currentYear = computed(() => currentDate.value.getFullYear())
-const currentMonth = computed(() => currentDate.value.getMonth())
+// Utils
+const dayNames = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']
+const hours = computed(() =>
+  Array.from({ length: props.endHour - props.startHour + 1 }, (_, i) => props.startHour + i)
+)
 
-const currentMonthName = computed(() => {
-  const monthNames = [
-    'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-    'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
-  ]
-  return monthNames[currentMonth.value]
+// Calcul de la semaine en cours
+const weekStart = computed(() => {
+  const d = new Date(currentDate.value)
+  const day = d.getDay()
+  const diff = d.getDate() - day
+  return new Date(d.setDate(diff))
 })
 
-const calendarWeeks = computed(() => {
-  const year = currentYear.value
-  const month = currentMonth.value
-  
-  // Get first day of month and last day of month
-  const firstDay = new Date(year, month, 1)
-  const lastDay = new Date(year, month + 1, 0)
-  
-  // Get first day of week (Sunday = 0)
-  const startDate = new Date(firstDay)
-  startDate.setDate(startDate.getDate() - firstDay.getDay())
-  
-  const weeks = []
-  const currentWeekDate = new Date(startDate)
-  
-  // Generate 6 weeks (42 days) to fill the calendar
-  for (let week = 0; week < 6; week++) {
-    const weekDays = []
-    
-    for (let day = 0; day < 7; day++) {
-      const date = currentWeekDate.getDate()
-      const isCurrentMonth = currentWeekDate.getMonth() === month
-      const dayEvents = getEventsForDate(new Date(currentWeekDate))
-      
-      weekDays.push({
-        date: isCurrentMonth ? date : null,
-        fullDate: new Date(currentWeekDate),
-        isCurrentMonth,
-        isToday: isToday(currentWeekDate),
-        isWeekend: currentWeekDate.getDay() === 0 || currentWeekDate.getDay() === 6,
-        events: dayEvents
-      })
-      
-      currentWeekDate.setDate(currentWeekDate.getDate() + 1)
-    }
-    
-    weeks.push(weekDays)
+const weekEnd = computed(() => {
+  const d = new Date(weekStart.value)
+  return new Date(d.setDate(d.getDate() + 6))
+})
+
+const currentWeekDays = computed(() => {
+  const days = []
+  const d = new Date(weekStart.value)
+  for (let i = 0; i < 7; i++) {
+    days.push(new Date(d))
+    d.setDate(d.getDate() + 1)
   }
-  
-  return weeks
+  return days
 })
 
-// Methods
-const getEventsForDate = (date) => {
+// Méthodes
+const formatDate = (date) =>
+  date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
+
+const getEventsForSlot = (day, hour) => {
   return props.events.filter(event => {
     const eventDate = new Date(event.date)
     return (
-      eventDate.getDate() === date.getDate() &&
-      eventDate.getMonth() === date.getMonth() &&
-      eventDate.getFullYear() === date.getFullYear()
+      eventDate.getFullYear() === day.getFullYear() &&
+      eventDate.getMonth() === day.getMonth() &&
+      eventDate.getDate() === day.getDate() &&
+      eventDate.getHours() === hour
     )
   })
 }
 
-const isToday = (date) => {
-  const today = new Date()
-  return (
-    date.getDate() === today.getDate() &&
-    date.getMonth() === today.getMonth() &&
-    date.getFullYear() === today.getFullYear()
-  )
+// Gestion de la sélection multiple
+const getSlotKey = (day, hour) => {
+  return `${day.toDateString()}-${hour}`
 }
 
-const getDayClasses = (day) => {
-  const classes = []
+const isSlotSelected = (day, hour) => {
+  const key = getSlotKey(day, hour)
+  return selectedSlots.value.some(slot => slot.key === key)
+}
+
+const startSelection = (day, hour) => {
+  // Ne pas permettre la sélection sur des créneaux avec des événements
+  if (getEventsForSlot(day, hour).length > 0) return
   
-  if (!day.isCurrentMonth) return classes
+  isSelecting.value = true
+  selectionStart.value = { day: new Date(day), hour }
+  selectionEnd.value = { day: new Date(day), hour }
   
-  if (day.isToday) classes.push('today')
-  if (day.isWeekend) classes.push('weekend')
+  // Effacer la sélection précédente
+  selectedSlots.value = []
+}
+
+const updateSelection = (day, hour) => {
+  if (!isSelecting.value) return
   
-  // Check for special red days (you can customize this logic)
-  const redDays = [1, 15] // Example: 1st and 15th of each month
-  if (redDays.includes(day.date)) {
-    classes.push('red-day')
+  selectionEnd.value = { day: new Date(day), hour }
+}
+
+const endSelection = () => {
+  if (!isSelecting.value) return
+  
+  isSelecting.value = false
+  
+  if (selectionStart.value && selectionEnd.value) {
+    const slots = calculateSelectedSlots()
+    
+    if (slots.length > props.maxSelectionHours) {
+      alert(`Vous ne pouvez sélectionner que ${props.maxSelectionHours} créneaux maximum.`)
+      return
+    }
+    
+    selectedSlots.value = slots
+  }
+}
+
+const calculateSelectedSlots = () => {
+  if (!selectionStart.value || !selectionEnd.value) return []
+  
+  const slots = []
+  const start = selectionStart.value
+  const end = selectionEnd.value
+  
+  if (start.day.toDateString() === end.day.toDateString()) {
+    const minHour = Math.min(start.hour, end.hour)
+    const maxHour = Math.max(start.hour, end.hour)
+    
+    for (let h = minHour; h <= maxHour; h++) {
+      if (getEventsForSlot(start.day, h).length === 0) {
+        const slotDate = new Date(start.day)
+        slotDate.setHours(h, 0, 0, 0)
+        
+        slots.push({
+          key: getSlotKey(start.day, h),
+          day: new Date(start.day),
+          hour: h,
+          date: slotDate
+        })
+      }
+    }
   }
   
-  return classes
+  return slots
 }
 
-const previousMonth = () => {
-  const newDate = new Date(currentDate.value)
-  newDate.setMonth(newDate.getMonth() - 1)
-  currentDate.value = newDate
-  emit('month-change', newDate)
+const isInSelectionRange = (day, hour) => {
+  if (!isSelecting.value || !selectionStart.value || !selectionEnd.value) return false
+  
+  const start = selectionStart.value
+  const end = selectionEnd.value
+  
+  if (start.day.toDateString() === end.day.toDateString() && 
+      day.toDateString() === start.day.toDateString()) {
+    const minHour = Math.min(start.hour, end.hour)
+    const maxHour = Math.max(start.hour, end.hour)
+    return hour >= minHour && hour <= maxHour
+  }
+  
+  return false
 }
 
-const nextMonth = () => {
-  const newDate = new Date(currentDate.value)
-  newDate.setMonth(newDate.getMonth() + 1)
-  currentDate.value = newDate
-  emit('month-change', newDate)
+const formatSelectionDuration = () => {
+  const duration = selectedSlots.value.length
+  return duration === 1 ? '1 heure' : `${duration} heures`
 }
 
-const onDayClick = (day) => {
-  if (day.date) {
-    emit('day-click', day)
+const confirmSelection = () => {
+  if (selectedSlots.value.length === 0) return
+  
+  const selectionData = {
+    slots: selectedSlots.value,
+    startDate: selectedSlots.value[0].date,
+    endDate: selectedSlots.value[selectedSlots.value.length - 1].date,
+    duration: selectedSlots.value.length,
+    startTime: `${selectedSlots.value[0].hour}:00`,
+    endTime: `${selectedSlots.value[selectedSlots.value.length - 1].hour + 1}:00`
+  }
+  
+  emit('slots-selected', selectionData)
+  clearSelection()
+}
+
+const clearSelection = () => {
+  selectedSlots.value = []
+  isSelecting.value = false
+  selectionStart.value = null
+  selectionEnd.value = null
+}
+
+const previousWeek = () => {
+  const d = new Date(currentDate.value)
+  d.setDate(d.getDate() - 7)
+  currentDate.value = d
+  emit('week-change', d)
+}
+
+const nextWeek = () => {
+  const d = new Date(currentDate.value)
+  d.setDate(d.getDate() + 7)
+  currentDate.value = d
+  emit('week-change', d)
+}
+
+const handleGlobalMouseUp = () => {
+  if (isSelecting.value) {
+    endSelection()
   }
 }
 
-const onEventClick = (event) => {
-  emit('event-click', event)
+if (typeof document !== 'undefined') {
+  document.addEventListener('mouseup', handleGlobalMouseUp)
 }
 
-const onMoreEventsClick = (day) => {
-  emit('more-events-click', day)
-}
-
-// Public methods (exposed to parent component)
-const goToDate = (date) => {
-  currentDate.value = new Date(date)
-}
-
-const addEvent = (event) => {
-  // This would typically be handled by the parent component
-  // but we can emit an event for it
-  emit('add-event', event)
-}
-
-// Expose methods to parent
-defineExpose({
-  goToDate,
-  addEvent,
-  currentDate: computed(() => currentDate.value)
-})
-
-// Watch for prop changes
-watch(() => props.initialDate, (newDate) => {
-  currentDate.value = new Date(newDate)
+import { onUnmounted } from 'vue'
+onUnmounted(() => {
+  if (typeof document !== 'undefined') {
+    document.removeEventListener('mouseup', handleGlobalMouseUp)
+  }
 })
 </script>
 
@@ -245,32 +284,19 @@ watch(() => props.initialDate, (newDate) => {
 .event-calendar {
   width: 100%;
   font-family: "League Spartan", Arial, sans-serif;
+  user-select: none;
 }
 
 .calendar-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
-  gap: 12px;
 }
 
-.calendar-month {
+.calendar-week {
   font-size: 18px;
   font-weight: 500;
-  margin-right: 2px;
-}
-
-.icon-arrow {
-  width: 15px;
-  height: 15px;
-  margin-right: auto;
-  margin-left: 2px;
-}
-
-.calendar-nav {
-  display: flex;
-  gap: 8px;
-  margin-left: auto;
 }
 
 .nav-btn {
@@ -278,149 +304,112 @@ watch(() => props.initialDate, (newDate) => {
   color: white;
   border: none;
   border-radius: 4px;
-  padding: 8px 12px;
+  padding: 6px 10px;
   cursor: pointer;
-  font-size: 16px;
   font-weight: bold;
-  transition: background 0.15s;
+  transition: background-color 0.2s;
 }
 
 .nav-btn:hover {
-  background: #2E7D31;
+  background: #388E3C;
 }
 
 .calendar-table {
   width: 100%;
-  table-layout: fixed;
   border-collapse: collapse;
-  background: #fff;
-  font-size: 15px;
 }
 
 .calendar-table th,
 .calendar-table td {
-  border: 1px solid #ededed;
-  text-align: left;
-  width: 66px;
-  min-width: 66px;
-  height: 100px;
-  max-height: 66px;
-  vertical-align: top;
-  position: relative;
-  padding: 7px 5px 7px 7px;
-  box-sizing: border-box;
-  overflow: hidden;
-  cursor: pointer;
-}
-
-.calendar-table td:hover {
-  background-color: #f5f5f5;
-}
-
-.calendar-table .week {
-  background: #43A047;
-  color: #fff;
-  font-weight: 600;
-  font-size: 16px;
+  border: 1px solid #eee;
   text-align: center;
-  border: none;
-  height: 15px;
-  width: 66px;
-  cursor: default;
+  padding: 4px;
 }
 
-.calendar-table .weekday {
-  background: var(--Primary---600, #43A047);
-}
-
-.calendar-table .sunday,
-.calendar-table .saturday {
-  background: var(--Primary---500, #6CC447);
-}
-
-.calendar-table td:nth-child(1),   /* Dimanche */
-.calendar-table td:nth-child(7) {  /* Samedi */
-  color: var(--Red, #EF5350);
-  font-weight: 600;
-}
-
-.calendar-table td.red-day {
-  color: var(--Red, #EF5350);
-  font-weight: 600;
-}
-
-.calendar-table td.today {
-  background-color: #E3F2FD;
-  border: 2px solid #2196F3;
+.time-col {
+  width: 60px;
+  background: #f5f5f5;
   font-weight: bold;
 }
 
-.calendar-table td.weekend {
-  background-color: #fafafa;
+.time-slot {
+  height: 60px;
+  cursor: pointer;
+  vertical-align: top;
+  position: relative;
+  transition: background-color 0.2s;
 }
 
-.events-container {
-  margin-top: 2px;
+.time-slot:hover {
+  background: #f9f9f9;
+}
+
+.time-slot.selected {
+  background: #E8F5E8 !important;
+  border: 2px solid #43A047;
+}
+
+.time-slot.selecting {
+  background: #FFF3E0 !important;
+  border: 2px dashed #FF9800;
 }
 
 .event {
-  display: inline-block;
-  font-size: 10px;
-  font-weight: 500;
-  margin-top: 2px;
-  margin-right: 2px;
-  padding: 1px 6px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: transform 0.1s;
-}
-
-.event:hover {
-  transform: scale(1.05);
-}
-
-.event.red { 
-  background: #FFDBDB; 
-  color: #EF5350; 
-}
-
-.event.green { 
-  background: #E6F8EC; 
-  color: #43A047; 
-}
-
-.event.blue { 
-  background: #E3F2FD; 
-  color: #2196F3; 
-}
-
-.event.orange { 
-  background: #FFF3E0; 
-  color: #FF9800; 
-}
-
-.event-more {
-  display: inline-block;
-  font-size: 9px;
-  font-weight: 500;
-  margin-top: 2px;
-  padding: 1px 4px;
+  background: #E3F2FD;
+  color: #2196F3;
+  font-size: 12px;
+  padding: 2px 4px;
   border-radius: 4px;
-  background: #f0f0f0;
-  color: #666;
-  cursor: pointer;
+  margin: 2px 0;
+  text-align: left;
+  pointer-events: none;
 }
 
-.event-more:hover {
-  background: #e0e0e0;
+.selection-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
 }
 
-.calendar-footer {
-  color: var(--Neutral---600, #4B5563);
-  font-size: 20px;
-  font-style: normal;
+.selection-info {
+  font-size: 14px;
+  color: #495057;
   font-weight: 500;
-  line-height: normal;
-  margin-top: 25px;
+}
+
+.confirm-btn {
+  background: #43A047;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.confirm-btn:hover {
+  background: #388E3C;
+}
+
+.cancel-btn {
+  background: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.cancel-btn:hover {
+  background: #5a6268;
 }
 </style>

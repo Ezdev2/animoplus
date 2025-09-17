@@ -18,6 +18,7 @@ import { auth } from '@/stores/auth.js'
 import Specialist from '@/pages/Homepage/Specialist.vue'
 import SignUp from '@/pages/Authentication/SignUp.vue'
 import ResetPassword from '@/pages/Authentication/ResetPassword.vue'
+import LostAnimal from '@/pages/LostAnimal/LostAnimal.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -86,6 +87,12 @@ const router = createRouter({
       path: '/speciality',
       name: 'speciality',
       component: SpecialityPage,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/lost-animal',
+      name: 'lost-animal',
+      component: LostAnimal,
       meta: { requiresAuth: true }
     },
     {
