@@ -14,7 +14,7 @@ import Tasks from '@/pages/Tasks/components/TasksComponents.vue'
 import Accounting from '@/pages/Accounting/Accounting.vue'
 import StockPage from '@/pages/StockManagement/StockPage.vue'
 
-import { auth } from '@/stores/auth.js'
+import { TokenService } from '@/services'
 import Specialist from '@/pages/Homepage/Specialist.vue'
 
 const router = createRouter({
@@ -114,19 +114,12 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = auth.isAuthenticated
+  const isAuthenticated = TokenService.isAuthenticated()
 
-  // Si connecté et essaie d’aller sur la home (/) → redirection vers dashboard
-  if (to.path === '/' && isAuthenticated) {
-    return next('/dashboard')
-  }
-
-  // Si route réservée aux non-connectés et qu'on est connecté → dashboard
   if (to.meta.requiresGuest && isAuthenticated) {
     return next('/dashboard')
   }
 
-  // Si route protégée et qu’on n’est PAS connecté → redirection vers /ask-appointment
   if (to.meta.requiresAuth && !isAuthenticated) {
     return next('/login')
   }

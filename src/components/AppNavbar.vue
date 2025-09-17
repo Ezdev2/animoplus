@@ -38,7 +38,7 @@
 </template>
 
 <script setup>
-import { auth } from '@/stores/auth'
+import { useAuth } from '@/services'
 import { useRouter } from 'vue-router'
 
 import logoutIcon from '@/assets/icons/logout.svg';
@@ -46,6 +46,7 @@ import userIcon from '@/assets/icons/user-profil.svg';
 import botIcon from '@/assets/icons/bot.svg';
 
 const router = useRouter()
+const { logout: authLogout } = useAuth()
 
 defineProps({
   role: {
@@ -56,9 +57,14 @@ defineProps({
 
 const emit = defineEmits(['show-pop-up']);
 
-function logout() {
-  auth.isAuthenticated = false
-  auth.role = null
-  router.push('/login')
+async function logout() {
+  try {
+    await authLogout()
+    // Redirect is handled by the useAuth composable
+  } catch (error) {
+    console.error('Logout error:', error)
+    // Force redirect even if logout fails
+    router.push('/login')
+  }
 }
 </script>

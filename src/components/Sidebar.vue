@@ -29,8 +29,9 @@
 </template>
 
 <script setup>
+import { computed } from 'vue';
 import { useRoute } from 'vue-router';
-import { auth } from '@/stores/auth.js'
+import { useAuth } from '@/services'
 
 import dashboardIcon from '@/assets/icons/sidebar/DasboardIcon.vue';
 import animalIcon from '@/assets/icons/sidebar/AnimalIcon.vue';
@@ -45,9 +46,17 @@ import taskIcon from '@/assets/icons/sidebar/TaskIcon.vue';
 import userIconWhite from '@/assets/icons/user-profil-white.svg';
 
 const route = useRoute();
+const { userType } = useAuth();
+
+// Map API user_type to sidebar role
+const userRole = computed(() => {
+    if (userType.value === 'veterinarian') return 'pro';
+    if (userType.value === 'client') return 'client';
+    return '';
+});
 
 const props = defineProps({
-    user: {
+    role: {
         type: String,
         default: "",
     },
@@ -128,8 +137,10 @@ const menuItems = [
     },
 ];
 
-const filteredMenuItems = menuItems.filter(item => {
-    return item.user === "" || item.user === auth.role || (Array.isArray(item.user) && item.user.includes(auth.role));
+const filteredMenuItems = computed(() => {
+    return menuItems.filter(item => {
+        return item.user === "" || item.user === userRole.value || (Array.isArray(item.user) && item.user.includes(userRole.value));
+    });
 });
 
 </script>
