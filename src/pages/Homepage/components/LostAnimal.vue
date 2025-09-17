@@ -3,8 +3,8 @@
         class="w-full mx-4 my-8 px-12 py-20 bg-primary-600 text-white rounded-[2rem] shadow-2xl flex flex-col items-center justify-between relative overflow-hidden">
         <!-- Background graphics -->
         <div class="absolute inset-0">
-            <svg class="absolute w-72 h-auto top-20 -right-10 md:left-auto transform -rotate-12"
-                viewBox="0 0 341 305" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg class="absolute w-72 h-auto top-20 -right-10 md:left-auto transform -rotate-12" viewBox="0 0 341 305"
+                fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
                     d="M252.048 40.4933C253.411 41.0109 254.761 41.6258 256.081 42.3367C266.637 48.0174 273.039 58.5914 275.125 70.1943C277.211 81.7971 275.252 94.7378 269.041 106.739C262.828 118.74 253.46 127.689 242.887 132.479C232.314 137.271 220.136 137.853 209.58 132.172C199.024 126.491 192.622 115.917 190.536 104.315C188.451 92.7117 190.41 79.771 196.62 67.7703C202.834 55.7687 212.203 46.8154 222.776 42.0229C232.028 37.8308 242.501 36.8628 252.048 40.4931L252.048 40.4933ZM155.001 2.52548C164.485 6.34102 171.895 14.313 176.427 23.8977C181.605 34.8525 183.354 48.1506 180.845 61.599C178.339 75.0508 172.016 86.2816 163.41 93.7024C154.807 101.123 143.529 104.783 132.036 101.835C120.543 98.8891 111.593 90.0491 106.415 79.0948C101.237 68.1399 99.4899 54.8353 101.999 41.3863C104.505 27.9346 110.828 16.7037 119.434 9.28298C128.037 1.86187 139.315 -1.79754 150.808 1.15059C152.245 1.51847 153.648 1.98043 155.001 2.52586L155.001 2.52548ZM319.07 139.944C324.449 142.264 329.236 145.706 332.933 150.335C340.324 159.593 341.582 171.35 338.302 182.213C335.023 193.073 327.318 203.419 316.029 211.196C304.739 218.972 291.851 222.814 279.707 222.575C267.562 222.337 255.812 217.803 248.42 208.548C241.029 199.29 239.771 187.532 243.051 176.67C246.33 165.809 254.033 155.47 265.322 147.693C276.612 139.918 289.507 136.079 301.652 136.317C307.722 136.437 313.689 137.625 319.069 139.945L319.07 139.944ZM43.7266 32.2202C49.2371 34.1579 54.518 37.3647 59.2273 41.465C68.6454 49.6626 76.1626 61.4956 80.0866 75.2213C84.0098 88.9494 83.6432 102.156 79.5848 112.714C75.5269 123.27 67.4617 131.382 56.2237 133.352C44.9861 135.321 33.2678 130.671 23.8497 122.473C14.4316 114.276 6.91971 102.453 2.99651 88.7248C-0.926679 74.9967 -0.567792 61.7873 3.49124 51.2293C7.54911 40.6735 15.6219 32.5638 26.8594 30.5942C32.4796 29.61 38.2167 30.2801 43.7267 32.2177L43.7266 32.2202ZM170.201 118.765C230.082 142.192 259.8 213.35 237.972 277.061C232.515 292.989 226.451 301.911 217.16 304.384C212.515 305.621 207.568 304.808 203.076 302.966C198.583 301.125 194.319 298.318 189.923 294.987C172.346 281.671 151.943 259.484 125.524 249.148C99.1096 238.814 70.1117 241.673 48.645 239.715C43.2787 239.226 38.3238 238.426 33.7807 236.733C29.2376 235.039 24.9709 232.248 22.1693 228.097C16.5686 219.798 17.3286 208.801 22.7855 192.873C44.6138 129.16 110.309 95.3326 170.195 118.762L170.201 118.765Z"
                     fill="white" fill-opacity="0.15" />
@@ -20,13 +20,24 @@
         </div>
 
         <!-- Content section -->
-        <div class="z-10 text-center md:w-2/3">
-            <h1 class="text-4xl font-bold mb-4 leading-tight">Animaux perdus ?</h1>
-            <p class="text-lg mb-8 opacity-90">Signalez la disparition de votre animal pour maximiser vos chances de le
-                retrouver.</p>
-            <a href="#"
-                class="inline-block px-10 py-4 bg-primary-500 text-white font-bold rounded-xl shadow-lg hover:bg-accent-500 transition-colors duration-300">J’ai
-                perdu mon animal</a>
+        <div class="z-10 text-center">
+            <h1 class="text-6xl font-bold mb-8 leading-tight uppercase">Animaux perdus</h1>
+            <div class="grid grid-cols-2 gap-6">
+                <div class="rounded-4xl p-8 bg-white flex flex-col justify-between gap-6">
+                    <h2 class="text-neutral-900 text-3xl font-bold">J'AI PERDU MON ANIMAL</h2>
+                    <p class="text-neutral-600">VOUS AVEZ PERDUS VOTRE COMPAGNON ? CRÉEZ UNE ALERTE EN QUELQUES SECONDES ET DIFFUSEZ-LA AUTOMATIQUEMENT AUPRÈS DE LA COMMUNAUTÉ ANIMO+ ET DE VOS PROCHES</p>
+                    <a href="#"
+                        class="px-10 py-4 bg-primary-600 text-white font-bold rounded-full shadow-lg hover:bg-primary-500 transition-colors duration-300">J’ai
+                        Créer une alerte</a>
+                </div>
+                <div class="rounded-4xl p-8 bg-white flex flex-col justify-between gap-6">
+                    <h2 class="text-neutral-900 text-3xl font-bold">J'AI TROUVÉ UN ANIMAL</h2>
+                    <p class="text-neutral-600">VOUS AVEZ TROUNÉ UN ANIMAL ERRANT , SIGNALEZ-LE ET CONTRIBUEZ À RÉUNIR UNE FAMILLE EN PERMETTANT AU PROPRIÉTAIRE DE LE RETROUVER RAPIDEMENT.</p>
+                    <a href="#"
+                        class="px-10 py-4 bg-primary-600 text-white font-bold rounded-full shadow-lg hover:bg-primary-500 transition-colors duration-300">J’ai
+                        Créer une alerte</a>
+                </div>
+            </div>
         </div>
 
         <div class="relative w-full h-40 md:h-full md:w-1/3 mt-8 md:mt-0 flex items-center justify-center z-10">
@@ -35,12 +46,4 @@
 </template>
 
 <script setup>
-import pointerIcon from "@/assets/layers/pointer.svg";
-
-const benefits = [
-    "Dispenser les meilleurs soins possibles à vos patients",
-    "Profiter d'une meilleure qualité de vie au travail",
-    "Augmenter les revenus de votre activité",
-    "Optimiser votre temps grâce à notre interface professionnelle",
-];
 </script>

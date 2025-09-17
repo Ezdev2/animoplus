@@ -2,10 +2,10 @@
   <section class="w-full my-[80px] flex flex-col items-center">
     <div class="w-full flex flex-col items-center gap-[80px]">
       <div class="relative">
-        <h1 class="text-primary-600 text-center text-[40px] font-extrabold uppercase">
+        <h1 class="text-primary-600 text-center text-6xl font-extrabold uppercase">
           L’ALLIE DE VOTRE COMPAGNON
         </h1>
-        <img :src="layerYellow" alt="layer yellow" class="absolute left-0" />
+        <img :src="layerYellow" alt="layer yellow" class="absolute right-0" />
       </div>
 
       <div class="w-full flex flex-col gap-2 mt-2 md:gap-12 md:flex-row md:justify-between md:items-start">
@@ -21,7 +21,7 @@
           <span class="absolute top-23">
             <img :src="lineGreen" alt="layer green" />
           </span>
-          <p class="text-base text-gray-600">
+          <p class="text-lg uppercase text-gray-600">
             {{ item.description }}
           </p>
         </div>

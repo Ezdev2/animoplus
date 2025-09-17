@@ -13,17 +13,13 @@
 
       <div class="w-1/2">
         <div class="flex items-center w-full bg-white border border-gray-300 rounded-[50px] px-4 py-2">
-          <input type="text" placeholder="Rechercher un professionnel ou une spécialité..."
+          <input type="text" placeholder="Explorer les professionnels près de chez moi..."
             class="flex-1 bg-transparent border-none outline-none text-[16px] text-neutral-600 placeholder:text-neutral-400" />
           <router-link to="/specialist">
             <img :src="searchIcon" alt="Rechercher" />
           </router-link>
         </div>
       </div>
-      <router-link to="/specialist"
-        class="bg-primary-600 w-[fit-content] text-white px-6 py-3 rounded-lg text-base hover:bg-white hover:text-primary-600 transition">
-        Voir la liste
-      </router-link>
     </div>
   </section>
 </template>

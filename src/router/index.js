@@ -16,6 +16,8 @@ import StockPage from '@/pages/StockManagement/StockPage.vue'
 
 import { auth } from '@/stores/auth.js'
 import Specialist from '@/pages/Homepage/Specialist.vue'
+import SignUp from '@/pages/Authentication/SignUp.vue'
+import ResetPassword from '@/pages/Authentication/ResetPassword.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -36,6 +38,18 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: Login,
+      meta: { requiresGuest: true }
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: SignUp,
+      meta: { requiresGuest: true }
+    },
+    {
+      path: '/reset-password',
+      name: 'reset-password',
+      component: ResetPassword,
       meta: { requiresGuest: true }
     },
     {

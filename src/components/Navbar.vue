@@ -1,6 +1,6 @@
 <template>
     <div class="
-        w-full flex justify-between items-center py-4 px-[44px] bg-primary-600">
+        w-full flex justify-between items-center py-4 px-[44px]" :class="isLoginPage ? 'bg-transparent' : 'bg-primary-600'">
         <router-link to="/">
             <img class="w-28 h-9" src="../assets/animoplus_header.png" />
         </router-link>
@@ -12,7 +12,7 @@
                 <a href="/" class="text-white text-lg font-medium">Animo + X</a>
             </div>
             <div class="flex justify-start items-center gap-6">
-                <router-link to="/login"
+                <router-link to="/register"
                     class="px-6 py-3 rounded-xl shadow-[0px_1px_3px_0px_rgba(0,0,0,0.05)] outline outline-1 outline-offset-[-1px] outline-gray-200 flex justify-center items-center gap-2.5">
                     <span class="text-white text-lg">S’inscrire</span>
                 </router-link>
@@ -35,7 +35,7 @@
 
         <router-link v-else-if="isResgisterPage" to="/login"
             class="px-6 py-3 bg-white rounded-xl shadow-[0px_1px_3px_0px_rgba(0,0,0,0.05)] outline outline-1 outline-offset-[-1px] outline-gray-200 flex justify-center items-center gap-2.5">
-            <span class="text-primary-600 text-lg">S'inscrire</span>
+            <span class="text-primary-600 text-lg">Se connceter</span>
 
             <div class="w-4 h-4 relative overflow-hidden">
                 <div
@@ -47,7 +47,7 @@
             </div>
         </router-link>
 
-        <router-link v-else to="/login"
+        <router-link v-else to="/register"
             class="px-6 py-3 bg-white rounded-xl shadow-[0px_1px_3px_0px_rgba(0,0,0,0.05)] outline outline-1 outline-offset-[-1px] outline-gray-200 flex justify-center items-center gap-2.5">
             <span class="text-primary-600 text-lg">S'inscrire</span>
 
@@ -70,6 +70,7 @@ import { useRoute } from 'vue-router'
 import { computed } from 'vue'
 
 const route = useRoute()
-const isLoginPage = computed(() => route.path === '/login')
+const isLoginPage = computed(() => route.path === '/login' || route.path === '/register' || route.path === '/reset-password')
 const isResgisterPage = computed(() => route.path === '/register')
+
 </script>

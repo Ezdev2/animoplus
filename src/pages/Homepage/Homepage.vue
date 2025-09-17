@@ -15,6 +15,7 @@
       <OptiCare />
       <CompanionPartner />
       <LostAnimal />
+      <Actuality/>
       <QuestionsBanner />
     </div>
   </div>
@@ -28,6 +29,7 @@ import OptiCare from './components/OptiCare.vue';
 import CompanionPartner from './components/CompanionPartner.vue';
 import QuestionsBanner from './components/QuestionsBanner.vue';
 import LostAnimal from './components/LostAnimal.vue';
+import Actuality from './components/Actuality.vue';
 
 import BubbleGreen from '@/assets/bubbles/1_green.vue';
 import BubbleYellow from '@/assets/bubbles/1_yellow.vue';
@@ -45,9 +47,6 @@ import BubbleGray from '@/assets/bubbles/1_gray.vue';
   height: 100vh;
   background-color: #43a047;
   z-index: -1;
-}
-.background-body {
-  background: linear-gradient(180deg, #43A047 4.53%, #FFF 11.52%);
 }
 
 .bubble {

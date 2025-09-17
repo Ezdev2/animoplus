@@ -12,7 +12,7 @@
     </div>
 
     <!-- Corps du message -->
-    <div class="flex items-start gap-2.5 p-5 bg-white min-h-[500px]">
+    <div class="flex items-start gap-2.5 p-5 bg-white min-h-[300px]">
       <img :src="chatIcon" alt="Avatar IA" class="chat-avatar-body" />
       <p class="message-bubble">
         Bonjour ! Je suis votre assistant vétérinaire virtuel propulsé par l’IA DeepSeek.

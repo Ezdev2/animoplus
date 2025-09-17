@@ -22,9 +22,12 @@
             class="w-full h-12 px-4 bg-white border border-neutral-200 rounded outline-none focus:ring-2 focus:ring-primary-600" />
         </label>
 
-        <div class="flex items-center gap-2 text-sm text-zinc-600">
-          <input type="checkbox" id="remember" class="w-4 h-4 border border-gray-400" />
-          <label for="remember">Se souvenir de moi</label>
+        <div class="flex w-full justify-between">
+          <div class="flex items-center gap-2 text-sm text-zinc-600">
+            <input type="checkbox" id="remember" class="w-4 h-4 border border-gray-400" />
+            <label for="remember">Se souvenir de moi</label>
+          </div>
+          <router-link to="/reset-password" class="text-primary-600 font-semibold underline">Mot de passe oublié</router-link>
         </div>
 
         <button @click="loginAs('client')"
@@ -40,7 +43,7 @@
 
       <p class="text-gray-600 text-lg">
         Pas encore de compte ?
-        <router-link to="/login" class="text-primary-600 font-semibold underline">Inscrivez-vous</router-link>
+        <router-link to="/register" class="text-primary-600 font-semibold underline">Inscrivez-vous</router-link>
       </p>
     </div>
   </div>
@@ -61,9 +64,8 @@ onMounted(() => {
 })
 
 function loginAs(role) {
-  // Utilise la méthode du store pour une connexion persistante
   authMethods.login(role)
-  
+
   // Redirection selon le rôle
   if (role === 'client') {
     router.push('/dashboard')
