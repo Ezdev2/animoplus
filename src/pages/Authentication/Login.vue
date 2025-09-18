@@ -12,13 +12,13 @@
 
         <label class="w-full flex flex-col gap-1">
           <span class="text-zinc-600 text-sm font-medium uppercase">Adresse email</span>
-          <input type="email" placeholder="johndoe@example.com"
+          <input v-model="email" type="email" placeholder="johndoe@example.com"
             class="w-full h-12 px-4 bg-white border border-neutral-200 rounded outline-none focus:ring-2 focus:ring-primary-600" />
         </label>
 
         <label class="w-full flex flex-col gap-1">
           <span class="text-zinc-600 text-sm font-medium uppercase">Mot de passe</span>
-          <input type="password" placeholder="********"
+          <input v-model="password" type="password" placeholder="********"
             class="w-full h-12 px-4 bg-white border border-neutral-200 rounded outline-none focus:ring-2 focus:ring-primary-600" />
         </label>
 
@@ -30,15 +30,15 @@
           <router-link to="/reset-password" class="text-primary-600 font-semibold underline">Mot de passe oublié</router-link>
         </div>
 
-        <button @click="loginAs('client')"
+        <button @click="handleLogin"
           class="w-full py-3 bg-primary-600 text-white rounded-xl text-lg font-medium hover:bg-primary-500 transition">
-          Se connecter en tant que client
+          Se connecter
         </button>
 
-        <button @click="loginAs('pro')"
-          class="w-full py-3 bg-primary-600 text-white rounded-xl text-lg font-medium hover:bg-primary-500 transition">
-          Se connecter en tant que professionnel
-        </button>
+        <!-- Affichage des erreurs -->
+        <div v-if="error" class="w-full p-3 bg-red-100 border border-red-300 rounded-lg text-red-700 text-sm">
+          {{ error }}
+        </div>
       </div>
 
       <p class="text-gray-600 text-lg">
@@ -50,28 +50,31 @@
 </template>
 
 <script setup>
-import { useRouter } from 'vue-router'
-import { onMounted } from 'vue'
-import { auth, authMethods } from '@/stores/auth'
+import { onMounted, ref } from 'vue'
+import { useAuth } from '@/composables/useAuth.js'
 
-const router = useRouter()
+const { isAuthenticated, login, error, requireGuest } = useAuth()
+
+// Données du formulaire
+const email = ref('')
+const password = ref('')
 
 // Redirection automatique si déjà connecté
 onMounted(() => {
-  if (auth.isAuthenticated) {
-    router.push('/dashboard')
-  }
+  requireGuest()
 })
 
-function loginAs(role) {
-  authMethods.login(role)
-
-  // Redirection selon le rôle
-  if (role === 'client') {
-    router.push('/dashboard')
-  } else if (role === 'pro') {
-    router.push('/dashboard')
+async function handleLogin() {
+  if (!email.value || !password.value) {
+    return
   }
+  
+  const credentials = {
+    email: email.value,
+    password: password.value
+  }
+  
+  await login(credentials)
 }
 </script>
 

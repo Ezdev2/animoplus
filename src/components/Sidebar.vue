@@ -18,7 +18,7 @@
 
         <!-- Bouton déconnexion -->
         <div>
-            <button @click="logout"
+            <button @click="handleLogout"
                 class="px-4 py-2 bg-white rounded-xl shadow outline outline-1 outline-gray-200 flex items-center gap-2 hover:bg-gray-50 transition">
                 <span class="text-red-500 text-base font-['League_Spartan']">Déconnexion</span>
                 <img :src="logoutIcon" alt="log out" class="feature-icon w-6">
@@ -28,8 +28,8 @@
 </template>
 
 <script setup>
-import { useRoute, useRouter } from 'vue-router';
-import { auth } from '@/stores/auth.js'
+import { useRoute } from 'vue-router';
+import { useAuth } from '@/composables/useAuth.js'
 
 import dashboardIcon from '@/assets/icons/sidebar/DasboardIcon.vue';
 import animalIcon from '@/assets/icons/sidebar/AnimalIcon.vue';
@@ -45,9 +45,9 @@ import lostAnimalIcon from '@/assets/icons/sidebar/LostAnimalIcon.vue';
 
 import logoutIcon from '@/assets/icons/logout.svg';
 
-
 const route = useRoute();
-const router = useRouter()
+const { role, logout } = useAuth()
+
 const props = defineProps({
     user: {
         type: String,
@@ -161,13 +161,13 @@ const menuItems = [
 ];
 
 const filteredMenuItems = menuItems.filter(item => {
-    return item.user === "" || item.user === auth.role || (Array.isArray(item.user) && item.user.includes(auth.role));
+    // Adapter pour les nouveaux user_type
+    const userRole = role.value === 'veterinarian' ? 'pro' : role.value;
+    return item.user === "" || item.user === userRole || (Array.isArray(item.user) && item.user.includes(userRole));
 });
 
-function logout() {
-  auth.isAuthenticated = false
-  auth.role = null
-  router.push('/login')
+async function handleLogout() {
+  await logout()
 }
 
 </script>

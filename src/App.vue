@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import { RouterView } from 'vue-router'
-import { auth } from './stores/auth.js'
+import { useAuth } from './composables/useAuth.js'
 
 import AppNavbar from './components/AppNavbar.vue';
 import Sidebar from './components/Sidebar.vue';
@@ -12,8 +12,12 @@ import ChatPopup from './components/ChatPopup.vue';
 import botIcon from '@/assets/icons/bot.svg';
 
 const isOpenBot = ref(false)
+const { isAuthenticated, role, initAuth } = useAuth()
 
-onMounted(() => {
+onMounted(async () => {
+  // Initialiser l'authentification au démarrage
+  await initAuth()
+  
   setTimeout(() => {
     isOpenBot.value = true
   }, 5000)
@@ -23,18 +27,20 @@ onMounted(() => {
 
 <template>
   <!-- Non connecté -->
-  <Navbar class="appbar" v-if="!auth.isAuthenticated" />
-  <RouterView v-if="!auth.isAuthenticated" />
+  <template v-if="!isAuthenticated">
+    <Navbar class="appbar" />
+    <RouterView />
 
-  <!-- Bouton flottant pour ouvrir le chatbot -->
-  <button v-if="!auth.isAuthenticated" @click="isOpenBot = true"
-    class="fixed bottom-6 right-6 z-50 bg-white border border-primary-600 hover:bg-neutral-200 text-white rounded-full p-4 shadow-lg">
-    <img :src="botIcon" alt="bot icon">
-  </button>
-  <Footer v-if="!auth.isAuthenticated" />
+    <!-- Bouton flottant pour ouvrir le chatbot -->
+    <button @click="isOpenBot = true"
+      class="fixed bottom-6 right-6 z-50 bg-white border border-primary-600 hover:bg-neutral-200 text-white rounded-full p-4 shadow-lg">
+      <img :src="botIcon" alt="bot icon">
+    </button>
+    <Footer />
+  </template>
 
   <!-- Connecté - Client -->
-  <div v-else-if="auth.role === 'client'" class="layout">
+  <div v-else-if="role === 'client'" class="layout">
     <Sidebar role="client" />
     <div class="main flex flex-col h-screen w-full overflow-hidden px-[24px]">
       <div class="appbar bg-white">
@@ -46,8 +52,8 @@ onMounted(() => {
     </div>
   </div>
 
-  <!-- Connecté - Pro -->
-  <div v-else-if="auth.role === 'pro'" class="layout">
+  <!-- Connecté - Vétérinaire -->
+  <div v-else-if="role === 'veterinarian'" class="layout">
     <Sidebar role="pro" />
     <div class="main flex flex-col h-screen w-full overflow-hidden px-[24px]">
       <div class="appbar bg-white">

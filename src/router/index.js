@@ -14,7 +14,7 @@ import Tasks from '@/pages/Tasks/components/TasksComponents.vue'
 import Accounting from '@/pages/Accounting/Accounting.vue'
 import StockPage from '@/pages/StockManagement/StockPage.vue'
 
-import { auth } from '@/stores/auth.js'
+import { useAuthStore } from '@/stores/authPinia.js'
 import Specialist from '@/pages/Homepage/Specialist.vue'
 import SignUp from '@/pages/Authentication/SignUp.vue'
 import ResetPassword from '@/pages/Authentication/ResetPassword.vue'
@@ -141,10 +141,17 @@ const router = createRouter({
   ],
 })
 
-router.beforeEach((to, from, next) => {
-  const isAuthenticated = auth.isAuthenticated
+router.beforeEach(async (to, from, next) => {
+  const authStore = useAuthStore()
+  
+  // Vérifier l'authentification si pas encore initialisée
+  if (!authStore.initializationComplete) {
+    await authStore.initAuth()
+  }
+  
+  const isAuthenticated = authStore.isAuthenticated
 
-  // Si connecté et essaie d’aller sur la home (/) → redirection vers dashboard
+  // Si connecté et essaie d'aller sur la home (/) → redirection vers dashboard
   if (to.path === '/' && isAuthenticated) {
     return next('/dashboard')
   }
@@ -154,7 +161,7 @@ router.beforeEach((to, from, next) => {
     return next('/dashboard')
   }
 
-  // Si route protégée et qu’on n’est PAS connecté → redirection vers /ask-appointment
+  // Si route protégée et qu'on n'est PAS connecté → redirection vers login
   if (to.meta.requiresAuth && !isAuthenticated) {
     return next('/login')
   }
