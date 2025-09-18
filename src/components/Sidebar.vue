@@ -96,7 +96,7 @@ const menuItems = [
         label: "Gestion des patients",
         icon: userIcon,
         user: "pro",
-        link: "/animals"
+        link: "/manage-patient"
     },
     {
         label: "Gestion des services",

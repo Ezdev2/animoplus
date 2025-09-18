@@ -9,7 +9,7 @@ import ProfilePage from '@/pages/Profile/ProfilePage.vue'
 import SpecialityPage from '@/pages/Speciality/SpecialityPage.vue'
 import Message from '@/pages/Message/Message.vue'
 import Appointment from '@/pages/appointment/components/AppointmentPage.vue'
-import Services from '@/pages/Services/components/ServicesTable.vue'
+import Services from '@/pages/Services/ServicesPage.vue'
 import Tasks from '@/pages/Tasks/components/TasksComponents.vue'
 import Accounting from '@/pages/Accounting/Accounting.vue'
 import StockPage from '@/pages/StockManagement/StockPage.vue'
@@ -19,6 +19,7 @@ import Specialist from '@/pages/Homepage/Specialist.vue'
 import SignUp from '@/pages/Authentication/SignUp.vue'
 import ResetPassword from '@/pages/Authentication/ResetPassword.vue'
 import LostAnimal from '@/pages/LostAnimal/LostAnimal.vue'
+import ManagePatient from '@/pages/ManagePatient/ManagePatient.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -106,6 +107,12 @@ const router = createRouter({
       name: 'appointment',
       component: Appointment,
       meta: { requiresAuth: true } 
+    },
+    {
+      path: '/manage-patient',
+      name: 'manage-patient',
+      component: ManagePatient,
+      meta: { requiresAuth: true }
     },
     {
       path: '/services',

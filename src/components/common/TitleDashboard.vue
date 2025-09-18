@@ -5,7 +5,7 @@
       v-if="hasButton"
       @click="$emit('onClickBtn')"
       class="bg-accent-500 text-white px-4 py-3 rounded-[14px] shadow-md flex items-center gap-2">
-      <img :src="icon" alt="icone patte" class="" />
+      <img v-if="icon" :src="icon" alt="icone" class="" />
       {{ btnTitle }}
     </button>
     <div 
@@ -13,7 +13,7 @@
       @click="$emit('onClickBtn')" 
       class="flex gap-2 items-center cursor-pointer"
     >
-      <img :src="icon" alt="icone patte" class="" />
+      <img v-if="icon" :src="icon" alt="icone" class="" />
       <span class="text-primary-600">{{ btnTitle }}</span>
     </div>
   </div>

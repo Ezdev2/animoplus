@@ -55,9 +55,9 @@ defineProps({
   background: white;
   border-radius: 10px;
   padding: 1.5rem;
-  width: 600px;
+  width: 60%;
   max-width: 95%;
-  max-height: 80vh;
+  max-height: 90vh;
 }
 
 .modal-header {
