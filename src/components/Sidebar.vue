@@ -5,7 +5,7 @@
             <img class="w-28 h-9" src="../assets/animoplus_header.png" />
 
             <!-- Menu principal -->
-            <nav class="flex flex-col gap-4">
+            <nav class="flex flex-col gap-6">
                 <RouterLink v-for="item in filteredMenuItems" :key="item.label" :to="item.link"
                     class="flex items-center gap-4 text-base hover:text-accent-400 transition"
                     :class="route.path === item.link ? 'text-accent-400 font-bold' : 'text-white'">
