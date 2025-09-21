@@ -50,14 +50,54 @@ export const tokenService = {
     }
   },
 
-  // Supprimer tous les tokens
+  // Nettoyer tous les tokens et données utilisateur
   clearTokens() {
     try {
       localStorage.removeItem(TOKEN_KEY)
       localStorage.removeItem(REFRESH_TOKEN_KEY)
       localStorage.removeItem(USER_DATA_KEY)
     } catch (error) {
-      console.error('Erreur lors de la suppression des tokens:', error)
+      console.error('Erreur lors du nettoyage des tokens:', error)
+    }
+  },
+
+  // Forcer le refresh du token
+  async forceRefreshToken() {
+    try {
+      const refreshToken = this.getRefreshToken()
+      if (!refreshToken) {
+        throw new Error('Aucun refresh token disponible')
+      }
+
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://laravel-backend-4yxv.onrender.com/api'
+      
+      const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          refresh_token: refreshToken
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`Erreur refresh: ${response.status}`)
+      }
+
+      const data = await response.json()
+      const { access_token, refresh_token } = data
+      
+      this.setTokens(access_token, refresh_token)
+      
+      console.log('✅ Token refreshé manuellement avec succès')
+      return { success: true, token: access_token }
+      
+    } catch (error) {
+      console.error('❌ Erreur lors du refresh manuel:', error)
+      this.clearTokens()
+      return { success: false, error: error.message }
     }
   },
 

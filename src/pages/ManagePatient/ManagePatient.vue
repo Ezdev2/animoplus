@@ -26,6 +26,7 @@ import PatientList from './components/PatientList.vue'
 import PatientDetailsModal from './components/PatientDetailsModal.vue'
 import CreatePatientModal from './components/CreatePatientModal.vue'
 import ConsultationReportModal from './components/ConsultationReportModal.vue'
+// import { useUsers } from '@/composables/useUsers.js'
 
 // State
 const patients = ref([])
@@ -215,8 +216,29 @@ const removeReminder = (reminderId) => {
     }
 }
 
+// Nouveau système avec API (en mode fallback pour éviter les erreurs)
+// TODO: Activer quand l'API sera prête
+// const { 
+//   users, 
+//   clientUsers, 
+//   loading: usersLoading, 
+//   error: usersError,
+//   fetchUsers,
+//   searchUsers 
+// } = useUsers()
+
 // Initialisation
-onMounted(() => {
-    patients.value = [...initialPatients]
+onMounted(async () => {
+  // Garder les données mock pour l'instant (pas de changement visuel)
+  patients.value = [...initialPatients]
+  
+  // TODO: Récupérer les utilisateurs clients depuis l'API
+  console.log('Page ManagePatient initialisée avec données mock')
 })
+
+// Fonction pour rechercher des clients (préparée pour l'API)
+const searchClients = async (query) => {
+  console.log('Recherche clients (API pas encore connectée):', query)
+  // TODO: Implémenter la recherche API
+}
 </script>

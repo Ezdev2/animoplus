@@ -51,30 +51,64 @@
 
 <script setup>
 import { onMounted, ref } from 'vue'
-import { useAuth } from '@/composables/useAuth.js'
+import { useSimpleAuth } from '@/composables/useSimpleAuth.js'
+import { useRouter } from 'vue-router'
 
-const { isAuthenticated, login, error, requireGuest } = useAuth()
+const auth = useSimpleAuth()
+const router = useRouter()
 
 // Données du formulaire
 const email = ref('')
 const password = ref('')
+const error = ref('')
+const loading = ref(false)
 
 // Redirection automatique si déjà connecté
 onMounted(() => {
-  requireGuest()
+  if (auth.isAuthenticated.value) {
+    console.log('🔄 Déjà connecté, redirection vers dashboard')
+    router.push('/dashboard')
+  }
 })
 
 async function handleLogin() {
   if (!email.value || !password.value) {
+    error.value = 'Veuillez remplir tous les champs'
     return
   }
   
-  const credentials = {
-    email: email.value,
-    password: password.value
-  }
+  loading.value = true
+  error.value = ''
   
-  await login(credentials)
+  try {
+    console.log('🔐 Tentative de connexion:', email.value)
+    
+    // Appel API direct sans authService pour éviter la duplication
+    const { apiClient } = await import('@/services/api/config.js')
+    const { API_ENDPOINTS } = await import('@/services/api/endpoints.js')
+    
+    const response = await apiClient.post(API_ENDPOINTS.AUTH.LOGIN, {
+      email: email.value,
+      password: password.value
+    })
+    
+    const { access_token, refresh_token, user } = response.data
+    console.log('✅ Connexion réussie:', { user: user.name, role: user.user_type })
+    
+    // Sauvegarder UNIQUEMENT avec useSimpleAuth (évite la duplication)
+    auth.login(access_token, refresh_token, user)
+    
+    // Redirection forcée
+    console.log('🔄 Redirection vers dashboard...')
+    window.location.href = '/dashboard'
+    
+  } catch (err) {
+    console.error('❌ Erreur login:', err)
+    const errorMessage = err.response?.data?.message || 'Erreur de connexion'
+    error.value = errorMessage
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 

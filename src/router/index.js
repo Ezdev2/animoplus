@@ -14,12 +14,19 @@ import Tasks from '@/pages/Tasks/components/TasksComponents.vue'
 import Accounting from '@/pages/Accounting/Accounting.vue'
 import StockPage from '@/pages/StockManagement/StockPage.vue'
 
-import { useAuthStore } from '@/stores/authPinia.js'
+import { simpleGuard } from '@/router/simpleGuard.js'
 import Specialist from '@/pages/Homepage/Specialist.vue'
 import SignUp from '@/pages/Authentication/SignUp.vue'
 import ResetPassword from '@/pages/Authentication/ResetPassword.vue'
 import LostAnimal from '@/pages/LostAnimal/LostAnimal.vue'
 import ManagePatient from '@/pages/ManagePatient/ManagePatient.vue'
+
+// Pages d'erreur
+import NotFound from '@/pages/Error/NotFound.vue'
+import AccessDenied from '@/pages/Error/AccessDenied.vue'
+
+// Pages de test
+import CloudinaryTest from '@/pages/Test/CloudinaryTest.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -64,109 +71,106 @@ const router = createRouter({
       path: '/dashboard',
       name: 'dashboard',
       component: Dashboard,
-      meta: { requiresAuth: true } // nécessite d’être connecté
+      meta: { requiresAuth: true, roles: ['client', 'veterinarian'] }
     },
     {
       path: '/animals',
       name: 'animals',
       component: Animals,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, roles: ['client'] }
     },
     {
       path: '/documents',
       name: 'documents',
       component: Documents,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, roles: ['client', 'veterinarian'] }
     },
     {
       path: '/profil',
       name: 'profil',
       component: ProfilePage,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, roles: ['client', 'veterinarian'] }
     },
     {
       path: '/speciality',
       name: 'speciality',
       component: SpecialityPage,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, roles: ['client'] }
     },
     {
       path: '/lost-animal',
       name: 'lost-animal',
       component: LostAnimal,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, roles: ['client', 'veterinarian'] }
     },
     {
       path: '/message',
       name: 'message',
       component: Message,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, roles: ['client', 'veterinarian'] }
     },
     {
       path: '/appointment',
       name: 'appointment',
       component: Appointment,
-      meta: { requiresAuth: true } 
+      meta: { requiresAuth: true, roles: ['client', 'veterinarian'] }
     },
     {
       path: '/manage-patient',
       name: 'manage-patient',
       component: ManagePatient,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, roles: ['veterinarian'] }
     },
     {
       path: '/services',
       name: 'services',
       component: Services,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, roles: ['veterinarian'] }
     },
     {
       path: '/tasks',
       name: 'tasks',
       component: Tasks,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, roles: ['veterinarian'] }
     },
     {
       path: '/accounting',
       name: 'accounting',
       component: Accounting,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, roles: ['veterinarian'] }
     },
     {
       path: '/stockManagement',
       name: 'stockManagement',
       component: StockPage,
+      meta: { requiresAuth: true, roles: ['veterinarian'] }
+    },
+    // Page d'accès refusé
+    {
+      path: '/access-denied',
+      name: 'access-denied',
+      component: AccessDenied,
       meta: { requiresAuth: true }
     },
+    // Page de test Cloudinary (publique)
+    {
+      path: '/test/cloudinary',
+      name: 'cloudinary-test',
+      component: CloudinaryTest,
+      meta: { requiresGuest: false, requiresAuth: false } // Accessible à tous
+    },
+    // Route 404 - DOIT ÊTRE LA DERNIÈRE
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      component: NotFound
+    }
   ],
 })
 
-router.beforeEach(async (to, from, next) => {
-  const authStore = useAuthStore()
-  
-  // Vérifier l'authentification si pas encore initialisée
-  if (!authStore.initializationComplete) {
-    await authStore.initAuth()
-  }
-  
-  const isAuthenticated = authStore.isAuthenticated
-
-  // Si connecté et essaie d'aller sur la home (/) → redirection vers dashboard
-  if (to.path === '/' && isAuthenticated) {
-    return next('/dashboard')
-  }
-
-  // Si route réservée aux non-connectés et qu'on est connecté → dashboard
-  if (to.meta.requiresGuest && isAuthenticated) {
-    return next('/dashboard')
-  }
-
-  // Si route protégée et qu'on n'est PAS connecté → redirection vers login
-  if (to.meta.requiresAuth && !isAuthenticated) {
-    return next('/login')
-  }
-
-  return next()
+router.beforeEach((to, from, next) => {
+  // Utiliser le guard ultra-simple
+  simpleGuard(to, from, next)
 })
 
 export default router

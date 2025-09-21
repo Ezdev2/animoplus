@@ -9,30 +9,30 @@
     <!-- Informations utilisateur -->
     <div class="flex justify-between items-start mb-4">
       <div class="flex gap-5">
-        <img :src="ProfileImg" alt="photo de profil" class="w-[130px] h-[130px] rounded-full object-cover" />
+        <img :src="userAvatar" alt="photo de profil" class="w-[130px] h-[130px] rounded-full object-cover" />
 
         <div class="flex flex-col gap-2">
-          <h3 class="text-[20px] font-semibold text-neutral-700">Ezra Fanomezantsoa</h3>
-          <p class=" text-neutral-700">exemples@gmail.com</p>
+          <h3 class="text-[20px] font-semibold text-neutral-700">{{ userName }}</h3>
+          <p class=" text-neutral-700">{{ userEmail }}</p>
 
           <!-- Infos personnelles -->
           <p class="flex items-start gap-2">
             <img :src="phoneIcon" alt="Téléphone" class="w-[16px]" />
-            +261 03 400 05
+            {{ userPhone }}
           </p>
           <p class="flex items-start gap-2">
             <img :src="locationIcon" alt="Localisation" class="w-[16px]" />
-            Antananarivo 101
+            {{ userAddress }}
           </p>
           <p class="flex items-start gap-2">
             <img :src="calendarIcon" alt="Date de naissance" class="w-[16px]" />
-            19/01/2002
+            {{ userBirthDate }}
           </p>
         </div>
       </div>
 
       <!-- Bouton Ajouter un animal -->
-      <button v-if="isClient" @click="addAnimal"
+      <button v-if="isUserClient" @click="addAnimal"
         class="bg-accent-500 text-white px-4 py-3 rounded-[14px] shadow-md flex items-center gap-2">
         <img :src="animalIcon" alt="icone patte" class="w-fit" />
         Ajouter un animal
@@ -53,7 +53,7 @@
     </Alert>
 
     <!-- Section Animaux -->
-    <div v-if="isClient" class="flex flex-col gap-4">
+    <div v-if="isUserClient" class="flex flex-col gap-4">
       <div class="flex items-center font-bold gap-4">
         <img :src="petIcon" alt="icone animal" />
         <h3>Animaux de Compagnie</h3>
@@ -77,11 +77,22 @@
     </div>
   </section>
   <AddAnimal v-if="showModal" @close="showModal = false" />
+  
+  <!-- Debug API Tester - TEMPORAIRE -->
+  <ApiTester v-if="showApiTester" @close="showApiTester = false" />
+  
+  <!-- Bouton pour ouvrir le testeur API -->
+  <button @click="showApiTester = true" 
+    class="fixed bottom-4 right-4 bg-blue-500 text-white px-3 py-2 rounded-full shadow-lg hover:bg-blue-600 z-40">
+    🔧 API Test
+  </button>
 
 </template>
 
 <script setup>
 import ProfileImg from '@/assets/images/image1.svg'
+import DefaultAvatar from '@/assets/images/default-avatar.svg'
+import { getUserAvatar } from '@/utils/avatarUtils.js'
 import phoneIcon from '@/assets/icons/small-phone.svg'
 import locationIcon from '@/assets/icons/small-marker.svg'
 import calendarIcon from '@/assets/icons/small-calendar.svg'
@@ -95,13 +106,48 @@ import TitleDashboard from '@/components/common/TitleDashboard.vue'
 import Alert from '@/components/common/Alert.vue'
 
 import AddAnimal from '@/pages/Animals/components/AddAnimal.vue'
-import { ref } from 'vue'
+import ApiTester from '@/components/debug/ApiTester.vue'
+import { ref, computed, onMounted } from 'vue'
+import { useSimpleAuth } from '@/composables/useSimpleAuth.js'
 
 const props = defineProps({
   isClient: {
     type: Boolean,
     default: true
   }
+})
+
+// Utiliser le système d'auth ultra-simple
+const auth = useSimpleAuth()
+
+// Initialiser les données
+auth.init()
+
+// Données utilisateur - UNE SEULE SOURCE
+const userData = computed(() => {
+  return auth.getCurrentUser.value
+})
+const userName = computed(() => {
+  if (!userData.value) return 'Utilisateur'
+  return userData.value.name || `${userData.value.firstName || ''} ${userData.value.lastName || ''}`.trim() || 'Utilisateur'
+})
+const userEmail = computed(() => userData.value?.email || 'email@exemple.com')
+const userPhone = computed(() => userData.value?.phone || '+261 00 000 00 00')
+const userAddress = computed(() => userData.value?.address || 'Adresse inconnue')
+const userBirthDate = computed(() => {
+  if (userData.value?.birth_date) {
+    return new Date(userData.value.birth_date).toLocaleDateString('fr-FR')
+  }
+  return '19/01/2002'
+})
+const userAvatar = computed(() => {
+  // Utiliser l'utilitaire pour obtenir l'avatar approprié
+  return getUserAvatar(userData.value, 130)
+})
+
+// Déterminer le type d'utilisateur
+const isUserClient = computed(() => {
+  return userData.value?.user_type === 'client' || userData.value?.role === 'client'
 })
 
 const animals = ref([
@@ -112,12 +158,19 @@ const animals = ref([
 ])
 
 const showModal = ref(false)
+const showApiTester = ref(false)
 
 const emit = defineEmits(['edit-profile']);
 
 function addAnimal () {
   showModal.value = true;
 }
+
+// Initialisation ultra-simple
+onMounted(() => {
+  console.log('🚀 Initialisation UserProfile - Version Simple')
+  console.log('👤 Utilisateur:', userData.value?.name)
+})
 
 </script>
 
