@@ -1,22 +1,34 @@
 // Centralisation de tous les endpoints de l'API
 export const API_ENDPOINTS = {
-  // Authentication
+  // Authentification
   AUTH: {
     LOGIN: '/auth/login',
-    REGISTER: '/auth/register',
     LOGOUT: '/auth/logout',
+    REGISTER: '/auth/register',
     REFRESH: '/auth/refresh',
     ME: '/auth/me',
+    FORGOT_PASSWORD: '/auth/forgot-password',
     RESET_PASSWORD: '/auth/reset-password',
-    CHANGE_PASSWORD: '/auth/change-password'
+    VERIFY_EMAIL: '/auth/verify-email'
   },
 
-  // Users Management
+  // Gestion des utilisateurs
   USERS: {
-    BASE: '/users',
-    PROFILE: '/users/profile',
-    UPDATE_PROFILE: '/users/profile',
-    AVATAR: '/users/avatar'
+    LIST: '/users',
+    CREATE: '/users',
+    SHOW: (id) => `/users/${id}`,
+    UPDATE: (id) => `/users/${id}`,
+    DELETE: (id) => `/users/${id}`,
+    SEARCH: '/users/search',
+    PROFILE: '/auth/me', // GET - Récupérer le profil (route existante)
+    UPDATE_PROFILE: '/user/profile', // PUT - Mettre à jour le profil
+    CHANGE_PASSWORD: '/user/change-password', // PUT - Changer mot de passe
+    DEACTIVATE: '/user/deactivate', // POST - Désactiver compte
+    SESSIONS: '/user/sessions', // GET - Sessions actives
+    REVOKE_SESSION: '/user/sessions/revoke', // DELETE - Révoquer session
+    REVOKE_ALL_SESSIONS: '/user/sessions/revoke-all', // DELETE - Révoquer toutes
+    UPLOAD_AVATAR: '/users/avatar',
+    UPDATE_AVATAR: '/user/avatar' // PUT - Mettre à jour l'avatar avec URL
   },
 
   // Clients

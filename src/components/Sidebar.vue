@@ -29,7 +29,8 @@
 
 <script setup>
 import { useRoute } from 'vue-router';
-import { useAuth } from '@/composables/useAuth.js'
+import { useSimpleAuth } from '@/composables/useSimpleAuth.js'
+import { computed } from 'vue'
 
 import dashboardIcon from '@/assets/icons/sidebar/DasboardIcon.vue';
 import animalIcon from '@/assets/icons/sidebar/AnimalIcon.vue';
@@ -46,7 +47,22 @@ import lostAnimalIcon from '@/assets/icons/sidebar/LostAnimalIcon.vue';
 import logoutIcon from '@/assets/icons/logout.svg';
 
 const route = useRoute();
-const { role, logout } = useAuth()
+const auth = useSimpleAuth()
+
+// Récupérer le rôle depuis les données utilisateur
+const role = computed(() => {
+  const user = auth.getCurrentUser.value
+  if (!user) return null
+  
+  // Adapter les différents formats de rôle
+  return user.user_type || user.role || 'client'
+})
+
+// Fonction de déconnexion
+const logout = () => {
+  auth.logout()
+  window.location.href = '/login'
+}
 
 const props = defineProps({
     user: {

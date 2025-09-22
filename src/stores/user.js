@@ -41,19 +41,27 @@ export const useUserStore = defineStore('user', () => {
     error.value = null
 
     try {
-      const result = await authService.getCurrentUser()
+      // Utiliser le nouveau service utilisateur
+      const { userService } = await import('../services/users/userService.js')
+      const result = await userService.getProfile()
       
       if (result.success) {
         setUser(result.data)
-        return result.data
+        return { success: true, data: result.data }
       } else {
-        error.value = result.error
-        return null
+        // Fallback vers l'ancien service
+        const authResult = await authService.getCurrentUser()
+        if (authResult.success) {
+          setUser(authResult.data)
+          return { success: true, data: authResult.data }
+        } else {
+          setError(result.error || authResult.error)
+          return { success: false, error: result.error || authResult.error }
+        }
       }
-    } catch (err) {
-      error.value = 'Erreur lors de la récupération du profil utilisateur'
-      console.error('Erreur fetchCurrentUser:', err)
-      return null
+    } catch (error) {
+      setError('Erreur lors de la récupération de l\'utilisateur')
+      return { success: false, error: error.value }
     } finally {
       loading.value = false
     }

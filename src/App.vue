@@ -1,7 +1,7 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import { RouterView } from 'vue-router'
-import { useAuth } from './composables/useAuth.js'
+import { useSimpleAuth } from './composables/useSimpleAuth.js'
 
 import AppNavbar from './components/AppNavbar.vue';
 import Sidebar from './components/Sidebar.vue';
@@ -12,11 +12,27 @@ import ChatPopup from './components/ChatPopup.vue';
 import botIcon from '@/assets/icons/bot.svg';
 
 const isOpenBot = ref(false)
-const { isAuthenticated, role, initAuth } = useAuth()
+const auth = useSimpleAuth()
+
+// États réactifs basés sur useSimpleAuth
+const isAuthenticated = computed(() => auth.isAuthenticated.value)
+const currentUser = computed(() => auth.getCurrentUser.value)
+const role = computed(() => {
+  if (!currentUser.value) return null
+  // Normaliser le rôle pour compatibilité
+  return currentUser.value.user_type || currentUser.value.role || 'client'
+})
 
 onMounted(async () => {
-  // Initialiser l'authentification au démarrage
-  await initAuth()
+  // Initialiser l'authentification au démarrage avec le système simple
+  console.log('🚀 App.vue - Initialisation avec useSimpleAuth')
+  auth.init()
+  
+  console.log('📊 App.vue - État initial:', {
+    isAuthenticated: isAuthenticated.value,
+    user: currentUser.value?.name || 'Aucun',
+    role: role.value
+  })
   
   setTimeout(() => {
     isOpenBot.value = true
