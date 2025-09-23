@@ -6,7 +6,7 @@
       <div
         class="justify-start text-white text-2xl font-semibold font-['League_Spartan']"
       >
-        Bienvenue Ezra Fanomezantsoa !
+        Bienvenue {{ userName }} !
       </div>
     </div>
     <div
@@ -17,4 +17,27 @@
     </div>
   </div>
 </template>
+
+<script setup>
+import { computed } from 'vue'
+import { useSimpleAuth } from '@/composables/useSimpleAuth.js'
+
+const auth = useSimpleAuth()
+
+// Nom de l'utilisateur avec fallback
+const userName = computed(() => {
+  const user = auth.getCurrentUser.value
+  if (user?.name) {
+    return user.name
+  }
+  if (user?.firstName && user?.lastName) {
+    return `${user.firstName} ${user.lastName}`
+  }
+  if (user?.firstName) {
+    return user.firstName
+  }
+  return 'Utilisateur'
+})
+</script>
+
 <style scoped></style>
