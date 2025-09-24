@@ -44,13 +44,30 @@ export const API_ENDPOINTS = {
     SPECIALTIES: '/veterinarians/specialties'
   },
 
-  // Animals
+  // Animals (basé sur la collection Postman)
   ANIMALS: {
-    BASE: '/animals',
-    BY_CLIENT: '/animals/client',
-    SPECIES: '/animals/species',
-    RACES: '/animals/races',
-    PHOTOS: '/animals/photos'
+    LIST: '/animaux',
+    CREATE: '/animaux',
+    GET_BY_ID: (id) => `/animaux/${id}`,
+    UPDATE: (id) => `/animaux/${id}`,
+    DELETE: (id) => `/animaux/${id}`,
+    UPLOAD_PHOTO: (id) => `/animaux/${id}/photo`,
+    SEARCH: '/animaux/search',
+    BY_OWNER: '/animaux/owner',
+    BY_SPECIES: '/animaux/species',
+    
+    // Endpoints pour les espèces et races
+    SPECIES: {
+      LIST: '/especes',
+      GET_BY_ID: (id) => `/especes/${id}`,
+      RACES: (id) => `/especes/${id}/races`
+    },
+    
+    RACES: {
+      LIST: '/races',
+      GET_BY_ID: (id) => `/races/${id}`,
+      BY_SPECIES: (especeId) => `/races/espece/${especeId}`
+    }
   },
 
   // Appointments
