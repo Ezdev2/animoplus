@@ -122,7 +122,7 @@ import ContextMenu from '@/components/common/ContextMenu.vue'
 import DeleteConfirmModal from '@/components/common/DeleteConfirmModal.vue'
 
 // Import des services API
-import { useAnimals, useDeleteAnimal } from '@/services/animals/animalQueries.js'
+import { useAnimalsStore } from '@/stores/animals.js'
 import { useSpeciesCache } from '@/composables/useSpeciesCache.js'
 import { useSimpleAuth } from '@/composables/useSimpleAuth.js'
 
@@ -137,6 +137,9 @@ const animalToDelete = ref(null)
 const auth = useSimpleAuth()
 const currentUser = computed(() => auth.getCurrentUser.value)
 
+// Store Pinia pour les animaux (remplace les services directs)
+const animalsStore = useAnimalsStore()
+
 // Récupération des espèces et races avec cache optimisé
 const { 
   species: speciesData, 
@@ -145,62 +148,17 @@ const {
   backgroundRefreshStatus 
 } = useSpeciesCache({ withRaces: true })
 
-// Récupération des animaux de l'utilisateur connecté
-const { 
-  data: animalsResponse, 
-  isLoading: loadingAnimals, 
-  error: animalsError,
-  refetch: refetchAnimals 
-} = useAnimals({
-  proprietaire_id: computed(() => currentUser.value?.id)
-})
+// Filtrer les animaux par propriétaire depuis le store
+const animals = computed(() => 
+  animalsStore.getAnimalsByOwner(currentUser.value?.id)
+)
+const loadingAnimals = computed(() => animalsStore.isLoading)
+const animalsError = computed(() => animalsStore.error)
 
-// Mutation pour la suppression d'animaux
-const deleteAnimalMutation = useDeleteAnimal({
-  onSuccess: (data, animalId) => {
-    console.log('✅ Animal supprimé avec succès, ID:', animalId)
-    showDeleteModal.value = false
-    animalToDelete.value = null
-    
-    // Double sécurité : forcer le refetch en plus de l'invalidation automatique
-    setTimeout(() => {
-      console.log('🔄 Refetch manuel de la liste des animaux')
-      refetchAnimals()
-    }, 100)
-  },
-  onError: (error) => {
-    console.error('❌ Erreur suppression animal:', error)
-    // Le modal reste ouvert pour permettre de réessayer
-  }
-})
-
-// Liste des animaux enrichie avec les données d'espèces et races
-const animals = computed(() => {
-  const rawAnimals = animalsResponse.value?.data || []
-  const species = speciesData.value
-  
-  if (!species.length) return rawAnimals
-  
-  // Enrichir chaque animal avec les données d'espèce et race
-  return rawAnimals.map(animal => {
-    // Trouver l'espèce
-    const espece = species.find(s => s.id === animal.espece_id)
-    
-    // Trouver la race dans l'espèce
-    let race = null
-    if (espece && espece.races && animal.race_id) {
-      race = espece.races.find(r => r.id === animal.race_id)
-    }
-
-    console.log(animal)
-    
-    return {
-      ...animal,
-      espece: espece || null,
-      race: race || null
-    }
-  })
-})
+// Fonction pour recharger les animaux
+const refetchAnimals = () => {
+  animalsStore.animalsQuery.refetch?.()
+}
 
 // Debug pour les animaux et le cache
 watch(animals, (newAnimals) => {
@@ -270,10 +228,12 @@ async function deleteAnimal() {
   
   try {
     console.log('🗑️ Suppression de l\'animal:', animalToDelete.value.nom)
-    await deleteAnimalMutation.mutateAsync(animalToDelete.value.id)
+    await animalsStore.removeAnimal(animalToDelete.value.id)
+    showDeleteModal.value = false
+    animalToDelete.value = null
   } catch (error) {
     console.error('Erreur lors de la suppression:', error)
-    throw error // Relancer l'erreur pour que le modal la gère
+    throw error
   }
 }
 

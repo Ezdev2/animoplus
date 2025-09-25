@@ -70,8 +70,27 @@ export const API_ENDPOINTS = {
     }
   },
 
-  // Appointments
+  // Appointments (basé sur la collection Postman Appointments_Collection)
   APPOINTMENTS: {
+    LIST: '/appointments',
+    CREATE: '/appointments',
+    DETAIL: (id) => `/appointments/${id}`,
+    UPDATE: (id) => `/appointments/${id}`,
+    DELETE: (id) => `/appointments/${id}`,
+    
+    // Actions sur les statuts
+    UPDATE_STATUS: (id) => `/appointments/${id}/status`,
+    CONFIRM: (id) => `/appointments/${id}/confirm`,
+    CANCEL: (id) => `/appointments/${id}/cancel`,
+    COMPLETE: (id) => `/appointments/${id}/complete`,
+    
+    // Requêtes spécialisées
+    CLIENT_APPOINTMENTS: (clientId) => `/clients/${clientId}/appointments`,
+    PROFESSIONAL_APPOINTMENTS: (professionalId) => `/professionals/${professionalId}/appointments`,
+    AVAILABLE_SLOTS: '/appointments/available-slots',
+    STATS: '/appointments/stats',
+    
+    // Anciens endpoints (compatibilité)
     BASE: '/appointments',
     SCHEDULE: '/appointments/schedule',
     AVAILABILITY: '/appointments/availability',
@@ -88,9 +107,25 @@ export const API_ENDPOINTS = {
 
   // Services
   SERVICES: {
-    BASE: '/services',
-    SPECIALIZED: '/services/specialized',
+    LIST: '/services',
+    CREATE: '/services',
+    DETAIL: (id) => `/services/${id}`,
+    UPDATE: (id) => `/services/${id}`,
+    DELETE: (id) => `/services/${id}`,
+    USER_SERVICES: (userId) => `/users/${userId}/services`,
+    TOGGLE_STATUS: (id) => `/services/${id}/toggle-status`,
     TYPES: '/services/types'
+  },
+
+  // Service Types
+  SERVICE_TYPES: {
+    LIST: '/service-types',
+    CREATE: '/service-types',
+    DETAIL: (id) => `/service-types/${id}`,
+    UPDATE: (id) => `/service-types/${id}`,
+    DELETE: (id) => `/service-types/${id}`,
+    TOGGLE_STATUS: (id) => `/service-types/${id}/toggle-status`,
+    STATS: '/service-types/stats'
   },
 
   // Specialties
