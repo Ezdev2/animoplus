@@ -18,6 +18,7 @@ import { simpleGuard } from '@/router/simpleGuard.js'
 import Specialist from '@/pages/Homepage/Specialist.vue'
 import SignUp from '@/pages/Authentication/SignUp.vue'
 import ResetPassword from '@/pages/Authentication/ResetPassword.vue'
+import VerifyEmail from '@/pages/Authentication/VerifyEmail.vue'
 import LostAnimal from '@/pages/LostAnimal/LostAnimal.vue'
 import ManagePatient from '@/pages/ManagePatient/ManagePatient.vue'
 
@@ -59,6 +60,12 @@ const router = createRouter({
       path: '/reset-password',
       name: 'reset-password',
       component: ResetPassword,
+      meta: { requiresGuest: true }
+    },
+    {
+      path: '/verify-email',
+      name: 'verify-email',
+      component: VerifyEmail,
       meta: { requiresGuest: true }
     },
     {

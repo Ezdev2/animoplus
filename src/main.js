@@ -37,3 +37,11 @@ app.use(router)
 app.use(VueQueryPlugin, queryClientConfig)
 
 app.mount('#app')
+
+// Utilitaires de développement
+if (import.meta.env.DEV) {
+  import('@/utils/testRegistration.js').then(module => {
+    console.log('🛠️ Utilitaires de test chargés')
+    console.log('💡 Tapez testRegistration.config() dans la console pour tester la config')
+  })
+}

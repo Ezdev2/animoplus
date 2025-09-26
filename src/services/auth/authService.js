@@ -30,22 +30,41 @@ export const authService = {
   // Inscription utilisateur
   async register(userData) {
     try {
+      console.log('🚀 Tentative d\'inscription avec authService:', {
+        endpoint: API_ENDPOINTS.AUTH.REGISTER,
+        userData: { ...userData, password: '[MASQUÉ]', password_confirmation: '[MASQUÉ]' }
+      })
+      
       const response = await apiClient.post(API_ENDPOINTS.AUTH.REGISTER, userData)
-      const { token, refreshToken, user } = response.data
-
-      // Sauvegarder les tokens et données utilisateur
-      tokenService.setTokens(token, refreshToken)
-      tokenService.setUserData(user)
-
+      
+      console.log('✅ Réponse API inscription:', {
+        status: response.status,
+        data: response.data
+      })
+      
+      // Pour l'inscription avec vérification email, on ne sauvegarde PAS les tokens
+      // car l'utilisateur doit d'abord vérifier son email
+      console.log('📧 Inscription réussie, vérification email requise')
+      
       return {
         success: true,
-        data: { token, refreshToken, user }
+        data: response.data
       }
     } catch (error) {
-      console.error('Erreur lors de l\'inscription:', error)
+      console.error('❌ Erreur lors de l\'inscription:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data,
+        config: {
+          url: error.config?.url,
+          method: error.config?.method,
+          baseURL: error.config?.baseURL
+        }
+      })
+      
       return {
         success: false,
-        error: error.response?.data?.message || 'Erreur d\'inscription'
+        error: error.response?.data?.message || error.message || 'Erreur d\'inscription'
       }
     }
   },
@@ -149,6 +168,47 @@ export const authService = {
       return {
         success: false,
         error: error.response?.data?.message || 'Erreur de changement de mot de passe'
+      }
+    }
+  },
+
+  // Vérification d'email
+  async verifyEmail(email, token) {
+    try {
+      const response = await apiClient.post(API_ENDPOINTS.AUTH.VERIFY_EMAIL, {
+        email,
+        token
+      })
+      
+      return {
+        success: true,
+        data: response.data
+      }
+    } catch (error) {
+      console.error('Erreur lors de la vérification d\'email:', error)
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erreur de vérification d\'email'
+      }
+    }
+  },
+
+  // Renvoyer l'email de vérification
+  async resendVerification(email) {
+    try {
+      const response = await apiClient.post(API_ENDPOINTS.AUTH.RESEND_VERIFICATION, {
+        email
+      })
+      
+      return {
+        success: true,
+        data: response.data
+      }
+    } catch (error) {
+      console.error('Erreur lors du renvoi de vérification:', error)
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erreur de renvoi de vérification'
       }
     }
   },
