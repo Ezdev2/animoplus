@@ -115,9 +115,18 @@ const email = ref(route.query.email || '')
 const token = ref(route.query.token || '')
 
 onMounted(async () => {
+  console.log('📧 VerifyEmail - Page montée:', {
+    email: email.value,
+    token: token.value ? token.value.substring(0, 10) + '...' : 'Aucun token',
+    query: route.query
+  })
+  
   // Si on a un token dans l'URL, vérifier automatiquement
   if (token.value && email.value) {
+    console.log('🔍 Vérification automatique avec token')
     await verifyEmail(email.value, token.value)
+  } else {
+    console.log('📧 Affichage page d\'attente - pas de token')
   }
 })
 

@@ -69,8 +69,12 @@
     </div>
 
     <button class="w-full py-3 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-500 disabled:opacity-50"
-      @click="handleNext" :disabled="!isFormValid || isLoading">
-      {{ isLoading ? 'Inscription en cours...' : (isProfessional ? 'Continuer vers les infos professionnelles' : 'Finaliser l\'inscription') }}
+      @click="handleNext" :disabled="!isFormValid || isLoading || isRedirecting">
+      {{ 
+        isLoading ? 'Inscription en cours...' : 
+        isRedirecting ? 'Redirection...' :
+        (isProfessional ? 'Continuer vers les infos professionnelles' : 'Finaliser l\'inscription') 
+      }}
     </button>
   </div>
 </template>
@@ -91,6 +95,7 @@ const emit = defineEmits(['next', 'setUserType'])
 const router = useRouter()
 const { showToast } = useToast()
 const isLoading = ref(false)
+const isRedirecting = ref(false)
 
 // Validation du formulaire
 const isFormValid = computed(() => {
@@ -184,13 +189,23 @@ async function handleClientRegistration() {
     
     if (result.success) {
       console.log('✅ Inscription réussie:', result.data)
-      showToast('Inscription réussie ! Vérifiez votre email pour activer votre compte.', 'success')
+      showToast('Inscription réussie ! Redirection en cours...', 'success')
       
-      // Rediriger vers la page de vérification d'email
-      router.push({
-        name: 'verify-email',
-        query: { email: props.formData.email }
-      })
+      console.log('🔄 Redirection vers verify-email avec email:', props.formData.email)
+      
+      // Attendre un peu pour que l'utilisateur voie le toast
+      setTimeout(async () => {
+        isRedirecting.value = true
+        
+        // Rediriger vers la page de vérification d'email
+        await router.push({
+          name: 'verify-email',
+          query: { email: props.formData.email }
+        })
+        
+        console.log('✅ Redirection effectuée')
+        isRedirecting.value = false
+      }, 1500) // 1.5 secondes de délai
     } else {
       console.error('❌ Erreur inscription:', result.error)
       showToast(result.error || 'Erreur lors de l\'inscription', 'error')

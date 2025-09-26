@@ -112,13 +112,20 @@ async function handleRegister() {
     
     if (result.success) {
       console.log('✅ Inscription réussie:', result.data)
-      showToast('Inscription réussie ! Vérifiez votre email pour activer votre compte.', 'success')
+      showToast('Inscription réussie ! Redirection en cours...', 'success')
       
-      // Rediriger vers la page de vérification d'email
-      router.push({
-        name: 'verify-email',
-        query: { email: props.formData.email }
-      })
+      console.log('🔄 Redirection vers verify-email avec email:', props.formData.email)
+      
+      // Attendre un peu pour que l'utilisateur voie le toast
+      setTimeout(async () => {
+        // Rediriger vers la page de vérification d'email
+        await router.push({
+          name: 'verify-email',
+          query: { email: props.formData.email }
+        })
+        
+        console.log('✅ Redirection effectuée')
+      }, 1500) // 1.5 secondes de délai
     } else {
       console.error('❌ Erreur inscription:', result.error)
       showToast(result.error || 'Erreur lors de l\'inscription', 'error')
