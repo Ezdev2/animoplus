@@ -11,18 +11,28 @@
     <EventCalendar 
       :events="calendarEvents" 
       @slots-selected="onSlotsSelected"
+      @event-click="onEventClick"
       :max-selection-hours="5"
     />
 
+
     <ListAppointment 
-      :appointment="rendezVousList" 
       @show-appointment-detail="showAppointmentDetail" 
+      @edit-appointment="editAppointment"
     />
 
     <ShowAppointment 
       v-if="showModal" 
       :appointment="selectedAppointmentData" 
       @close="showModal = false" 
+      @deleted="onAppointmentDeleted"
+    />
+
+    <EditAppointmentModal 
+      v-if="editModal" 
+      :appointment="selectedAppointmentForEdit" 
+      @close="editModal = false" 
+      @updated="onAppointmentUpdated"
     />
     
     <FindService 
@@ -46,10 +56,13 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { auth } from '@/stores/auth'
+import { useAppointmentsStore } from '@/stores/appointments'
+import { useAppointments } from '@/services/appointments/appointmentQueries'
 
 import TitleDashboard from '@/components/common/TitleDashboard.vue'
 import EventCalendar from '@/components/EventCalendar.vue'
 import AddAppointmentModal from './AddAppointmentModal.vue'
+import EditAppointmentModal from './EditAppointmentModal.vue'
 import ShowAppointment from './ShowAppointment.vue'
 import FindService from './FindService.vue'
 import ListAppointment from './ListAppointment.vue'
@@ -57,11 +70,17 @@ import ListAppointment from './ListAppointment.vue'
 // Icons
 import smallCalendar from '@/assets/icons/appointment.svg'
 
+// Store et queries
+const appointmentsStore = useAppointmentsStore()
+const { data: appointmentsData, refetch } = useAppointments()
+
 // State
 const showAddEventModal = ref(false)
 const showModal = ref(false)
+const editModal = ref(false)
 const findServiceModal = ref(false)
 const selectedAppointmentData = ref(null)
+const selectedAppointmentForEdit = ref(null)
 
 const formData = ref({
   date: "",
@@ -117,29 +136,91 @@ const rendezVousList = ref([
 ])
 
 const calendarEvents = computed(() => {
-  return rendezVousList.value.map(rdv => ({
-    id: rdv.id,
-    title: rdv.titre,
-    date: convertToISODate(rdv.date, rdv.heureDebut)
-  }))
+  // Utiliser les données du store ou de l'API
+  // L'API retourne une structure paginée : { data: { data: [...], current_page: 1, ... } }
+  const appointments = appointmentsData.value?.data?.data || appointmentsStore.appointments || rendezVousList.value
+  
+  return appointments.map(rdv => {
+    try {
+      // Format API
+      if (rdv.date && rdv.start_time && !rdv.jour) {
+        const date = new Date(rdv.date)
+        const [hours, minutes] = rdv.start_time.split(':')
+        date.setHours(parseInt(hours), parseInt(minutes))
+        
+        return {
+          id: rdv.id,
+          title: rdv.service?.name || 'Consultation vétérinaire',
+          date: date.toISOString()
+        }
+      }
+      // Format mock
+      else if (rdv.date && rdv.heureDebut && rdv.jour) {
+        return {
+          id: rdv.id,
+          title: rdv.titre,
+          date: convertToISODate(rdv.date, rdv.heureDebut)
+        }
+      }
+      
+      // Fallback
+      return {
+        id: rdv.id,
+        title: rdv.titre || rdv.service?.name || 'RDV',
+        date: new Date().toISOString()
+      }
+    } catch (error) {
+      console.error("❌ Erreur conversion date pour RDV:", rdv, error)
+      return {
+        id: rdv.id,
+        title: rdv.titre || rdv.service?.name || 'RDV',
+        date: new Date().toISOString()
+      }
+    }
+  })
 })
 
 const convertToISODate = (dateStr, timeStr) => {
   const months = {
+    'janvier': 0, 'février': 1, 'mars': 2, 'avril': 3, 'mai': 4, 'juin': 5,
+    'juillet': 6, 'août': 7, 'septembre': 8, 'octobre': 9, 'novembre': 10, 'décembre': 11,
+    // Versions avec majuscules pour compatibilité
     'Janvier': 0, 'Février': 1, 'Mars': 2, 'Avril': 3, 'Mai': 4, 'Juin': 5,
     'Juillet': 6, 'Août': 7, 'Septembre': 8, 'Octobre': 9, 'Novembre': 10, 'Décembre': 11
   }
   
-  const parts = dateStr.split(' ')
-  const day = parseInt(parts[0])
-  const month = months[parts[1]]
-  const year = parseInt(parts[2])
-  
-  const timeParts = timeStr.split(':')
-  const hour = parseInt(timeParts[0])
-  const minute = parseInt(timeParts[1])
-  
-  return new Date(year, month, day, hour, minute).toISOString()
+  try {
+    const parts = dateStr.split(' ')
+    const day = parseInt(parts[0])
+    const monthName = parts[1]
+    const year = parseInt(parts[2])
+    
+    // Vérifier si le mois existe (insensible à la casse)
+    const month = months[monthName] !== undefined ? months[monthName] : months[monthName.toLowerCase()]
+    
+    if (month === undefined) {
+      console.error("❌ Mois non reconnu:", monthName, "dans", dateStr)
+      throw new Error(`Mois non reconnu: ${monthName}`)
+    }
+    
+    const timeParts = timeStr.split(':')
+    const hour = parseInt(timeParts[0])
+    const minute = parseInt(timeParts[1])
+    
+    const date = new Date(year, month, day, hour, minute)
+    
+    // Vérifier si la date est valide
+    if (isNaN(date.getTime())) {
+      console.error("❌ Date invalide créée:", { year, month, day, hour, minute })
+      throw new Error("Date invalide")
+    }
+    
+    return date.toISOString()
+  } catch (error) {
+    console.error("❌ Erreur dans convertToISODate:", { dateStr, timeStr, error })
+    // Retourner une date par défaut
+    return new Date().toISOString()
+  }
 }
 
 const getDayName = (date) => {
@@ -153,6 +234,12 @@ const formatDate = (date) => {
     year: "numeric"
   })
 }
+
+// Charger les données au montage
+onMounted(() => {
+  console.log('📅 Chargement de la page appointments...')
+  refetch()
+})
 
 // Gestion des événements
 const openAddModal = () => {
@@ -185,6 +272,7 @@ const onSlotsSelected = (selectionData) => {
 }
 
 const closeAddModal = () => {
+  console.log('🔒 Fermeture du modal depuis le parent...')
   showAddEventModal.value = false
   // Réinitialiser les données
   formData.value = {
@@ -199,31 +287,98 @@ const closeAddModal = () => {
 }
 
 const addAppointment = (newAppointment) => {
-  // Générer un nouvel ID
-  const newId = Math.max(...rendezVousList.value.map(rdv => rdv.id)) + 1
-  
-  const appointment = {
-    id: newId,
-    jour: getDayName(new Date(newAppointment.date)),
-    date: formatDate(new Date(newAppointment.date)),
-    titre: newAppointment.title || `Rendez-vous ${newAppointment.service || 'vétérinaire'}`,
-    heureDebut: newAppointment.startTime,
-    heureFin: newAppointment.endTime,
-    animal: newAppointment.animalType,
-    address: newAppointment.address,
-    service: newAppointment.service,
-    enLigne: newAppointment.isOnline || false,
-    eventType: newAppointment.eventType || "blue",
-    meetLink: newAppointment.meetLink || ""
+  try {
+    console.log("📝 Données reçues pour ajout:", newAppointment)
+    
+    // Générer un nouvel ID
+    const newId = Math.max(...rendezVousList.value.map(rdv => rdv.id)) + 1
+    
+    // Créer un objet Date valide
+    const appointmentDate = new Date(newAppointment.date)
+    
+    // Vérifier si la date est valide
+    if (isNaN(appointmentDate.getTime())) {
+      console.error("❌ Date invalide:", newAppointment.date)
+      return
+    }
+    
+    const appointment = {
+      id: newId,
+      jour: getDayName(appointmentDate),
+      date: formatDate(appointmentDate),
+      titre: newAppointment.title || `Rendez-vous ${newAppointment.service || 'vétérinaire'}`,
+      heureDebut: newAppointment.startTime,
+      heureFin: newAppointment.endTime,
+      animal: newAppointment.animalType || "Animal",
+      address: newAppointment.address,
+      service: newAppointment.service,
+      enLigne: newAppointment.isOnline || false,
+      eventType: newAppointment.eventType || "blue",
+      meetLink: newAppointment.meetLink || ""
+    }
+    
+    rendezVousList.value.push(appointment)
+    console.log("✅ Nouveau rendez-vous ajouté:", appointment)
+    
+    // Le modal se fermera via son propre mécanisme
+  } catch (error) {
+    console.error("❌ Erreur lors de l'ajout du rendez-vous:", error)
   }
-  
-  rendezVousList.value.push(appointment)
-  console.log("Nouveau rendez-vous ajouté :", appointment)
 }
 
 const showAppointmentDetail = (appointment) => {
   selectedAppointmentData.value = appointment
   showModal.value = true
+}
+
+// Gestion du clic sur un événement dans le calendrier
+const onEventClick = (calendarEvent) => {
+  console.log('🎯 Clic sur événement calendrier:', calendarEvent)
+  
+  // Trouver le rendez-vous complet à partir de l'ID de l'événement
+  const appointments = appointmentsData.value?.data?.data || appointmentsStore.appointments || rendezVousList.value
+  const fullAppointment = appointments.find(rdv => rdv.id === calendarEvent.id)
+  
+  if (fullAppointment) {
+    console.log('📋 Rendez-vous trouvé:', fullAppointment)
+    showAppointmentDetail(fullAppointment)
+  } else {
+    console.warn('⚠️ Rendez-vous non trouvé pour l\'événement:', calendarEvent)
+  }
+}
+
+// Gestion de la modification d'un rendez-vous
+const editAppointment = (appointment) => {
+  console.log('✏️ Modification du rendez-vous:', appointment)
+  selectedAppointmentForEdit.value = appointment
+  editModal.value = true
+}
+
+// Gestion de la mise à jour d'un rendez-vous
+const onAppointmentUpdated = (updatedAppointment) => {
+  console.log('✅ Rendez-vous mis à jour:', updatedAppointment)
+  
+  // TODO: Mettre à jour dans l'API et le store
+  // Pour le moment, on simule la mise à jour locale
+  
+  // Fermer le modal
+  editModal.value = false
+  selectedAppointmentForEdit.value = null
+  
+  // Rafraîchir les données
+  refetch()
+}
+
+// Gestion de la suppression d'un rendez-vous
+const onAppointmentDeleted = (appointmentId) => {
+  console.log('🗑️ Rendez-vous supprimé:', appointmentId)
+  
+  // Fermer le modal de détail
+  showModal.value = false
+  selectedAppointmentData.value = null
+  
+  // Rafraîchir les données pour mettre à jour la liste
+  refetch()
 }
 
 const onServiceSelected = (service) => {

@@ -67,8 +67,8 @@ const props = defineProps({
   },
   position: {
     type: String,
-    default: 'bottom-left', // bottom-left, bottom-right, top-left, top-right
-    validator: (value) => ['bottom-left', 'bottom-right', 'top-left', 'top-right'].includes(value)
+    default: 'bottom-left', // bottom-left, bottom-right, top-left, top-right, auto, bottom-left-modal
+    validator: (value) => ['bottom-left', 'bottom-right', 'top-left', 'top-right', 'auto', 'bottom-left-modal'].includes(value)
   }
 })
 
@@ -80,6 +80,12 @@ const isOpen = ref(false)
 
 // Position du menu
 const menuPosition = computed(() => {
+  if (props.position === 'auto') {
+    return 'position-auto'
+  }
+  if (props.position === 'bottom-left-modal') {
+    return 'position-bottom-left-modal'
+  }
   return `position-${props.position}`
 })
 
@@ -194,6 +200,39 @@ onUnmounted(() => {
 .position-top-right {
   bottom: calc(100% + 8px);
   right: 0;
+}
+
+.position-auto {
+  top: calc(100% + 8px);
+  right: 0;
+  transform: translateX(0);
+}
+
+/* Ajustement automatique si le menu dépasse à droite */
+.position-auto {
+  /* Par défaut à droite du bouton */
+  right: 0;
+}
+
+/* Si dans un conteneur avec overflow, ajuster à gauche */
+.context-menu-container:has(.position-auto) {
+  position: relative;
+}
+
+/* Classe pour forcer l'alignement à gauche dans les modals */
+.modal .position-auto,
+.position-auto.in-modal {
+  right: auto;
+  left: 0;
+  transform: translateX(-100%);
+}
+
+/* Position spéciale pour les modals - s'ouvre directement à gauche du bouton */
+.position-bottom-left-modal {
+  top: calc(100% + 8px);
+  right: 100%;
+  left: auto;
+  margin-right: 8px;
 }
 
 .context-menu-content {

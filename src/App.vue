@@ -9,6 +9,7 @@ import Navbar from './components/Navbar.vue';
 import Footer from './components/Footer.vue';
 
 import ChatPopup from './components/ChatPopup.vue';
+import ToastContainer from './components/common/ToastContainer.vue';
 import botIcon from '@/assets/icons/bot.svg';
 
 const isOpenBot = ref(false)
@@ -82,6 +83,9 @@ onMounted(async () => {
   </div>
 
   <ChatPopup v-if="isOpenBot" @close-pop-up="isOpenBot = false" />
+  
+  <!-- Container global pour les toasts -->
+  <ToastContainer />
 </template>
 
 <style scoped>

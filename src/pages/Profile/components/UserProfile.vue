@@ -31,17 +31,32 @@
         </div>
       </div>
 
-      <!-- Bouton Ajouter un animal -->
-      <button v-if="isUserClient" @click="addAnimal"
-        class="bg-accent-500 text-white px-4 py-3 rounded-[14px] shadow-md flex items-center gap-2">
-        <img :src="animalIcon" alt="icone patte" class="w-fit" />
-        Ajouter un animal
-      </button>
-      <button v-else 
-        class="bg-accent-500 text-white px-4 py-3 rounded-[14px] shadow-md flex items-center gap-2">
-        <img :src="animalIcon" alt="icone patte" class="w-fit" />
-        Ajouter un service
-      </button>
+      <!-- Boutons d'action -->
+      <div v-if="isUserClient" class="flex flex-col gap-3">
+        <button @click="addAnimal"
+          class="bg-accent-500 text-white px-4 py-3 rounded-[14px] shadow-md flex items-center gap-2">
+          <img :src="animalIcon" alt="icone patte" class="w-fit" />
+          Ajouter un animal
+        </button>
+      </div>
+      
+      <div v-else class="flex flex-col gap-3">
+        <button @click="addService"
+          class="bg-accent-500 text-white px-4 py-3 rounded-[14px] shadow-md flex items-center gap-2">
+          <img :src="animalIcon" alt="icone patte" class="w-fit" />
+          Ajouter un service
+        </button>
+        
+        <button @click="viewMyServices"
+          class="bg-blue-500 text-white px-4 py-3 rounded-[14px] shadow-md flex items-center gap-2 hover:bg-blue-600 transition-colors">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            <path d="m2 17 10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            <path d="m2 12 10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+          </svg>
+          Voir mes services
+        </button>
+      </div>
     </div>
 
     <Alert :alert-img="alertIcon" alert-description="Information confidentielle">
@@ -78,6 +93,31 @@
   </section>
   <AddAnimal v-if="showModal" @close="showModal = false" />
   
+  <!-- Modal des services utilisateur -->
+  <UserServicesModal 
+    v-if="showServicesModal" 
+    :userId="currentUser?.id"
+    @close="showServicesModal = false"
+    @edit-service="handleEditService"
+    @delete-service="handleDeleteService"
+    @create-service="handleCreateService"
+  />
+  
+  <!-- Modal d'ajout de service -->
+  <AddServiceModal 
+    v-if="showAddServiceModal"
+    @close="handleAddServiceClose"
+    @service-created="handleServiceCreated"
+  />
+  
+  <!-- Modal d'édition de service -->
+  <EditServiceModal 
+    v-if="showEditServiceModal && selectedService"
+    :service="selectedService"
+    @close="handleEditServiceClose"
+    @service-updated="handleServiceUpdated"
+  />
+  
   <!-- Debug API Tester - TEMPORAIRE -->
   <ApiTester v-if="showApiTester" @close="showApiTester = false" />
   
@@ -104,8 +144,10 @@ import editIcon from '@/assets/icons/edit-icon.svg'
 
 import TitleDashboard from '@/components/common/TitleDashboard.vue'
 import Alert from '@/components/common/Alert.vue'
-
 import AddAnimal from '@/pages/Animals/components/AddAnimal.vue'
+import UserServicesModal from '@/components/services/UserServicesModal.vue'
+import AddServiceModal from '@/components/services/AddServiceModal.vue'
+import EditServiceModal from '@/components/services/EditServiceModal.vue'
 import ApiTester from '@/components/debug/ApiTester.vue'
 import { ref, computed, onMounted } from 'vue'
 import { useSimpleAuth } from '@/composables/useSimpleAuth.js'
@@ -159,11 +201,76 @@ const animals = ref([
 
 const showModal = ref(false)
 const showApiTester = ref(false)
+const showServicesModal = ref(false)
+const showAddServiceModal = ref(false)
+const showEditServiceModal = ref(false)
+const selectedService = ref(null)
+
+// Utilisateur actuel pour le modal des services
+const currentUser = computed(() => userData.value)
 
 const emit = defineEmits(['edit-profile']);
 
 function addAnimal () {
   showModal.value = true;
+}
+
+function addService() {
+  console.log('🔧 Ajouter un service')
+  showAddServiceModal.value = true
+}
+
+function viewMyServices() {
+  console.log('👁️ Voir mes services')
+  showServicesModal.value = true
+}
+
+// Gestionnaires d'événements du modal des services
+function handleEditService(service) {
+  console.log('✏️ Éditer le service:', service)
+  selectedService.value = service
+  showServicesModal.value = false // Fermer le modal des services
+  showEditServiceModal.value = true // Ouvrir le modal d'édition
+}
+
+function handleDeleteService(service) {
+  console.log('🗑️ Supprimer le service:', service)
+  // La suppression est maintenant gérée directement dans UserServicesModal
+  // Le modal de confirmation s'ouvrira automatiquement
+}
+
+function handleCreateService() {
+  console.log('➕ Créer un nouveau service depuis le modal des services')
+  showServicesModal.value = false
+  showAddServiceModal.value = true
+}
+
+// Gestionnaires du modal d'ajout de service
+function handleAddServiceClose() {
+  showAddServiceModal.value = false
+}
+
+function handleServiceCreated(service) {
+  console.log('✅ Service créé:', service)
+  showAddServiceModal.value = false
+  // Le service sera automatiquement ajouté à la liste via TanStack Query
+}
+
+// Gestionnaires du modal d'édition de service
+function handleEditServiceClose() {
+  showEditServiceModal.value = false
+  selectedService.value = null
+  // Rouvrir le modal des services pour voir les changements
+  showServicesModal.value = true
+}
+
+function handleServiceUpdated(service) {
+  console.log('✅ Service modifié:', service)
+  showEditServiceModal.value = false
+  selectedService.value = null
+  // Rouvrir le modal des services pour voir les changements
+  showServicesModal.value = true
+  // Le service sera automatiquement mis à jour dans la liste via TanStack Query
 }
 
 // Initialisation ultra-simple

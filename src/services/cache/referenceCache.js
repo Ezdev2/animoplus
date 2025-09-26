@@ -6,6 +6,7 @@ export const referenceCacheService = {
     CACHE_DURATION: 24 * 60 * 60 * 1000, // 24 heures
     STORAGE_KEYS: {
       SPECIES: 'animoplus_species_cache',
+      SERVICE_TYPES: 'animoplus_service_types_cache',
       LAST_UPDATE: 'animoplus_species_last_update'
     }
   },

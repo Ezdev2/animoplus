@@ -56,33 +56,32 @@
           </div>
         </div>
 
-        <!-- Type d'animal -->
+        <!-- Animal concerné -->
         <div class="form-section">
-          <h3 class="section-title">🐾 Type d'animal</h3>
-          <div class="animal-selector">
-            <button 
-              type="button"
-              v-for="animal in animalTypes" 
-              :key="animal.value"
-              @click="selectAnimal(animal.value)"
-              :class="['animal-btn', { active: form.animalType === animal.value }]"
-            >
-              <span class="animal-icon">{{ animal.icon }}</span>
-              <span class="animal-label">{{ animal.label }}</span>
-            </button>
-          </div>
+          <h3 class="section-title">🐾 Animal concerné</h3>
           
-          <!-- Autre animal -->
-          <div v-if="form.animalType === 'autre'" class="form-group mt-3">
-            <label for="otherAnimal">Précisez l'animal</label>
-            <input 
-              type="text" 
-              id="otherAnimal"
-              v-model="form.otherAnimal" 
-              placeholder="Ex: Lapin, Oiseau, Reptile..."
+          <!-- Sélection d'animal existant -->
+          <div class="form-group">
+            <label for="selectedAnimal">Choisir un animal existant</label>
+            <select 
+              id="selectedAnimal"
+              v-model="form.selectedAnimal" 
               class="form-input"
-            />
+              :disabled="loadingAnimals"
+            >
+              <option value="">
+                {{ loadingAnimals ? 'Chargement...' : 'Sélectionnez un animal' }}
+              </option>
+              <option 
+                v-for="animal in userAnimals" 
+                :key="animal.id" 
+                :value="animal.id"
+              >
+                {{ animal.nom }} ({{ getAnimalSpeciesName(animal) }})
+              </option>
+            </select>
           </div>
+
         </div>
 
         <!-- Adresse -->
@@ -168,6 +167,7 @@
           <h3 class="section-title">⚕️ Service recherché</h3>
           
           <div class="service-selector">
+          
             <div v-if="form.selectedService" class="selected-service">
               <div class="service-card">
                 <div class="service-info">
@@ -193,13 +193,13 @@
                   v-model="serviceSearchQuery"
                   placeholder="Rechercher un service ou vétérinaire..."
                   class="search-input"
-                  @input="onSearchInput"
+                  @keyup.enter="performSearch"
                 />
                 <button 
                   type="button" 
-                  @click="toggleServiceSearch"
+                  @click="performSearch"
                   class="search-toggle-btn"
-                  :class="{ active: showServiceSearch }"
+                  :disabled="!serviceSearchQuery || serviceSearchQuery.length < 2"
                 >
                   🔍
                 </button>
@@ -221,20 +221,20 @@
             </div>
 
             <!-- Résultats de recherche -->
-            <div v-if="showServiceSearch && (filteredServices.length > 0 || isSearching)" class="search-results">
+            <div v-if="actualSearchTerm && (availableServices.length > 0 || loadingServices)" class="search-results">
               <div class="search-results-header">
                 <h4>🔍 Résultats pour "{{ serviceSearchQuery || 'Vétérinaire généraliste' }}"</h4>
-                <span class="results-count">{{ filteredServices.length }} résultat(s) trouvé(s)</span>
+                <span class="results-count">{{ availableServices.length }} résultat(s) trouvé(s)</span>
               </div>
 
-              <div v-if="isSearching" class="loading-state">
+              <div v-if="loadingServices" class="loading-state">
                 <div class="loading-spinner"></div>
                 <span>Recherche en cours...</span>
               </div>
 
               <div v-else class="services-list">
                 <div 
-                  v-for="service in filteredServices" 
+                  v-for="service in availableServices" 
                   :key="service.id"
                   @click="selectService(service)"
                   class="service-item"
@@ -247,22 +247,24 @@
                   
                   <div class="service-details">
                     <h5 class="service-name">{{ service.name }}</h5>
-                    <p class="service-address">📍 {{ service.address }}</p>
-                    <p class="service-distance">📏 Distance : {{ service.distance }} km</p>
+                    <p class="service-address">📍 {{ service.user?.address || 'Adresse non renseignée' }}</p>
+                    <p class="service-price">💰 {{ service.price }}€ - {{ service.duration }}min</p>
+                    <p class="service-type">🏷️ {{ service.service_type?.name || 'Service général' }}</p>
                   </div>
                   
                   <div class="service-contact">
                     <button 
                       type="button"
-                      @click.stop="callService(service.phone)"
+                      @click.stop="callService(service.user?.phone)"
                       class="call-btn"
+                      v-if="service.user?.phone"
                     >
-                      📞 {{ service.phone }}
+                      📞 {{ service.user.phone }}
                     </button>
                   </div>
                 </div>
 
-                <div v-if="filteredServices.length === 0 && !isSearching" class="no-results">
+                <div v-if="availableServices.length === 0 && !loadingServices" class="no-results">
                   <div class="no-results-icon">🔍</div>
                   <p>Aucun service trouvé pour cette recherche</p>
                   <small>Essayez d'élargir la zone de recherche ou modifier les mots-clés</small>
@@ -297,9 +299,10 @@
           <button 
             type="submit" 
             class="btn btn-primary"
-            :disabled="!isFormValid"
+            :disabled="!isFormValid || isCreating"
           >
-            Créer le rendez-vous
+            <span v-if="isCreating">Création en cours...</span>
+            <span v-else>Créer le rendez-vous</span>
           </button>
         </div>
       </form>
@@ -309,6 +312,12 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
+import { useSearchServices } from '@/services/services/serviceQueries.js'
+import { useCreateAppointment } from '@/services/appointments/appointmentQueries.js'
+import { useToast } from '@/composables/useToast.js'
+import { useSimpleAuth } from '@/composables/useSimpleAuth.js'
+import { useAnimalsStore } from '@/stores/animals.js'
+import { useAppointmentsStore } from '@/stores/appointments.js'
 
 // Props
 const props = defineProps({
@@ -321,20 +330,87 @@ const props = defineProps({
 // Emits
 const emit = defineEmits(['close', 'add-appointment'])
 
+// Services
+const toast = useToast()
+const auth = useSimpleAuth()
+
+// Stores globaux
+const animalsStore = useAnimalsStore()
+const appointmentsStore = useAppointmentsStore()
+
+// Animaux de l'utilisateur depuis le store UNIQUEMENT (pas d'API call)
+const userAnimals = computed(() => 
+  animalsStore.getAnimalsByOwner(auth.getCurrentUser.value?.id)
+)
+const loadingAnimals = computed(() => animalsStore.isLoading)
+
+// État de chargement local
+const isCreating = ref(false)
+
+// Mutation pour créer un rendez-vous avec synchronisation store
+const createAppointmentMutation = useCreateAppointment({
+  onMutate: () => {
+    isCreating.value = true
+    console.log('🔄 Début création rendez-vous...')
+  },
+  onSuccess: (data) => {
+    isCreating.value = false
+    console.log('✅ Rendez-vous créé avec succès:', data)
+    
+    // Utiliser le message de l'API ou un message par défaut
+    const successMessage = data.message || 'Rendez-vous créé avec succès'
+    toast.success(successMessage)
+    
+    // Le store est automatiquement synchronisé via TanStack Query
+    // Les listes d'appointments sont invalidées et refetchées
+    console.log('🔄 Store appointments synchronisé automatiquement')
+    
+    // Émettre l'événement pour le parent (pour compatibilité calendrier)
+    const appointmentData = {
+      id: data.data?.id,
+      date: form.value.date,
+      startTime: form.value.startTime,
+      endTime: form.value.endTime,
+      duration: calculatedDuration.value,
+      selectedAnimal: form.value.selectedAnimal,
+      isOnline: form.value.locationType === 'online',
+      location_type: form.value.locationType,
+      address: form.value.address,
+      coordinates: form.value.coordinates,
+      online_meeting_url: form.value.meetLink,
+      service: form.value.selectedService?.name || 'Consultation générale',
+      serviceProvider: form.value.selectedService,
+      notes: form.value.notes,
+      title: `${form.value.selectedService?.name || 'Consultation'} - ${data.data?.animal?.nom || 'Animal'}`,
+      eventType: getEventTypeByService(),
+      status: data.data?.status || 'pending',
+      confirmationToken: data.data?.confirmation_token
+    }
+    
+    emit('add-appointment', appointmentData)
+    console.log('📤 Événement add-appointment émis')
+    closeModal()
+    console.log('🚪 Modal fermé')
+  },
+  onError: (error) => {
+    isCreating.value = false
+    console.error('❌ Erreur création rendez-vous:', error)
+    toast.error('Erreur lors de la création du rendez-vous. Veuillez réessayer.')
+  }
+})
+
 // State
 const showMap = ref(false)
 const showServiceSearch = ref(false)
 const serviceSearchQuery = ref('')
 const distanceRange = ref(5)
-const isSearching = ref(false)
 
 // Formulaire
 const form = ref({
   date: '',
   startTime: '09:00',
   endTime: '10:00',
-  animalType: '',
-  otherAnimal: '',
+  selectedAnimal: '', // ID de l'animal sélectionné
   locationType: 'physical',
   address: '',
   coordinates: null,
@@ -343,63 +419,36 @@ const form = ref({
   notes: ''
 })
 
-// Services de démonstration
-const availableServices = ref([
-  {
-    id: 1,
-    name: 'Solange FOURNIER',
-    address: '250 route de la Vallée 69380 CIVRIEUX-D\'AZERGUES',
-    phone: '04 78 43 45 67',
-    distance: 2.5,
-    speciality: 'Vétérinaire généraliste',
-    avatar: null
-  },
-  {
-    id: 2,
-    name: 'Valerie VOUILLON',
-    address: '250 route de la Vallée 69380 CIVRIEUX-D\'AZERGUES',
-    phone: '04 78 43 45 67',
-    distance: 2.5,
-    speciality: 'Vétérinaire généraliste',
-    avatar: null
-  },
-  {
-    id: 3,
-    name: 'Dr. Martin DUBOIS',
-    address: '15 Avenue de la République 69001 LYON',
-    phone: '04 78 28 35 42',
-    distance: 8.2,
-    speciality: 'Urgences vétérinaires',
-    avatar: null
-  },
-  {
-    id: 4,
-    name: 'Clinique Vétérinaire du Centre',
-    address: '32 Rue de la Liberté 69003 LYON',
-    phone: '04 72 34 56 78',
-    distance: 12.1,
-    speciality: 'Chirurgie et radiologie',
-    avatar: null
-  },
-  {
-    id: 5,
-    name: 'Cabinet Dr. Sophie MARTIN',
-    address: '78 Boulevard des Belges 69006 LYON',
-    phone: '04 78 45 67 89',
-    distance: 15.3,
-    speciality: 'Cardiologie vétérinaire',
-    avatar: null
-  }
-])
-const animalTypes = [
-  { value: 'chien', label: 'Chien', icon: '🐕' },
-  { value: 'chat', label: 'Chat', icon: '🐱' },
-  { value: 'oiseau', label: 'Oiseau', icon: '🐦' },
-  { value: 'lapin', label: 'Lapin', icon: '🐰' },
-  { value: 'rongeur', label: 'Rongeur', icon: '🐹' },
-  { value: 'reptile', label: 'Reptile', icon: '🦎' },
-  { value: 'autre', label: 'Autre', icon: '🐾' }
-]
+// Recherche de services via API (désactivée par défaut)
+const searchEnabled = ref(false)
+const actualSearchTerm = ref('')
+
+const { 
+  data: servicesResponse, 
+  isLoading: loadingServices, 
+  isError: servicesError,
+  refetch: refetchServices
+} = useSearchServices(actualSearchTerm, {
+  with_user: true,
+  with_service_type: true,
+  enabled_only: true
+})
+
+// Services disponibles depuis l'API
+const availableServices = computed(() => {
+  console.log('📋 Services API response:', servicesResponse.value)
+  console.log('🔍 Query UI:', serviceSearchQuery.value, typeof serviceSearchQuery.value)
+  console.log('🔍 Actual search term:', actualSearchTerm.value, typeof actualSearchTerm.value)
+  console.log('⏳ Loading:', loadingServices.value)
+  console.log('❌ Error:', servicesError.value)
+  
+  // La réponse API a cette structure : { success: true, data: [...] }
+  const services = servicesResponse.value?.data?.data || servicesResponse.value?.data || []
+  console.log('📋 Services extraits:', services)
+  return services
+})
+
+// Plus de watcher automatique - recherche uniquement sur clic
 
 // Computed
 const calculatedDuration = computed(() => {
@@ -418,36 +467,32 @@ const isFormValid = computed(() => {
     form.value.date &&
     form.value.startTime &&
     form.value.endTime &&
-    form.value.animalType &&
+    form.value.selectedService &&
+    form.value.selectedAnimal && // Animal requis
     (form.value.locationType === 'online' || form.value.address) &&
     calculatedDuration.value > 0
   )
 })
 
-const filteredServices = computed(() => {
-  let services = availableServices.value.filter(service => 
-    service.distance <= distanceRange.value
-  )
-
-  if (serviceSearchQuery.value.trim()) {
-    const query = serviceSearchQuery.value.toLowerCase().trim()
-    services = services.filter(service =>
-      service.name.toLowerCase().includes(query) ||
-      service.speciality.toLowerCase().includes(query) ||
-      service.address.toLowerCase().includes(query)
-    )
-  }
-
-  return services.sort((a, b) => a.distance - b.distance)
-})
+// Les services sont directement dans availableServices (plus besoin de filteredServices)
 
 // Méthodes
-const selectAnimal = (animalType) => {
-  form.value.animalType = animalType
-  if (animalType !== 'autre') {
-    form.value.otherAnimal = ''
-  }
+
+// Fonction pour obtenir le nom de l'espèce d'un animal
+const getAnimalSpeciesName = (animal) => {
+  // Pour l'instant, on utilise l'espece_id car on n'a pas les données d'espèces enrichies
+  // TODO: enrichir avec les données d'espèces depuis le cache
+  return animal.espece?.nom || 'Espèce inconnue'
 }
+
+// Watcher pour l'animal sélectionné
+watch(() => form.value.selectedAnimal, (newAnimalId) => {
+  console.log('🐾 Animal sélectionné ID:', newAnimalId)
+  if (newAnimalId) {
+    const selectedAnimal = animalsStore.getAnimalById(newAnimalId)
+    console.log('🐾 Animal trouvé:', selectedAnimal)
+  }
+})
 
 const selectLocationOnMap = (event) => {
   // Simulation de sélection sur carte
@@ -474,18 +519,30 @@ const clearSelectedService = () => {
 const toggleServiceSearch = () => {
   showServiceSearch.value = !showServiceSearch.value
   if (showServiceSearch.value && !serviceSearchQuery.value) {
-    serviceSearchQuery.value = 'Vétérinaire généraliste'
-    onSearchInput()
+    serviceSearchQuery.value = 'consultation'
   }
 }
 
-const onSearchInput = () => {
-  isSearching.value = true
-  // Simuler un délai de recherche
-  setTimeout(() => {
-    isSearching.value = false
-  }, 500)
+// Fonction pour déclencher la recherche manuellement
+const performSearch = () => {
+  const query = String(serviceSearchQuery.value || '').trim()
+  console.log('🔍 Query à rechercher:', query, typeof query)
+  
+  if (query && query.length >= 2) {
+    console.log('🔍 Recherche manuelle déclenchée:', query)
+    // Éviter les recherches dupliquées
+    if (actualSearchTerm.value !== query) {
+      actualSearchTerm.value = query
+      console.log('🔄 Nouvelle recherche lancée pour:', query)
+    } else {
+      console.log('⚠️ Recherche identique ignorée')
+    }
+  } else {
+    console.log('⚠️ Query trop courte pour la recherche')
+  }
 }
+
+// Fonction supprimée - plus de recherche automatique
 
 const selectService = (service) => {
   form.value.selectedService = service
@@ -500,31 +557,44 @@ const callService = (phone) => {
 }
 
 const closeModal = () => {
+  console.log('🔒 Fermeture du modal...')
   emit('close')
 }
 
-const submitAppointment = () => {
-  if (!isFormValid.value) return
+const submitAppointment = async () => {
+  if (!isFormValid.value || isCreating.value) return
   
+  // Préparer les données pour l'API selon le modèle Laravel fillable
   const appointmentData = {
+    // Champs obligatoires du modèle Laravel
     date: form.value.date,
-    startTime: form.value.startTime,
-    endTime: form.value.endTime,
-    duration: calculatedDuration.value,
-    animalType: form.value.animalType === 'autre' ? form.value.otherAnimal : form.value.animalType,
-    isOnline: form.value.locationType === 'online',
+    start_time: form.value.startTime,
+    end_time: form.value.endTime,
+    service_id: form.value.selectedService?.id || null,
+    client_id: auth.getCurrentUser.value?.id || null,
+    animal_id: form.value.selectedAnimal || null, // Ajout de animal_id
+    location_type: form.value.locationType,
     address: form.value.locationType === 'physical' ? form.value.address : null,
-    coordinates: form.value.coordinates,
-    meetLink: form.value.meetLink,
-    service: form.value.selectedService?.name || 'Consultation générale',
-    serviceProvider: form.value.selectedService,
-    notes: form.value.notes,
-    title: `${form.value.selectedService?.name || 'Consultation'} - ${form.value.animalType === 'autre' ? form.value.otherAnimal : form.value.animalType}`,
-    eventType: getEventTypeByService()
+    online_meeting_url: form.value.locationType === 'online' ? form.value.meetLink : null,
+    notes: form.value.notes || null,
+    emergency: false,
+    status: 'pending'
   }
   
-  emit('add-appointment', appointmentData)
-  closeModal()
+  console.log('📝 Création du rendez-vous avec les données:', appointmentData)
+  console.log('🔑 Token actuel:', auth.getCurrentUser.value)
+  console.log('🔑 Données localStorage:', localStorage.getItem('data'))
+  
+  try {
+    // Utiliser la mutation TanStack Query pour créer le rendez-vous
+    console.log('🚀 Lancement de la mutation...')
+    await createAppointmentMutation.mutateAsync(appointmentData)
+    // Le succès est géré par onSuccess de la mutation
+  } catch (error) {
+    // L'erreur est gérée par onError de la mutation
+    console.error('❌ Erreur lors de la soumission:', error)
+    console.error('❌ Détails erreur:', error.response?.data)
+  }
 }
 
 const getEventTypeByService = () => {
@@ -538,6 +608,9 @@ const getEventTypeByService = () => {
 
 // Initialisation avec les props
 onMounted(() => {
+  // Initialiser l'authentification
+  auth.init()
+  
   if (props.initialDate) {
     form.value.date = props.initialDate
   }
@@ -547,6 +620,15 @@ onMounted(() => {
   if (props.endTime) {
     form.value.endTime = props.endTime
   }
+  
+  console.log('🚀 Modal de création de rendez-vous initialisé')
+  console.log('👤 Utilisateur connecté:', auth.getCurrentUser.value?.name || 'Non connecté')
+  
+  // Test d'accès au store des animaux
+  console.log('🐾 Store animaux:', animalsStore)
+  console.log('🐾 Animaux dans le store:', animalsStore.animals)
+  console.log('🐾 Animaux de l\'utilisateur:', userAnimals.value)
+  console.log('🐾 État de chargement:', loadingAnimals.value)
 })
 
 // Watcher pour synchroniser les heures

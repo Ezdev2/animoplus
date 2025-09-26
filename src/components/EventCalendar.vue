@@ -37,7 +37,8 @@
             <!-- Événements existants -->
             <div v-for="event in getEventsForSlot(day, hour)" 
                  :key="event.id" 
-                 class="event">
+                 class="event"
+                 @click.stop="handleEventClick(event)">
               {{ event.title }}
             </div>
           </td>
@@ -248,6 +249,12 @@ const clearSelection = () => {
   selectionEnd.value = null
 }
 
+// Gestion du clic sur un événement
+const handleEventClick = (event) => {
+  console.log('Clic sur événement:', event)
+  emit('event-click', event)
+}
+
 const previousWeek = () => {
   const d = new Date(currentDate.value)
   d.setDate(d.getDate() - 7)
@@ -362,7 +369,13 @@ onUnmounted(() => {
   border-radius: 4px;
   margin: 2px 0;
   text-align: left;
-  pointer-events: none;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.event:hover {
+  background: #BBDEFB;
 }
 
 .selection-controls {
