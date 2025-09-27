@@ -8,8 +8,12 @@
             </h1>
 
             <!-- Étapes -->
-            <component :is="currentStepComponent" :formData="formData" @next="goNext" @prev="goPrev"
-                @togglePro="togglePro" />
+            <component :is="currentStepComponent" 
+                :formData="formData" 
+                :isProfessional="isPro"
+                @next="goNext" 
+                @prev="goPrev"
+                @setUserType="setUserType" />
         </div>
     </div>
 </template>
@@ -20,28 +24,28 @@ import { ref, computed } from 'vue'
 // Import des sous-étapes
 import StepOwnerInfos from './components/StepOwnerInfos.vue'
 import StepProInfos from './components/StepProInfos.vue'
-import StepCompanionInfos from './components/StepCompanionInfos.vue'
 
 const step = ref(1)
 const isPro = ref(false)
 
 const formData = ref({
-  // Données communes
+  // Champs requis par l'API
+  name: '',
   email: '',
   password: '',
-  gender: '',
-  firstname: '',
-  lastname: '',
-  birthdate: '',
-  profilePicture: null,
-  termsAccepted: false,
-
-  // Compagnon
-  species: null,
-  race: null,
-  weight: '',
+  password_confirmation: '',
+  phone: '',
+  user_type: 'client',
   
-  // Pro
+  // Champs optionnels
+  gender: '',
+  birthdate: '',
+  termsAccepted: false,
+  
+  // Pro - champs spécifiques vétérinaire
+  license_number: '',
+  clinic_name: '',
+  clinic_address: '',
   newsletter: false,
   cgv: false,
   cgu: false,
@@ -50,9 +54,9 @@ const formData = ref({
 })
 
 const currentStepComponent = computed(() => {
-  if (isPro.value) return StepProInfos
   if (step.value === 1) return StepOwnerInfos
-  if (step.value === 2) return StepCompanionInfos
+  if (isPro.value && step.value === 2) return StepProInfos
+  // Plus d'étape 2 pour les clients - inscription directe
   return StepOwnerInfos
 })
 
@@ -62,8 +66,8 @@ function goNext() {
 function goPrev() {
   if (step.value > 1) step.value--
 }
-function togglePro() {
-  isPro.value = true
+function setUserType(isProfessional) {
+  isPro.value = isProfessional
   step.value = 1
 }
 </script>

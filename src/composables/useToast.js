@@ -142,6 +142,20 @@ export function useToast() {
     })
   }
   
+  /**
+   * Fonction showToast pour compatibilité
+   * @param {string} message - Message à afficher
+   * @param {string} type - Type de toast
+   * @param {number} duration - Durée
+   */
+  function showToast(message, type = 'info', duration = 5000) {
+    return addToast({
+      type,
+      message,
+      duration
+    })
+  }
+
   return {
     toasts,
     addToast,
@@ -151,6 +165,7 @@ export function useToast() {
     error,
     warning,
     info,
-    errorWithRestore
+    errorWithRestore,
+    showToast // Ajout pour compatibilité
   }
 }
