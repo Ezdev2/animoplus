@@ -80,7 +80,7 @@ export function useServiceTypesCache(options = {}) {
     refetchOnMount: false,                // Pas de refetch au mount si en cache
     refetchOnReconnect: false,            // Pas de refetch à la reconnexion
     
-    // Données initiales depuis le cache localStorage
+    // Données initiales depuis le cache localStorage ou initialisation avec données réelles
     initialData: () => {
       try {
         const cachedData = referenceCacheService.getFromCache(CACHE_KEY)
@@ -88,11 +88,25 @@ export function useServiceTypesCache(options = {}) {
           console.log('⚡ Chargement des types de services depuis le cache localStorage:', cachedData.length)
           isLoadingFromCache.value = false
           return cachedData
+        } else {
+          // Si pas de cache, initialiser avec les données réelles de l'API
+          console.log('🔄 Initialisation du cache avec les données réelles de l\'API...')
+          const realData = referenceCacheService.initializeServiceTypesCache()
+          isLoadingFromCache.value = false
+          return realData
         }
       } catch (error) {
         console.error('❌ Erreur lors du chargement du cache localStorage:', error)
+        // En cas d'erreur, initialiser avec les données réelles
+        try {
+          const realData = referenceCacheService.initializeServiceTypesCache()
+          isLoadingFromCache.value = false
+          return realData
+        } catch (initError) {
+          console.error('❌ Erreur lors de l\'initialisation avec les données réelles:', initError)
+          return undefined
+        }
       }
-      return undefined
     },
 
     // Sauvegarder en cache après récupération
@@ -242,73 +256,30 @@ export function useServiceTypesCache(options = {}) {
     lastUpdate: cacheInfo.value?.service_types?.timestamp || 'Jamais'
   }))
 
-  // Données de fallback basées sur la structure réelle de l'API
-  const fallbackServiceTypes = [
-    {
-      id: "01993a68-f13a-731d-b2d3-d51e667198a3",
-      name: "Consultation",
-      description: "Examens et consultations médicales",
-      icon: "stethoscope",
-      color: "#3B82F6",
-      is_active: true
-    },
-    {
-      id: "01993a69-09e1-73c2-9f54-e3866eeae5f1",
-      name: "Vaccination",
-      description: "Vaccinations et prévention",
-      icon: "syringe",
-      color: "#10B981",
-      is_active: true
-    },
-    {
-      id: "01993a69-053a-70d7-b0bd-8e21db991da0",
-      name: "Chirurgie",
-      description: "Interventions chirurgicales",
-      icon: "scissors",
-      color: "#EF4444",
-      is_active: true
-    },
-    {
-      id: "01993a69-0e87-70e9-ad42-61046abcccbb",
-      name: "Diagnostic",
-      description: "Examens diagnostiques et analyses",
-      icon: "search",
-      color: "#8B5CF6",
-      is_active: true
-    },
-    {
-      id: "01993a69-1350-70e2-a490-135f3f1dcca6",
-      name: "Urgence",
-      description: "Soins d'urgence",
-      icon: "alert",
-      color: "#F59E0B",
-      is_active: true
-    },
-    {
-      id: "01993a69-17fb-71fa-89f6-c44ab122f484",
-      name: "Dentaire",
-      description: "Soins dentaires",
-      icon: "tooth",
-      color: "#06B6D4",
-      is_active: true
-    },
-    {
-      id: "01993a69-1ce0-7144-9b87-8cfb09e28fe0",
-      name: "Spécialisé",
-      description: "Consultations spécialisées",
-      icon: "star",
-      color: "#EC4899",
-      is_active: true
-    },
-    {
-      id: "01993a69-21f7-7040-8f06-9faccba2e4ce",
-      name: "Hospitalisation",
-      description: "Hospitalisation et surveillance",
-      icon: "bed",
-      color: "#6B7280",
-      is_active: true
+  // Fonction pour forcer la mise à jour avec les données réelles
+  const forceUpdateWithRealData = () => {
+    try {
+      console.log('🔄 Mise à jour forcée avec les données réelles de l\'API...')
+      
+      // Vider le cache actuel
+      referenceCacheService.clearCache(CACHE_KEY)
+      
+      // Initialiser avec les vraies données
+      const realData = referenceCacheService.initializeServiceTypesCache()
+      
+      // Mettre à jour le cache TanStack Query
+      queryClient.setQueryData(['service-types', 'cached', config.withStats, config.activeOnly], realData)
+      
+      console.log('✅ Cache mis à jour avec les données réelles:', realData.length, 'types')
+      return realData
+    } catch (error) {
+      console.error('❌ Erreur lors de la mise à jour forcée:', error)
+      return []
     }
-  ]
+  }
+
+  // Données de fallback si l'API échoue (utilise les vraies données comme fallback)
+  const fallbackServiceTypes = referenceCacheService.initializeServiceTypesCache()
 
   // Types de services finaux (API ou fallback)
   const finalServiceTypes = computed(() => {
@@ -349,6 +320,7 @@ export function useServiceTypesCache(options = {}) {
     forceRefresh,
     clearServiceTypesCache,
     performBackgroundRefresh,
+    forceUpdateWithRealData,
     
     // Utilitaires TanStack Query
     refetch: serviceTypesQuery.refetch

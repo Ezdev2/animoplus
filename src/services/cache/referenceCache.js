@@ -210,14 +210,114 @@ export const referenceCacheService = {
       if (!lastUpdate) return true
 
       const timeSinceUpdate = Date.now() - parseInt(lastUpdate)
-      const backgroundUpdateThreshold = 12 * 60 * 60 * 1000 // 12 heures
+      const updateThreshold = 6 * 60 * 60 * 1000 // 6 heures
 
-      return timeSinceUpdate > backgroundUpdateThreshold
+      return timeSinceUpdate > updateThreshold
     } catch (error) {
       console.error('❌ Erreur vérification mise à jour:', error)
       return true
     }
+  },
+
+  /**
+   * Initialiser le cache avec les données réelles de l'API
+   */
+  initializeServiceTypesCache() {
+    const realServiceTypes = [
+      {
+        "id": "019990f6-4a93-7265-8eb3-e0e0d77111f5",
+        "name": "Chirurgie",
+        "description": "Interventions chirurgicales",
+        "icon": "scissors",
+        "color": "#EF4444",
+        "is_active": true,
+        "created_at": "2025-09-28T15:34:44.000000Z",
+        "updated_at": "2025-09-28T15:34:44.000000Z",
+        "deleted_at": null
+      },
+      {
+        "id": "019990f6-4a08-727a-9ba4-2e4fabef9aa6",
+        "name": "Consultation",
+        "description": "Examens et consultations médicales",
+        "icon": "stethoscope",
+        "color": "#3B82F6",
+        "is_active": true,
+        "created_at": "2025-09-28T15:34:43.000000Z",
+        "updated_at": "2025-09-28T15:34:43.000000Z",
+        "deleted_at": null
+      },
+      {
+        "id": "019990f6-4b78-717a-b381-3a48a58066d0",
+        "name": "Dentaire",
+        "description": "Soins dentaires",
+        "icon": "tooth",
+        "color": "#06B6D4",
+        "is_active": true,
+        "created_at": "2025-09-28T15:34:44.000000Z",
+        "updated_at": "2025-09-28T15:34:44.000000Z",
+        "deleted_at": null
+      },
+      {
+        "id": "019990f6-4b17-7095-8c57-af40b0a7566c",
+        "name": "Diagnostic",
+        "description": "Examens diagnostiques et analyses",
+        "icon": "search",
+        "color": "#8B5CF6",
+        "is_active": true,
+        "created_at": "2025-09-28T15:34:44.000000Z",
+        "updated_at": "2025-09-28T15:34:44.000000Z",
+        "deleted_at": null
+      },
+      {
+        "id": "019990f6-4bbb-7375-8f41-c81920d65f02",
+        "name": "Hospitalisation",
+        "description": "Hospitalisation et surveillance",
+        "icon": "bed",
+        "color": "#6B7280",
+        "is_active": true,
+        "created_at": "2025-09-28T15:34:44.000000Z",
+        "updated_at": "2025-09-28T15:34:44.000000Z",
+        "deleted_at": null
+      },
+      {
+        "id": "019990f6-4b9b-734b-b22b-1b38e1879091",
+        "name": "Spécialisé",
+        "description": "Consultations spécialisées",
+        "icon": "star",
+        "color": "#EC4899",
+        "is_active": true,
+        "created_at": "2025-09-28T15:34:44.000000Z",
+        "updated_at": "2025-09-28T15:34:44.000000Z",
+        "deleted_at": null
+      },
+      {
+        "id": "019990f6-4b5e-712a-a429-2054103ad888",
+        "name": "Urgence",
+        "description": "Soins d'urgence",
+        "icon": "alert",
+        "color": "#F59E0B",
+        "is_active": true,
+        "created_at": "2025-09-28T15:34:44.000000Z",
+        "updated_at": "2025-09-28T15:34:44.000000Z",
+        "deleted_at": null
+      },
+      {
+        "id": "019990f6-4ac7-71ee-ab31-373a0324051c",
+        "name": "Vaccination",
+        "description": "Vaccinations et prévention",
+        "icon": "syringe",
+        "color": "#10B981",
+        "is_active": true,
+        "created_at": "2025-09-28T15:34:44.000000Z",
+        "updated_at": "2025-09-28T15:34:44.000000Z",
+        "deleted_at": null
+      }
+    ]
+
+    // Sauvegarder les données réelles en cache
+    this.saveToCache(this.config.STORAGE_KEYS.SERVICE_TYPES, realServiceTypes)
+    console.log('✅ Cache des types de services initialisé avec les données réelles de l\'API:', realServiceTypes.length, 'types')
+    
+    return realServiceTypes
   }
 }
-
-export default referenceCacheService

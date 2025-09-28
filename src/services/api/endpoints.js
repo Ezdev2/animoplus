@@ -157,10 +157,33 @@ export const API_ENDPOINTS = {
     SUPPLIERS: '/stock/suppliers'
   },
 
-  // Tasks
+  // Tasks (basé sur la collection Postman Tasks_Collection)
   TASKS: {
+    LIST: '/tasks',
+    CREATE: '/tasks',
+    DETAIL: (id) => `/tasks/${id}`,
+    UPDATE: (id) => `/tasks/${id}`,
+    DELETE: (id) => `/tasks/${id}`,
+    
+    // Actions sur les tâches
+    COMPLETE: (id) => `/tasks/${id}/complete`,
+    UNCOMPLETE: (id) => `/tasks/${id}/uncomplete`,
+    ASSIGN: (id) => `/tasks/${id}/assign`,
+    UNASSIGN: (id) => `/tasks/${id}/unassign`,
+    
+    // Requêtes spécialisées
+    MY_TASKS: '/tasks/my-tasks',
+    ASSIGNED_TASKS: '/tasks/assigned',
+    OVERDUE_TASKS: '/tasks/overdue',
+    COMPLETED_TASKS: '/tasks/completed',
+    PRIORITY_TASKS: '/tasks/priority',
+    
+    // Statistiques et rapports
+    STATS: '/tasks/stats',
+    SUMMARY: '/tasks/summary',
+    
+    // Anciens endpoints (compatibilité)
     BASE: '/tasks',
-    ASSIGN: '/tasks/assign',
     STATUS: '/tasks/status'
   },
 
