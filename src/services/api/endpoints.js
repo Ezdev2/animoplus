@@ -210,6 +210,27 @@ export const API_ENDPOINTS = {
   LOST_ANIMALS: {
     BASE: '/lost-animals',
     SEARCH: '/lost-animals/search'
+  },
+
+  // Actifs (basé sur la collection Postman Actifs_Collection)
+  ACTIFS: {
+    LIST: '/actifs',
+    CREATE: '/actifs',
+    DETAIL: (id) => `/actifs/${id}`,
+    UPDATE: (id) => `/actifs/${id}`,
+    DELETE: (id) => `/actifs/${id}`,
+    SEARCH: '/actifs/search'
+  },
+
+  // Stocks (basé sur la collection Postman Stocks_Collection)
+  STOCKS: {
+    LIST: '/stocks',
+    MY_STOCKS: '/stocks/my-stocks',
+    CREATE: '/stocks',
+    DETAIL: (id) => `/stocks/${id}`,
+    UPDATE: (id) => `/stocks/${id}`,
+    DELETE: (id) => `/stocks/${id}`,
+    SEARCH: '/stocks/search'
   }
 }
 
