@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { serviceService } from './serviceService.js'
+import { useServicesStore } from '@/stores/services.js'
 
 // Clés de requête pour les services
 export const SERVICE_QUERY_KEYS = {
@@ -114,20 +115,34 @@ export function useService(serviceId, options = {}) {
  */
 export function useCreateService(options = {}) {
   const queryClient = useQueryClient()
+  const servicesStore = useServicesStore()
 
   return useMutation({
     mutationFn: (serviceData) => serviceService.createService(serviceData),
     onSuccess: (data, variables) => {
-      // Invalider les listes de services
-      queryClient.invalidateQueries({ queryKey: SERVICE_QUERY_KEYS.lists() })
-      queryClient.invalidateQueries({ queryKey: SERVICE_QUERY_KEYS.all })
+      console.log('✅ Service créé avec succès:', data)
       
-      // Si on a l'ID utilisateur, invalider ses services
-      if (variables.user_id) {
-        queryClient.invalidateQueries({ 
-          queryKey: SERVICE_QUERY_KEYS.userServices(variables.user_id) 
-        })
+      // Mettre à jour le store Pinia avec le nouveau service
+      if (data.success && data.data) {
+        console.log('📝 Ajout du nouveau service au store Pinia:', data.data)
+        servicesStore.addService(data.data)
       }
+      
+      // Invalider tous les caches de services pour forcer le rechargement
+      queryClient.invalidateQueries({ queryKey: SERVICE_QUERY_KEYS.all })
+      queryClient.invalidateQueries({ queryKey: SERVICE_QUERY_KEYS.lists() })
+      
+      // Invalider spécifiquement le cache avec les options utilisées
+      const currentOptions = { user_id: variables.user_id, with_service_type: true }
+      queryClient.invalidateQueries({ 
+        queryKey: SERVICE_QUERY_KEYS.list(currentOptions)
+      })
+      
+      console.log('🔄 Caches invalidés pour forcer le rechargement des services')
+    },
+    onError: (error) => {
+      console.error('❌ Erreur création service:', error)
+      servicesStore.setError(error)
     },
     ...options
   })
@@ -140,32 +155,36 @@ export function useCreateService(options = {}) {
  */
 export function useUpdateService(options = {}) {
   const queryClient = useQueryClient()
+  const servicesStore = useServicesStore()
 
   return useMutation({
     mutationFn: ({ id, data }) => serviceService.updateService(id, data),
     onSuccess: (data, variables) => {
-      const { id } = variables
+      console.log('✅ Service modifié avec succès:', data)
+      
+      // Mettre à jour le store Pinia avec le service modifié
+      if (data.success && data.data) {
+        console.log('📝 Mise à jour du service dans le store Pinia:', data.data)
+        servicesStore.updateService(data.data)
+      }
+      
+      // Mettre à jour le cache TanStack Query
+      queryClient.setQueryData(SERVICE_QUERY_KEYS.lists(), (oldData) => {
+        if (!oldData || !oldData.data) return oldData
+        
+        const updatedTasks = oldData.data.map(service => 
+          service.id === variables.id ? { ...service, ...data.data } : service
+        )
+        
+        return { ...oldData, data: updatedTasks }
+      })
       
       // Mettre à jour le cache du service spécifique
-      queryClient.setQueryData(SERVICE_QUERY_KEYS.detail(id), data)
-      
-      // Invalider les listes pour refléter les changements
-      queryClient.invalidateQueries({ 
-        queryKey: SERVICE_QUERY_KEYS.lists(),
-        refetchType: 'active'
-      })
-      queryClient.invalidateQueries({ 
-        queryKey: SERVICE_QUERY_KEYS.all,
-        refetchType: 'active'
-      })
-      
-      // Invalider les services utilisateur si on a l'info
-      if (data?.data?.user_id) {
-        queryClient.invalidateQueries({ 
-          queryKey: SERVICE_QUERY_KEYS.userServices(data.data.user_id),
-          refetchType: 'active'
-        })
-      }
+      queryClient.setQueryData(SERVICE_QUERY_KEYS.detail(variables.id), data)
+    },
+    onError: (error) => {
+      console.error('❌ Erreur modification service:', error)
+      servicesStore.setError(error)
     },
     ...options
   })
@@ -178,110 +197,33 @@ export function useUpdateService(options = {}) {
  */
 export function useDeleteService(options = {}) {
   const queryClient = useQueryClient()
+  const servicesStore = useServicesStore()
 
   return useMutation({
     mutationFn: (id) => serviceService.deleteService(id),
-    
-    // Optimistic Update - Suppression immédiate de l'UI
-    onMutate: async (serviceId) => {
-      console.log('🚀 Optimistic Update - Suppression immédiate du service:', serviceId)
+    onSuccess: (data, serviceId) => {
+      console.log('✅ Service supprimé avec succès:', data)
       
-      // Annuler les requêtes en cours pour éviter les conflits
-      await queryClient.cancelQueries({ queryKey: SERVICE_QUERY_KEYS.all })
+      // Mettre à jour le store Pinia en supprimant le service
+      if (data.success) {
+        console.log('🗑️ Suppression du service du store Pinia:', serviceId)
+        servicesStore.removeService(serviceId)
+      }
       
-      // Sauvegarder l'état précédent pour pouvoir restaurer en cas d'erreur
-      const previousServices = {}
-      
-      // Récupérer et sauvegarder toutes les listes de services
-      const allQueries = queryClient.getQueriesData({ queryKey: SERVICE_QUERY_KEYS.lists() })
-      allQueries.forEach(([queryKey, data]) => {
-        if (data?.data) {
-          previousServices[JSON.stringify(queryKey)] = data
-        }
+      // Mettre à jour le cache TanStack Query
+      queryClient.setQueryData(SERVICE_QUERY_KEYS.lists(), (oldData) => {
+        if (!oldData || !oldData.data) return oldData
+        
+        const filteredServices = oldData.data.filter(service => service.id !== serviceId)
+        
+        return { ...oldData, data: filteredServices }
       })
-      
-      // Récupérer et sauvegarder les services utilisateur
-      const userQueries = queryClient.getQueriesData({ queryKey: [...SERVICE_QUERY_KEYS.all, 'user'] })
-      userQueries.forEach(([queryKey, data]) => {
-        if (data?.data) {
-          previousServices[JSON.stringify(queryKey)] = data
-        }
-      })
-      
-      // Supprimer optimistiquement le service de toutes les listes
-      allQueries.forEach(([queryKey, data]) => {
-        if (data?.data) {
-          const updatedData = {
-            ...data,
-            data: data.data.filter(service => service.id !== serviceId)
-          }
-          queryClient.setQueryData(queryKey, updatedData)
-        }
-      })
-      
-      userQueries.forEach(([queryKey, data]) => {
-        if (data?.data) {
-          const updatedData = {
-            ...data,
-            data: data.data.filter(service => service.id !== serviceId)
-          }
-          queryClient.setQueryData(queryKey, updatedData)
-        }
-      })
-      
-      // Supprimer le service du cache détaillé
-      queryClient.removeQueries({ queryKey: SERVICE_QUERY_KEYS.detail(serviceId) })
-      
-      console.log('✅ Service supprimé optimistiquement de l\'UI')
-      
-      // Retourner le contexte pour pouvoir restaurer en cas d'erreur
-      return { previousServices, serviceId }
     },
-    
-    // Succès - Confirmation silencieuse
-    onSuccess: (data, serviceId, context) => {
-      console.log('✅ Suppression confirmée par le serveur, ID:', serviceId)
-      
-      // Pas besoin de mettre à jour l'UI, c'est déjà fait optimistiquement
-      // Juste invalider pour s'assurer que les données sont fraîches
-      queryClient.invalidateQueries({ 
-        queryKey: SERVICE_QUERY_KEYS.all,
-        refetchType: 'none' // Pas de refetch immédiat
-      })
-      
-      // Appeler le callback de succès si fourni
-      if (options.onSuccess) {
-        options.onSuccess(data, serviceId, context)
-      }
+    onError: (error) => {
+      console.error('❌ Erreur suppression service:', error)
+      servicesStore.setError(error)
     },
-    
-    // Erreur - Restaurer l'état précédent + Toast
-    onError: (error, serviceId, context) => {
-      console.error('❌ Erreur suppression service, restauration...', error)
-      
-      // Restaurer l'état précédent
-      if (context?.previousServices) {
-        Object.entries(context.previousServices).forEach(([queryKeyStr, data]) => {
-          const queryKey = JSON.parse(queryKeyStr)
-          queryClient.setQueryData(queryKey, data)
-        })
-        console.log('🔄 État précédent restauré')
-      }
-      
-      // Appeler le callback d'erreur si fourni
-      if (options.onError) {
-        options.onError(error, serviceId, context)
-      }
-    },
-    
-    // Toujours exécuté - Nettoyage
-    onSettled: (data, error, serviceId, context) => {
-      console.log('🏁 Mutation terminée pour le service:', serviceId)
-      
-      if (options.onSettled) {
-        options.onSettled(data, error, serviceId, context)
-      }
-    }
+    ...options
   })
 }
 
