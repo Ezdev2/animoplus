@@ -222,7 +222,7 @@ export const API_ENDPOINTS = {
     SEARCH: '/actifs/search'
   },
 
-  // Stocks (basé sur la collection Postman Stocks_Collection)
+  // Stocks endpoints
   STOCKS: {
     LIST: '/stocks',
     MY_STOCKS: '/stocks/my-stocks',
@@ -231,12 +231,26 @@ export const API_ENDPOINTS = {
     UPDATE: (id) => `/stocks/${id}`,
     DELETE: (id) => `/stocks/${id}`,
     SEARCH: '/stocks/search'
+  },
+
+  // Expenses endpoints
+  EXPENSES: {
+    LIST: '/expenses',
+    MY_EXPENSES: '/expenses/my-expenses',
+    CREATE: '/expenses',
+    DETAIL: (id) => `/expenses/${id}`,
+    UPDATE: (id) => `/expenses/${id}`,
+    DELETE: (id) => `/expenses/${id}`,
+    SEARCH: '/expenses/search',
+    UPDATE_STATUS: (id) => `/expenses/${id}/status`,
+    RESTORE: (id) => `/expenses/${id}/restore`,
+    STATS: '/expenses/stats'
   }
 }
 
-// Helper function pour construire des URLs avec paramètres
-export const buildEndpoint = (endpoint, params = {}) => {
-  let url = endpoint
+// Helper function pour remplacer les paramètres dans l'URL
+export const buildEndpoint = (template, params = {}) => {
+  let url = template
   
   // Remplacer les paramètres dans l'URL (ex: /users/:id)
   Object.keys(params).forEach(key => {
