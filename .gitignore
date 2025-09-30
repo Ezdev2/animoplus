@@ -35,5 +35,6 @@ MIGRATION_AUTH_GUIDE.md
 ANIMAL_CREATION_ANALYSIS.md
 login_result.json
 data.json
+logs.txt
 
 .env

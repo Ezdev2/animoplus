@@ -122,7 +122,7 @@
 import TitleDashboard from '@/components/common/TitleDashboard.vue'
 import AddServiceModal from '@/components/services/AddServiceModal.vue'
 import EditServiceModal from '@/components/services/EditServiceModal.vue'
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { useAuth } from '@/composables/useAuth.js'
 import { 
   useServices, 
@@ -204,8 +204,44 @@ async function deleteService(service) {
 
   try {
     console.log('🗑️ Suppression du service:', service)
+    console.log('📋 Services dans le store AVANT suppression:', servicesStore.services.length)
+    console.log('🔍 Service à supprimer - ID:', service.id, 'Name:', service.name)
+    console.log('📝 Liste des IDs dans le store:', servicesStore.services.map(s => s.id))
+    
     await deleteServiceMutation.mutateAsync(service.id)
-    console.log('✅ Service supprimé avec succès')
+    console.log('✅ Service supprimé avec succès de l\'API')
+    
+    // Vérifier si le service existe dans le store avant suppression
+    const serviceExistsInStore = servicesStore.services.find(s => s.id === service.id)
+    console.log('🔍 Service existe dans le store avant removeService:', !!serviceExistsInStore)
+    
+    // Mise à jour immédiate du store Pinia pour synchronisation
+    console.log('🔄 Appel de servicesStore.removeService avec ID:', service.id)
+    servicesStore.removeService(service.id)
+    
+    console.log('📊 Services restants dans le store APRÈS suppression:', servicesStore.services.length)
+    console.log('📝 Liste des IDs restants:', servicesStore.services.map(s => s.id))
+    
+    // Attendre le prochain tick pour que la réactivité se déclenche
+    await nextTick()
+    
+    // Vérifier si le service a bien été supprimé après nextTick
+    const serviceStillExists = servicesStore.services.find(s => s.id === service.id)
+    console.log('🔍 Service existe encore dans le store après nextTick:', !!serviceStillExists)
+    
+    // Forcer le recalcul du computed services si nécessaire
+    console.log('🔄 Computed services length:', services.value.length)
+    console.log('📝 Computed services IDs:', services.value.map(s => s.id))
+    
+    // Si le service existe encore dans le computed, il y a un problème de réactivité
+    const serviceInComputed = services.value.find(s => s.id === service.id)
+    if (serviceInComputed) {
+      console.log('⚠️ Service encore présent dans le computed, forçage de la synchronisation')
+      // Forcer une nouvelle synchronisation
+      const currentServices = servicesStore.services.filter(s => s.id !== service.id)
+      servicesStore.setServices(currentServices)
+    }
+    
   } catch (error) {
     console.error('❌ Erreur lors de la suppression:', error)
     alert('Erreur lors de la suppression du service. Veuillez réessayer.')

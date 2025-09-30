@@ -110,6 +110,7 @@ export const API_ENDPOINTS = {
   // Services
   SERVICES: {
     LIST: '/services',
+    MY_SERVICES: '/services/my-services',
     CREATE: '/services',
     DETAIL: (id) => `/services/${id}`,
     UPDATE: (id) => `/services/${id}`,
@@ -222,7 +223,7 @@ export const API_ENDPOINTS = {
     SEARCH: '/actifs/search'
   },
 
-  // Stocks (basé sur la collection Postman Stocks_Collection)
+  // Stocks endpoints
   STOCKS: {
     LIST: '/stocks',
     MY_STOCKS: '/stocks/my-stocks',
@@ -231,12 +232,47 @@ export const API_ENDPOINTS = {
     UPDATE: (id) => `/stocks/${id}`,
     DELETE: (id) => `/stocks/${id}`,
     SEARCH: '/stocks/search'
+  },
+
+  // Expenses endpoints
+  EXPENSES: {
+    LIST: '/expenses',
+    MY_EXPENSES: '/expenses/my-expenses',
+    CREATE: '/expenses',
+    DETAIL: (id) => `/expenses/${id}`,
+    UPDATE: (id) => `/expenses/${id}`,
+    DELETE: (id) => `/expenses/${id}`,
+    SEARCH: '/expenses/search',
+    UPDATE_STATUS: (id) => `/expenses/${id}/status`,
+    RESTORE: (id) => `/expenses/${id}/restore`,
+    STATS: '/expenses/stats'
+  },
+
+  // Specialites endpoints (basé sur la collection Postman Specialites_Collection)
+  SPECIALITES: {
+    LIST: '/specialites',
+    CREATE: '/specialites',
+    DETAIL: (id) => `/specialites/${id}`,
+    UPDATE: (id) => `/specialites/${id}`,
+    DELETE: (id) => `/specialites/${id}`,
+    SEARCH: '/specialites/search',
+    TOGGLE_STATUS: (id) => `/specialites/${id}/toggle-status`,
+    VETERINARIANS: (id) => `/specialites/${id}/veterinarians`
+  },
+
+  // User Specialites endpoints (basé sur la collection Postman User_Specialites_Collection)
+  USER_SPECIALITES: {
+    LIST: '/user/specialties',
+    CREATE: '/user/specialties',
+    DETAIL: (id) => `/user/specialties/${id}`,
+    UPDATE: (id) => `/user/specialties/${id}`,
+    DELETE: (id) => `/user/specialties/${id}`
   }
 }
 
-// Helper function pour construire des URLs avec paramètres
-export const buildEndpoint = (endpoint, params = {}) => {
-  let url = endpoint
+// Helper function pour remplacer les paramètres dans l'URL
+export const buildEndpoint = (template, params = {}) => {
+  let url = template
   
   // Remplacer les paramètres dans l'URL (ex: /users/:id)
   Object.keys(params).forEach(key => {
