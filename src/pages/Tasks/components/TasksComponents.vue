@@ -65,7 +65,7 @@
         <div>
           <p class="text-red-600 text-sm font-medium">❌ Erreur lors du chargement des tâches</p>
           <p class="text-red-500 text-xs mt-1">{{ error }}</p>
-          <p class="text-gray-600 text-xs mt-2">Utilisation des données de démonstration en attendant.</p>
+          <p class="text-gray-600 text-xs mt-2">Vérifiez votre connexion et réessayez.</p>
         </div>
         <div class="flex gap-2 ml-4">
           <button 
@@ -75,14 +75,22 @@
           >
             {{ isLoading ? 'Chargement...' : 'Réessayer' }}
           </button>
-          <button 
-            @click="clearErrorAndUseMock()"
-            class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded text-xs font-medium transition"
-          >
-            Continuer avec démo
-          </button>
         </div>
       </div>
+    </div>
+
+    <!-- Message si aucune tâche -->
+    <div v-else-if="tasks.length === 0" class="text-center py-12">
+      <div class="text-gray-400 text-6xl mb-4">📝</div>
+      <h3 class="text-lg font-medium text-gray-900 mb-2">Aucune tâche pour le moment</h3>
+      <p class="text-gray-500 mb-6">Commencez par créer votre première tâche</p>
+      <button
+        @click="openCreateModal"
+        class="bg-[#8c3d20] text-white px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition"
+      >
+        <span class="font-bold mr-2 text-lg">+</span>
+        Créer ma première tâche
+      </button>
     </div>
 
     <!-- Liste des tâches -->
@@ -224,58 +232,6 @@ const selectedTasks = ref([])
 
 // Computed pour adapter les données du store au format existant
 const tasks = computed(() => {
-  if (!storeTasks.value || storeTasks.value.length === 0) {
-    // Fallback vers données mock si pas de données API
-    const today = new Date()
-    const tomorrow = new Date(today)
-    tomorrow.setDate(tomorrow.getDate() + 1)
-    const nextWeek = new Date(today)
-    nextWeek.setDate(nextWeek.getDate() + 7)
-    
-    return [
-      { 
-        id: 'mock-1', 
-        title: 'Appeler le fournisseur', 
-        done: false, 
-        name: 'Appeler le fournisseur', 
-        is_completed: false, 
-        priority: 'high',
-        description: 'Contacter le fournisseur pour la commande de matériel médical',
-        due_date: tomorrow.toISOString().split('T')[0]
-      },
-      { 
-        id: 'mock-2', 
-        title: 'Envoyer les factures', 
-        done: true, 
-        name: 'Envoyer les factures', 
-        is_completed: true, 
-        priority: 'medium',
-        description: 'Facturation mensuelle des clients',
-        due_date: null
-      },
-      { 
-        id: 'mock-3', 
-        title: 'Vérifier les stocks', 
-        done: false, 
-        name: 'Vérifier les stocks', 
-        is_completed: false, 
-        priority: 'low',
-        description: '',
-        due_date: nextWeek.toISOString().split('T')[0]
-      },
-      { 
-        id: 'mock-4', 
-        title: 'Préparer rapport mensuel', 
-        done: false, 
-        name: 'Préparer rapport mensuel', 
-        is_completed: false, 
-        priority: 'urgent',
-        description: 'Rapport d\'activité pour la direction',
-        due_date: today.toISOString().split('T')[0]
-      }
-    ]
-  }
-  
   // Adapter les données API au format existant du template
   // L'API retourne une structure paginée avec data.data[]
   let apiTasks = []
@@ -289,6 +245,7 @@ const tasks = computed(() => {
     }
   }
   
+  // Retourner les tâches API ou un tableau vide (pas de données mock)
   return apiTasks.map(task => ({
     ...task,
     title: task.name || task.title,
@@ -612,12 +569,6 @@ const deleteSelectedTasks = async () => {
   }
 }
 
-// Fonction pour gérer les erreurs et continuer avec les données mock
-const clearErrorAndUseMock = () => {
-  // Réinitialiser l'erreur dans le store pour afficher les données mock
-  resetStore()
-  console.log('🔄 Basculement vers les données de démonstration')
-}
 
 // Fonction pour rafraîchir les tâches manuellement
 const refreshTasksManually = async () => {

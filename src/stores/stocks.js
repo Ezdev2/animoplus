@@ -59,6 +59,9 @@ export const useStocksStore = defineStore('stocks', () => {
   const getError = computed(() => error.value)
   const getFilters = computed(() => filters.value)
   const getPagination = computed(() => pagination.value)
+  const getStats = computed(() => stats.value)
+  const getSummary = computed(() => summary.value)
+  const getAlerts = computed(() => alerts.value)
 
   // Getters calculés
   const getActiveStocks = computed(() => {
@@ -67,6 +70,37 @@ export const useStocksStore = defineStore('stocks', () => {
 
   const getInactiveStocks = computed(() => {
     return stocks.value.filter(stock => !stock.is_active)
+  })
+
+  const getLowStocks = computed(() => {
+    return stocks.value.filter(stock => stock.quantite_actuelle <= stock.quantite_minimale)
+  })
+
+  const getExpiringSoonStocks = computed(() => {
+    const today = new Date()
+    const thirtyDaysFromNow = new Date(today.getTime() + (30 * 24 * 60 * 60 * 1000))
+    
+    return stocks.value.filter(stock => {
+      if (!stock.date_expiration) return false
+      const expirationDate = new Date(stock.date_expiration)
+      return expirationDate <= thirtyDaysFromNow && expirationDate > today
+    })
+  })
+
+  const getExpiredStocks = computed(() => {
+    const today = new Date()
+    
+    return stocks.value.filter(stock => {
+      if (!stock.date_expiration) return false
+      const expirationDate = new Date(stock.date_expiration)
+      return expirationDate <= today
+    })
+  })
+
+  const getTotalValue = computed(() => {
+    return stocks.value.reduce((total, stock) => {
+      return total + (stock.quantite_actuelle * stock.prix_unitaire)
+    }, 0)
   })
 
   const getStockById = computed(() => {
@@ -572,7 +606,7 @@ export const useStocksStore = defineStore('stocks', () => {
     getLowStocks,
     getExpiringSoonStocks,
     getExpiredStocks,
-    getStocksByActif,
+    getStocksByActifId,
     getTotalValue,
     getStockById,
 

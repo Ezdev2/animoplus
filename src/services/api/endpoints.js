@@ -110,6 +110,7 @@ export const API_ENDPOINTS = {
   // Services
   SERVICES: {
     LIST: '/services',
+    MY_SERVICES: '/services/my-services',
     CREATE: '/services',
     DETAIL: (id) => `/services/${id}`,
     UPDATE: (id) => `/services/${id}`,
@@ -245,6 +246,27 @@ export const API_ENDPOINTS = {
     UPDATE_STATUS: (id) => `/expenses/${id}/status`,
     RESTORE: (id) => `/expenses/${id}/restore`,
     STATS: '/expenses/stats'
+  },
+
+  // Specialites endpoints (basé sur la collection Postman Specialites_Collection)
+  SPECIALITES: {
+    LIST: '/specialites',
+    CREATE: '/specialites',
+    DETAIL: (id) => `/specialites/${id}`,
+    UPDATE: (id) => `/specialites/${id}`,
+    DELETE: (id) => `/specialites/${id}`,
+    SEARCH: '/specialites/search',
+    TOGGLE_STATUS: (id) => `/specialites/${id}/toggle-status`,
+    VETERINARIANS: (id) => `/specialites/${id}/veterinarians`
+  },
+
+  // User Specialites endpoints (basé sur la collection Postman User_Specialites_Collection)
+  USER_SPECIALITES: {
+    LIST: '/user/specialties',
+    CREATE: '/user/specialties',
+    DETAIL: (id) => `/user/specialties/${id}`,
+    UPDATE: (id) => `/user/specialties/${id}`,
+    DELETE: (id) => `/user/specialties/${id}`
   }
 }
 

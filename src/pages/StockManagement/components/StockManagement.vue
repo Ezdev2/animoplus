@@ -107,8 +107,12 @@
             <td :colspan="visibleColumnsCount" class="empty-state">
               <div class="empty-content">
                 <div class="empty-icon">📦</div>
-                <h3 class="empty-title">Aucun stock trouvé</h3>
+                <h3 class="empty-title">Aucun stock pour le moment</h3>
                 <p class="empty-subtitle">Commencez par ajouter des produits à votre inventaire</p>
+                <button class="add-first-stock-btn" @click="showAddModal = true">
+                  <span class="plus">+</span>
+                  Ajouter mon premier stock
+                </button>
               </div>
             </td>
           </tr>
@@ -233,7 +237,7 @@ const sortBy = ref('quantite')
 const sortOrder = ref('desc')
 
 // Intégration API réelle avec useStocks
-const { useMyStocks } = useStocks()
+const { useMyStocks, deleteStock: deleteStockAPI, createStock, updateStock } = useStocks()
 
 // Options de requête pour mes stocks
 const stockOptions = ref({
@@ -247,44 +251,10 @@ const stockOptions = ref({
 // Hook pour récupérer mes stocks
 const { stocks, pagination, isLoading, error, refetch } = useMyStocks(stockOptions)
 
-// Stocks affichés (API ou fallback mock)
+// Stocks affichés (API uniquement - pas de données mock)
 const displayedStocks = computed(() => {
-  if (stocks.value && stocks.value.length > 0) {
-    return stocks.value
-  }
-  // Fallback mock data si pas de données API
-  return mockStocksFallback.value
+  return stocks.value || []
 })
-
-// Données mock de fallback (structure conforme à l'API)
-const mockStocksFallback = ref([
-  {
-    id: '1',
-    actif: { nom: 'Paracétamol 500mg', description: 'Antalgique', seuil_alerte: 10 },
-    lot_numero: 'LOT2025001',
-    quantite: 5,
-    prix_unitaire: '4.00',
-    date_expiration: '2025-06-15T00:00:00.000000Z',
-    notes: 'Stock faible - à commander',
-    is_active: true,
-    is_expired: false,
-    is_expiring_soon: true,
-    total_value: 20.00
-  },
-  {
-    id: '2',
-    actif: { nom: 'Amoxicilline 250mg', description: 'Antibiotique', seuil_alerte: 15 },
-    lot_numero: 'LOT2025002',
-    quantite: 40,
-    prix_unitaire: '6.50',
-    date_expiration: '2025-12-31T00:00:00.000000Z',
-    notes: 'Stock normal',
-    is_active: true,
-    is_expired: false,
-    is_expiring_soon: false,
-    total_value: 260.00
-  }
-])
 
 // Fonctions de gestion des colonnes
 const updateVisibleColumns = () => {
@@ -378,10 +348,33 @@ const editStock = (stock) => {
   showEditModal.value = true
 }
 
-const deleteStock = (stock) => {
-  if (confirm(`Êtes-vous sûr de vouloir supprimer le stock "${stock.actif?.nom}" ?`)) {
-    console.log('Supprimer le stock:', stock)
-    // TODO: Appeler l'API de suppression
+const deleteStock = async (stock) => {
+  const stockName = stock.actif?.nom || 'ce stock'
+  const confirmMessage = `Êtes-vous sûr de vouloir supprimer le stock "${stockName}" ?\n\nQuantité: ${stock.quantite}\nPrix unitaire: ${formatPrice(stock.prix_unitaire)}\n\nCette action est irréversible.`
+  
+  if (confirm(confirmMessage)) {
+    try {
+      console.log('🗑️ Suppression du stock:', stock)
+      
+      // Utiliser la fonction deleteStock importée du composable
+      const response = await deleteStockAPI(stock.id)
+      
+      if (response.success) {
+        console.log('✅ Stock supprimé avec succès:', stock.id)
+        
+        // Recharger les données pour mettre à jour l'affichage
+        await refetch()
+        
+        // Optionnel: Afficher un message de succès
+        alert('Stock supprimé avec succès')
+      } else {
+        console.error('❌ Erreur lors de la suppression:', response.error)
+        alert('Erreur lors de la suppression du stock: ' + (response.error || 'Erreur inconnue'))
+      }
+    } catch (error) {
+      console.error('❌ Erreur suppression stock:', error)
+      alert('Erreur lors de la suppression du stock: ' + (error.message || 'Erreur inconnue'))
+    }
   }
 }
 
@@ -390,8 +383,7 @@ const handleAddStock = async (stockData) => {
   try {
     console.log('📦 Nouveau stock à ajouter:', stockData)
     
-    // Intégration avec l'API de création via le composable useStocks
-    const { createStock } = useStocks()
+    // Utiliser la fonction createStock importée du composable
     const response = await createStock(stockData)
     
     if (response.success) {
@@ -422,8 +414,7 @@ const handleEditStock = async (updateData) => {
   try {
     console.log('📝 Modification du stock:', updateData)
     
-    // Intégration avec l'API de modification via le composable useStocks
-    const { updateStock } = useStocks()
+    // Utiliser la fonction updateStock importée du composable
     const response = await updateStock(updateData.id, updateData.changes)
     
     if (response.success) {
@@ -1010,5 +1001,34 @@ onMounted(() => {
 
 .auto-order-btn:hover {
   filter: brightness(0.92);
+}
+
+/* Bouton d'ajout du premier stock */
+.add-first-stock-btn {
+  background: var(--Accent---500, #A0522D);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0px 4px 12px 0px rgba(160, 82, 45, 0.25);
+}
+
+.add-first-stock-btn:hover {
+  background: #8b4513;
+  transform: translateY(-1px);
+  box-shadow: 0px 6px 16px 0px rgba(160, 82, 45, 0.35);
+}
+
+.add-first-stock-btn .plus {
+  font-size: 18px;
+  font-weight: bold;
 }
 </style>

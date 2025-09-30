@@ -7,7 +7,10 @@ export const referenceCacheService = {
     STORAGE_KEYS: {
       SPECIES: 'animoplus_species_cache',
       SERVICE_TYPES: 'animoplus_service_types_cache',
-      LAST_UPDATE: 'animoplus_species_last_update'
+      RACES: 'animoplus_races_cache',
+      SPECIALITES: 'animoplus_specialites_cache',
+      USERS: 'animoplus_users_cache',
+      LAST_UPDATE: 'animoplus_last_update'
     }
   },
 
@@ -147,6 +150,93 @@ export const referenceCacheService = {
   },
 
   /**
+   * Forcer la mise à jour d'un cache spécifique
+   */
+  async forceRefresh(cacheKey, refreshFunction) {
+    try {
+      console.log('🔄 Actualisation forcée du cache:', cacheKey)
+      
+      // Vider le cache existant
+      this.clearCache(cacheKey)
+      
+      // Exécuter la fonction de rafraîchissement
+      const data = await refreshFunction()
+      
+      // Sauvegarder les nouvelles données
+      if (data) {
+        this.saveToCache(cacheKey, data)
+      }
+      
+      console.log('✅ Cache actualisé avec succès:', cacheKey)
+      return data
+      
+    } catch (error) {
+      console.error('❌ Erreur actualisation forcée:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Invalider un cache (le marquer comme expiré sans le supprimer)
+   */
+  invalidateCache(cacheKey) {
+    try {
+      const cached = localStorage.getItem(cacheKey)
+      if (!cached) return
+      
+      const data = JSON.parse(cached)
+      // Marquer comme expiré en mettant un timestamp très ancien
+      data.timestamp = 0
+      
+      localStorage.setItem(cacheKey, JSON.stringify(data))
+      console.log('⚠️ Cache invalidé:', cacheKey)
+      
+    } catch (error) {
+      console.error('❌ Erreur invalidation cache:', error)
+    }
+  },
+
+  /**
+   * Obtenir les statistiques du cache
+   */
+  getCacheStats() {
+    const stats = {}
+    
+    Object.entries(this.config.STORAGE_KEYS).forEach(([name, key]) => {
+      const cached = localStorage.getItem(key)
+      if (cached) {
+        try {
+          const data = JSON.parse(cached)
+          const isValid = this.isCacheValid(key)
+          const size = new Blob([cached]).size
+          
+          stats[name.toLowerCase()] = {
+            exists: true,
+            valid: isValid,
+            count: Array.isArray(data.data) ? data.data.length : 0,
+            size: size,
+            lastUpdate: new Date(data.timestamp).toLocaleString('fr-FR'),
+            expiresAt: new Date(data.timestamp + this.config.CACHE_DURATION).toLocaleString('fr-FR')
+          }
+        } catch (error) {
+          stats[name.toLowerCase()] = {
+            exists: true,
+            valid: false,
+            error: 'Données corrompues'
+          }
+        }
+      } else {
+        stats[name.toLowerCase()] = {
+          exists: false,
+          valid: false
+        }
+      }
+    })
+    
+    return stats
+  },
+
+  /**
    * Obtenir les informations du cache
    */
   getCacheInfo() {
@@ -177,29 +267,6 @@ export const referenceCacheService = {
     return info
   },
 
-  /**
-   * Forcer la mise à jour du cache (pour les admins)
-   */
-  async forceRefresh(fetchFunction) {
-    try {
-      console.log('🔄 Mise à jour forcée du cache...')
-      
-      // Vider le cache actuel
-      this.clearAllCaches()
-      
-      // Récupérer les nouvelles données
-      const freshData = await fetchFunction()
-      
-      // Sauvegarder en cache
-      this.saveToCache(this.config.STORAGE_KEYS.SPECIES, freshData)
-      
-      console.log('✅ Cache mis à jour avec succès')
-      return freshData
-    } catch (error) {
-      console.error('❌ Erreur mise à jour forcée:', error)
-      throw error
-    }
-  },
 
   /**
    * Vérifier si une mise à jour en arrière-plan est nécessaire
