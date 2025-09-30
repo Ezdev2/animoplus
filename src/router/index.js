@@ -13,6 +13,7 @@ import Services from '@/pages/Services/ServicesPage.vue'
 import Tasks from '@/pages/Tasks/components/TasksComponents.vue'
 import Accounting from '@/pages/Accounting/Accounting.vue'
 import StockPage from '@/pages/StockManagement/StockPage.vue'
+import CacheManagementPage from '@/pages/Admin/CacheManagementPage.vue'
 
 import { simpleGuard } from '@/router/simpleGuard.js'
 import Specialist from '@/pages/Homepage/Specialist.vue'
@@ -28,6 +29,8 @@ import AccessDenied from '@/pages/Error/AccessDenied.vue'
 
 // Pages de test
 import CloudinaryTest from '@/pages/Test/CloudinaryTest.vue'
+import CacheTestPage from '@/pages/Test/CacheTestPage.vue'
+import ServiceTypesTestPage from '@/pages/Test/ServiceTypesTestPage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -152,6 +155,13 @@ const router = createRouter({
       component: StockPage,
       meta: { requiresAuth: true, roles: ['veterinarian'] }
     },
+    // Administration
+    {
+      path: '/admin/cache-management',
+      name: 'admin-cache-management',
+      component: CacheManagementPage,
+      meta: { requiresAuth: true, roles: ['veterinarian'] } // Accessible aux vétérinaires seulement
+    },
     // Page d'accès refusé
     {
       path: '/access-denied',
@@ -159,12 +169,28 @@ const router = createRouter({
       component: AccessDenied,
       meta: { requiresAuth: true }
     },
-    // Page de test Cloudinary (publique)
+    // Pages de test (publiques)
     {
       path: '/test/cloudinary',
       name: 'cloudinary-test',
       component: CloudinaryTest,
       meta: { requiresGuest: false, requiresAuth: false } // Accessible à tous
+    },
+    {
+      path: '/test/cache',
+      name: 'cache-test',
+      component: CacheTestPage,
+      meta: { requiresAuth: true, roles: ['veterinarian'] } // Test pour vétérinaires
+    },
+    {
+      path: '/test/service-types',
+      name: 'service-types-test',
+      component: ServiceTypesTestPage,
+      meta: { requiresAuth: true, roles: ['veterinarian'] } // Test pour vétérinaires
+    },
+    {
+      path: '/test/service-type', // Alias sans "s"
+      redirect: '/test/service-types'
     },
     // Route 404 - DOIT ÊTRE LA DERNIÈRE
     {

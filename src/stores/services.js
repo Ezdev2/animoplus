@@ -65,12 +65,40 @@ export const useServicesStore = defineStore('services', () => {
   }
 
   const removeService = (serviceId) => {
-    const index = services.value.findIndex(s => s.id === serviceId)
+    console.log('🔍 removeService appelé avec ID:', serviceId, 'Type:', typeof serviceId)
+    console.log('📝 IDs disponibles dans le store:', services.value.map(s => ({ id: s.id, type: typeof s.id, name: s.name })))
+    
+    // Tentative avec comparaison stricte
+    let index = services.value.findIndex(s => s.id === serviceId)
+    console.log('📍 Index trouvé (strict):', index)
+    
+    // Si pas trouvé avec comparaison stricte, essayer avec comparaison loose
+    if (index === -1) {
+      console.log('🔄 Tentative avec comparaison loose (==)')
+      index = services.value.findIndex(s => s.id == serviceId)
+      console.log('📍 Index trouvé (loose):', index)
+    }
+    
+    // Si toujours pas trouvé, essayer avec conversion string
+    if (index === -1) {
+      console.log('🔄 Tentative avec conversion string')
+      index = services.value.findIndex(s => String(s.id) === String(serviceId))
+      console.log('📍 Index trouvé (string):', index)
+    }
+    
     if (index !== -1) {
       const removedService = services.value.splice(index, 1)[0]
-      console.log('🗑️ Service supprimé du store:', removedService.name)
+      console.log('✅ Service supprimé du store:', removedService.name)
+      console.log('📊 Nombre de services restants:', services.value.length)
     } else {
-      console.log('⚠️ Service non trouvé pour suppression:', serviceId)
+      console.log('❌ Service non trouvé pour suppression:', serviceId)
+      console.log('🔍 Détails de comparaison:')
+      services.value.forEach((s, idx) => {
+        console.log(`   Service ${idx}: ${s.id} (${typeof s.id}) vs ${serviceId} (${typeof serviceId})`)
+        console.log(`     Strict (===): ${s.id === serviceId}`)
+        console.log(`     Loose (==): ${s.id == serviceId}`)
+        console.log(`     String: ${String(s.id) === String(serviceId)}`)
+      })
     }
   }
 

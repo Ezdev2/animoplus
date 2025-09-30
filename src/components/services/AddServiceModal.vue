@@ -73,6 +73,38 @@
           </select>
           <span v-if="errors.services_types_id" class="error-message">{{ errors.services_types_id }}</span>
         </div>
+
+        <!-- Spécialité -->
+        <div class="form-group">
+          <label for="serviceSpecialite" class="form-label">
+            Spécialité vétérinaire
+          </label>
+          <select
+            id="serviceSpecialite"
+            v-model="formData.specialite_id"
+            class="form-select"
+            :class="{ 'error': errors.specialite_id }"
+            :disabled="isLoadingSpecialites"
+          >
+            <option value="">
+              {{ isLoadingSpecialites ? 'Chargement des spécialités...' : 'Sélectionnez une spécialité (optionnel)' }}
+            </option>
+            <option 
+              v-for="specialite in activeSpecialites" 
+              :key="specialite.id" 
+              :value="specialite.id"
+              :title="specialite.description"
+            >
+              {{ specialite.name }}
+            </option>
+          </select>
+          <span v-if="errors.specialite_id" class="error-message">{{ errors.specialite_id }}</span>
+          <div class="form-help">
+            <small class="help-text">
+              Choisissez la spécialité vétérinaire correspondant à ce service (optionnel)
+            </small>
+          </div>
+        </div>
       </div>
 
       <!-- Tarification et durée -->
@@ -208,6 +240,7 @@ import { ref, computed, reactive, onMounted } from 'vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { useCreateService } from '@/services/services/serviceQueries.js'
 import { useServiceTypesCache } from '@/composables/useServiceTypesCache.js'
+import { useSpecialites } from '@/composables/useSpecialites.js'
 import { useToast } from '@/composables/useToast.js'
 
 // Émissions
@@ -221,6 +254,7 @@ const formData = reactive({
   name: '',
   description: '',
   services_types_id: '',
+  specialite_id: '',
   price: null,
   duration: 30,
   gap_between_services: 15,
@@ -244,6 +278,13 @@ const {
   activeOnly: true, // Seulement les types actifs pour le formulaire
   enableBackgroundRefresh: true
 })
+
+// Spécialités
+const { 
+  activeSpecialites,
+  isLoading: isLoadingSpecialites,
+  loadActiveSpecialites
+} = useSpecialites()
 
 // Protection contre les données null/undefined
 const finalServiceTypes = computed(() => {
@@ -380,8 +421,16 @@ function closeModal() {
 }
 
 // Initialisation
-onMounted(() => {
+onMounted(async () => {
   console.log('🚀 Modal d\'ajout de service initialisé')
+  
+  // Charger les spécialités actives
+  try {
+    await loadActiveSpecialites()
+    console.log('✅ Spécialités chargées:', activeSpecialites.value?.length || 0)
+  } catch (error) {
+    console.error('❌ Erreur chargement spécialités:', error)
+  }
   
   // Protection contre les erreurs d'accès
   try {
@@ -533,6 +582,16 @@ onMounted(() => {
   font-size: 14px;
   color: #374151;
   user-select: none;
+}
+
+.form-help {
+  margin-top: 4px;
+}
+
+.help-text {
+  color: #6b7280;
+  font-size: 12px;
+  font-style: italic;
 }
 
 .form-actions {

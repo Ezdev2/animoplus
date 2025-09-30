@@ -90,6 +90,119 @@
         </div>
       </div>
     </div>
+
+    <!-- Section Spécialités (pour les vétérinaires) -->
+    <div v-if="!isUserClient" class="flex flex-col gap-4">
+      <div class="flex items-center font-bold gap-4">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-accent-500">
+          <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+          <path d="m2 17 10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+          <path d="m2 12 10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+        <h3>Mes Spécialités</h3>
+      </div>
+
+      <hr />
+
+      <!-- État de chargement -->
+      <div v-if="isLoadingSpecialities" class="flex justify-center items-center py-8">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-accent-500"></div>
+        <span class="ml-3 text-gray-600">Chargement des spécialités...</span>
+      </div>
+
+      <!-- Si aucune spécialité enregistrée -->
+      <div v-else-if="userSpecialities.length < 1" class="flex flex-col items-center py-8">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-gray-400 mb-4">
+          <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="m2 17 10 5 10-5" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="m2 12 10 5 10-5" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+        </svg>
+        <p class="text-gray-500">Aucune spécialité enregistrée pour le moment</p>
+        <p class="text-sm text-gray-400 mt-2">Ajoutez vos spécialités vétérinaires pour enrichir votre profil</p>
+      </div>
+
+      <!-- Sinon on affiche les spécialités -->
+      <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div 
+          v-for="speciality in userSpecialities" 
+          :key="speciality.id" 
+          class="speciality-card border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+          :class="{ 'ring-2 ring-accent-500 bg-accent-50': speciality.is_primary }"
+        >
+          <!-- En-tête de la carte -->
+          <div class="flex items-start justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <span class="text-2xl">{{ getCertificationLevelIcon(speciality.certification_level) }}</span>
+              <div>
+                <h4 class="font-semibold text-gray-800">{{ getSpecialityName(speciality) }}</h4>
+                <p class="text-sm text-gray-600">{{ getSpecialityDescription(speciality) }}</p>
+              </div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="flex items-center gap-2">
+              <!-- Badge spécialité principale -->
+              <div v-if="speciality.is_primary" class="bg-accent-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+                Principale
+              </div>
+              
+              <!-- Bouton de suppression -->
+              <button 
+                @click="confirmDeleteSpeciality(speciality)"
+                class="text-red-500 hover:text-red-700 hover:bg-red-50 p-1 rounded-full transition-colors"
+                :title="`Supprimer ${getSpecialityName(speciality)}`"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="m18 6-12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="m6 6 12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Niveau de certification -->
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-sm font-medium text-gray-700">Niveau :</span>
+            <span 
+              class="px-2 py-1 rounded-full text-xs font-medium text-white"
+              :style="{ backgroundColor: getCertificationLevelColor(speciality.certification_level) }"
+            >
+              {{ getCertificationLevelLabel(speciality.certification_level) }}
+            </span>
+          </div>
+
+          <!-- Informations supplémentaires -->
+          <div v-if="speciality.certified_since || speciality.notes" class="text-xs text-gray-500 space-y-1">
+            <div v-if="speciality.certified_since" class="flex items-center gap-1">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="currentColor" stroke-width="2"/>
+                <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2"/>
+                <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2"/>
+                <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/>
+              </svg>
+              Certifié depuis : {{ new Date(speciality.certified_since).toLocaleDateString('fr-FR') }}
+            </div>
+            <div v-if="speciality.notes" class="italic">
+              {{ speciality.notes }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bouton d'ajout de spécialité -->
+      <div class="flex justify-center mt-4">
+        <button 
+          class="bg-accent-500 text-white px-6 py-2 rounded-lg hover:bg-accent-600 transition-colors flex items-center gap-2"
+          @click="addSpeciality"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2"/>
+            <line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          Ajouter une spécialité
+        </button>
+      </div>
+    </div>
   </section>
   <AddAnimal v-if="showModal" @close="showModal = false" />
   
@@ -118,6 +231,21 @@
     @service-updated="handleServiceUpdated"
   />
   
+  <!-- Modal d'ajout de spécialité utilisateur -->
+  <AddUserSpecialityModal 
+    :is-open="showAddSpecialityModal"
+    @close="showAddSpecialityModal = false"
+    @speciality-added="handleSpecialityAdded"
+  />
+
+  <!-- Modal de suppression de spécialité utilisateur -->
+  <DeleteSpecialityModal 
+    :is-open="showDeleteSpecialityModal"
+    :speciality="specialityToDelete"
+    @close="handleDeleteModalClose"
+    @confirm-delete="handleDeleteSpeciality"
+  />
+
   <!-- Debug API Tester - TEMPORAIRE -->
   <ApiTester v-if="showApiTester" @close="showApiTester = false" />
   
@@ -149,8 +277,11 @@ import UserServicesModal from '@/components/services/UserServicesModal.vue'
 import AddServiceModal from '@/components/services/AddServiceModal.vue'
 import EditServiceModal from '@/components/services/EditServiceModal.vue'
 import ApiTester from '@/components/debug/ApiTester.vue'
+import AddUserSpecialityModal from '@/components/userSpecialities/AddUserSpecialityModal.vue'
+import DeleteSpecialityModal from '@/components/userSpecialities/DeleteSpecialityModal.vue'
 import { ref, computed, onMounted } from 'vue'
 import { useSimpleAuth } from '@/composables/useSimpleAuth.js'
+import { useUserSpecialities } from '@/composables/useUserSpecialities.js'
 
 const props = defineProps({
   isClient: {
@@ -161,6 +292,18 @@ const props = defineProps({
 
 // Utiliser le système d'auth ultra-simple
 const auth = useSimpleAuth()
+
+// Composable pour les spécialités utilisateur
+const { 
+  userSpecialities, 
+  primarySpeciality,
+  isLoading: isLoadingSpecialities,
+  loadUserSpecialities,
+  removeUserSpeciality,
+  getCertificationLevelLabel,
+  getCertificationLevelIcon,
+  getCertificationLevelColor
+} = useUserSpecialities()
 
 // Initialiser les données
 auth.init()
@@ -201,6 +344,9 @@ const animals = ref([
 
 const showModal = ref(false)
 const showApiTester = ref(false)
+const showAddSpecialityModal = ref(false)
+const showDeleteSpecialityModal = ref(false)
+const specialityToDelete = ref(null)
 const showServicesModal = ref(false)
 const showAddServiceModal = ref(false)
 const showEditServiceModal = ref(false)
@@ -273,10 +419,83 @@ function handleServiceUpdated(service) {
   // Le service sera automatiquement mis à jour dans la liste via TanStack Query
 }
 
+// Fonction pour ajouter une spécialité
+function addSpeciality() {
+  console.log('➕ Ouvrir modal ajout spécialité')
+  showAddSpecialityModal.value = true
+}
+
+// Fonction appelée quand une spécialité est ajoutée
+function handleSpecialityAdded(speciality) {
+  console.log('✅ Spécialité ajoutée:', speciality)
+  showAddSpecialityModal.value = false
+  // Les données seront automatiquement mises à jour via le store Pinia
+}
+
+// Fonction pour ouvrir le modal de confirmation de suppression
+function confirmDeleteSpeciality(speciality) {
+  console.log('🗑️ Demande suppression spécialité:', speciality)
+  specialityToDelete.value = speciality
+  showDeleteSpecialityModal.value = true
+}
+
+// Fonction pour supprimer une spécialité (appelée par le modal)
+async function handleDeleteSpeciality(specialityId) {
+  try {
+    console.log('🗑️ Suppression spécialité confirmée:', specialityId)
+    
+    const result = await removeUserSpeciality(specialityId)
+    
+    if (result.success) {
+      console.log('✅ Spécialité supprimée avec succès:', result)
+      // Fermer le modal
+      showDeleteSpecialityModal.value = false
+      specialityToDelete.value = null
+      // Les données seront automatiquement mises à jour via le store Pinia
+    }
+  } catch (error) {
+    console.error('❌ Erreur lors de la suppression de la spécialité:', error)
+    // Le modal gère déjà l'état d'erreur
+  }
+}
+
+// Fonction pour fermer le modal de suppression
+function handleDeleteModalClose() {
+  showDeleteSpecialityModal.value = false
+  specialityToDelete.value = null
+}
+
+// Fonctions utilitaires pour extraire les données de spécialité
+function getSpecialityName(speciality) {
+  // Essayer différentes propriétés possibles
+  return speciality.specialty?.name || 
+         speciality.specialite?.name || 
+         speciality.name || 
+         'Spécialité inconnue'
+}
+
+function getSpecialityDescription(speciality) {
+  // Essayer différentes propriétés possibles
+  return speciality.specialty?.description || 
+         speciality.specialite?.description || 
+         speciality.description || 
+         ''
+}
+
 // Initialisation ultra-simple
-onMounted(() => {
+onMounted(async () => {
   console.log('🚀 Initialisation UserProfile - Version Simple')
   console.log('👤 Utilisateur:', userData.value?.name)
+  
+  // Charger les spécialités utilisateur si c'est un vétérinaire
+  if (!isUserClient.value) {
+    try {
+      await loadUserSpecialities()
+      console.log('✅ Spécialités utilisateur chargées:', userSpecialities.value?.length || 0)
+    } catch (error) {
+      console.error('❌ Erreur chargement spécialités:', error)
+    }
+  }
 })
 
 </script>
@@ -318,5 +537,38 @@ onMounted(() => {
   font-size: 13px;
   font-weight: 500;
   color: #333;
+}
+
+/* Styles pour les cartes de spécialités */
+.speciality-card {
+  transition: all 0.2s ease;
+}
+
+.speciality-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Styles pour les badges de certification */
+.certification-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Animation pour le chargement */
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 </style>
