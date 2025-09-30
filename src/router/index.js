@@ -31,6 +31,7 @@ import AccessDenied from '@/pages/Error/AccessDenied.vue'
 import CloudinaryTest from '@/pages/Test/CloudinaryTest.vue'
 import CacheTestPage from '@/pages/Test/CacheTestPage.vue'
 import ServiceTypesTestPage from '@/pages/Test/ServiceTypesTestPage.vue'
+import AuthDebugPage from '@/pages/Debug/AuthDebugPage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -81,7 +82,7 @@ const router = createRouter({
       path: '/dashboard',
       name: 'dashboard',
       component: Dashboard,
-      meta: { requiresAuth: true, roles: ['client', 'veterinarian'] }
+      meta: { requiresAuth: true, roles: ['client', 'veterinarian', 'veterinarian_pro'] }
     },
     {
       path: '/animals',
@@ -93,13 +94,13 @@ const router = createRouter({
       path: '/documents',
       name: 'documents',
       component: Documents,
-      meta: { requiresAuth: true, roles: ['client', 'veterinarian'] }
+      meta: { requiresAuth: true, roles: ['client', 'veterinarian', 'veterinarian_pro'] }
     },
     {
       path: '/profil',
       name: 'profil',
       component: ProfilePage,
-      meta: { requiresAuth: true, roles: ['client', 'veterinarian'] }
+      meta: { requiresAuth: true, roles: ['client', 'veterinarian', 'veterinarian_pro'] }
     },
     {
       path: '/speciality',
@@ -111,56 +112,75 @@ const router = createRouter({
       path: '/lost-animal',
       name: 'lost-animal',
       component: LostAnimal,
-      meta: { requiresAuth: true, roles: ['client', 'veterinarian'] }
+      meta: { requiresAuth: true, roles: ['client', 'veterinarian', 'veterinarian_pro'] }
     },
     {
       path: '/message',
       name: 'message',
       component: Message,
-      meta: { requiresAuth: true, roles: ['client', 'veterinarian'] }
+      meta: { requiresAuth: true, roles: ['client', 'veterinarian', 'veterinarian_pro'] }
     },
     {
       path: '/appointment',
       name: 'appointment',
       component: Appointment,
-      meta: { requiresAuth: true, roles: ['client', 'veterinarian'] }
+      meta: { requiresAuth: true, roles: ['client', 'veterinarian', 'veterinarian_pro'] }
     },
     {
       path: '/manage-patient',
       name: 'manage-patient',
       component: ManagePatient,
-      meta: { requiresAuth: true, roles: ['veterinarian'] }
+      meta: { requiresAuth: true, roles: ['veterinarian', 'veterinarian_pro'] }
     },
     {
       path: '/services',
       name: 'services',
       component: Services,
-      meta: { requiresAuth: true, roles: ['veterinarian'] }
+      meta: { requiresAuth: true, roles: ['veterinarian', 'veterinarian_pro'] }
     },
     {
       path: '/tasks',
       name: 'tasks',
       component: Tasks,
-      meta: { requiresAuth: true, roles: ['veterinarian'] }
+      meta: { requiresAuth: true, roles: ['veterinarian', 'veterinarian_pro'] }
     },
     {
       path: '/accounting',
       name: 'accounting',
       component: Accounting,
-      meta: { requiresAuth: true, roles: ['veterinarian'] }
+      meta: { requiresAuth: true, roles: ['veterinarian', 'veterinarian_pro'] }
     },
     {
       path: '/stockManagement',
       name: 'stockManagement',
       component: StockPage,
-      meta: { requiresAuth: true, roles: ['veterinarian'] }
+      meta: { requiresAuth: true, roles: ['veterinarian', 'veterinarian_pro'] }
+    },
+    // Pages Pro (accessibles seulement aux vétérinaires Pro)
+    {
+      path: '/pro-dashboard',
+      name: 'pro-dashboard',
+      component: Dashboard, // Réutiliser le dashboard avec affichage conditionnel
+      meta: { requiresAuth: true, roles: ['veterinarian_pro'] }
+    },
+    {
+      path: '/pro-analytics',
+      name: 'pro-analytics',
+      component: () => import('@/pages/Pro/ProAnalytics.vue'),
+      meta: { requiresAuth: true, roles: ['veterinarian_pro'] }
+    },
+    {
+      path: '/pro-reports',
+      name: 'pro-reports',
+      component: () => import('@/pages/Pro/ProReports.vue'),
+      meta: { requiresAuth: true, roles: ['veterinarian_pro'] }
     },
     // Administration
     {
       path: '/admin/cache-management',
       name: 'admin-cache-management',
       component: CacheManagementPage,
-      meta: { requiresAuth: true, roles: ['veterinarian'] } // Accessible aux vétérinaires seulement
+      meta: { requiresAuth: true, roles: ['veterinarian', 'veterinarian_pro'] } // Accessible aux vétérinaires et Pro
     },
     // Page d'accès refusé
     {
@@ -187,6 +207,12 @@ const router = createRouter({
       name: 'service-types-test',
       component: ServiceTypesTestPage,
       meta: { requiresAuth: true, roles: ['veterinarian'] } // Test pour vétérinaires
+    },
+    {
+      path: '/debug/auth',
+      name: 'auth-debug',
+      component: AuthDebugPage,
+      meta: { requiresAuth: false } // Accessible même sans auth pour diagnostic
     },
     {
       path: '/test/service-type', // Alias sans "s"

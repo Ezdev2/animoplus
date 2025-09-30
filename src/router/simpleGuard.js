@@ -48,7 +48,17 @@ export const simpleGuard = (to, from, next) => {
       const parsed = JSON.parse(data)
       isAuth = !!(parsed.token && parsed.user && parsed.user.id)
       userData = parsed.user
-      userRole = userData?.user_type || userData?.role || 'client'
+      
+      // Déterminer le rôle avec support des utilisateurs Pro
+      let baseRole = userData?.user_type || userData?.role || 'client'
+      
+      // Si c'est un vétérinaire Pro, on garde les deux rôles
+      if (baseRole === 'veterinarian_pro') {
+        userRole = 'veterinarian_pro'
+      } else {
+        userRole = baseRole
+      }
+      
     } catch (error) {
       console.error('❌ Guard - Erreur parsing data:', error)
       isAuth = false
@@ -61,7 +71,12 @@ export const simpleGuard = (to, from, next) => {
   
   // Vérifier les permissions par rôle
   const requiredRoles = to.meta?.roles
-  const hasRoleAccess = !requiredRoles || requiredRoles.includes(userRole)
+  let hasRoleAccess = !requiredRoles || requiredRoles.includes(userRole)
+  
+  // Si c'est un vétérinaire Pro, il a accès à toutes les pages des vétérinaires normaux
+  if (userRole === 'veterinarian_pro' && requiredRoles && requiredRoles.includes('veterinarian')) {
+    hasRoleAccess = true
+  }
   
   console.log('📊 Guard - État détaillé:', {
     isAuthenticated: isAuth,
