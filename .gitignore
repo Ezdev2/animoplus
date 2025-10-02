@@ -28,7 +28,7 @@ coverage
 *.sw?
 
 *.tsbuildinfo
-# postman
+postman
 INTEGRATION_BACKEND_GUIDE.md
 PHASE1_IMPLEMENTATION_SUMMARY.md
 MIGRATION_AUTH_GUIDE.md
