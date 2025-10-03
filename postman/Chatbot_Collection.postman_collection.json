@@ -1,0 +1,921 @@
+{
+	"info": {
+		"_postman_id": "chatbot-api-collection",
+		"name": "Chatbot API Collection",
+		"description": "Complete API collection for AnimoPlus Chatbot with intelligent response generation, intent detection, and modular conversation management",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "chatbot-collection"
+	},
+	"item": [
+		{
+			"name": "Send Message to Chatbot (Public)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has success property\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Response contains chatbot data\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"    pm.expect(jsonData.data).to.have.property('response');",
+							"    pm.expect(jsonData.data).to.have.property('intent');",
+							"    pm.expect(jsonData.data).to.have.property('confidence');",
+							"    pm.expect(jsonData.data).to.have.property('timestamp');",
+							"});",
+							"",
+							"pm.test(\"Response is not empty\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data.response).to.be.a('string');",
+							"    pm.expect(jsonData.data.response.length).to.be.greaterThan(0);",
+							"});",
+							"",
+							"pm.test(\"Confidence is a valid number\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data.confidence).to.be.a('number');",
+							"    pm.expect(jsonData.data.confidence).to.be.at.least(0);",
+							"    pm.expect(jsonData.data.confidence).to.be.at.most(1);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"message\": \"Bonjour, pouvez-vous me parler d'AnimoPlus ?\",\n    \"user_id\": \"{{user_id}}\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/chatbot/message",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"chatbot",
+						"message"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Ask About Services",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Intent detected correctly\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data.intent).to.be.oneOf(['service_info', 'info_request', 'default']);",
+							"});",
+							"",
+							"pm.test(\"Response mentions services\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    const response = jsonData.data.response.toLowerCase();",
+							"    pm.expect(response).to.satisfy(function(text) {",
+							"        return text.includes('service') || text.includes('vétérinaire') || text.includes('consultation');",
+							"    });",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"message\": \"Quels services proposez-vous pour les animaux ?\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/chatbot/message",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"chatbot",
+						"message"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Ask About Appointments",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response about appointments\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    const response = jsonData.data.response.toLowerCase();",
+							"    pm.expect(response).to.satisfy(function(text) {",
+							"        return text.includes('rendez-vous') || text.includes('rdv') || text.includes('appointment') || text.includes('réserver');",
+							"    });",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"message\": \"Comment prendre rendez-vous pour mon chien ?\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/chatbot/message",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"chatbot",
+						"message"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "General Greeting",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Greeting intent detected\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data.intent).to.be.oneOf(['greeting', 'default']);",
+							"});",
+							"",
+							"pm.test(\"Friendly response\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    const response = jsonData.data.response.toLowerCase();",
+							"    pm.expect(response).to.satisfy(function(text) {",
+							"        return text.includes('bonjour') || text.includes('salut') || text.includes('ravi') || text.includes('aider');",
+							"    });",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"message\": \"Bonjour !\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/chatbot/message",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"chatbot",
+						"message"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Unknown Message (Default Response)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Default intent for unknown message\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data.intent).to.equal('default');",
+							"});",
+							"",
+							"pm.test(\"Low confidence for unknown message\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data.confidence).to.be.at.most(0.2);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"message\": \"xyz123 random text that makes no sense\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/chatbot/message",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"chatbot",
+						"message"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Message Validation Error",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 422\", function () {",
+							"    pm.response.to.have.status(422);",
+							"});",
+							"",
+							"pm.test(\"Validation error response\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.false;",
+							"    pm.expect(jsonData).to.have.property('errors');",
+							"});",
+							"",
+							"pm.test(\"Message field error\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.errors).to.have.property('message');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"user_id\": \"invalid-uuid\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/chatbot/message",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"chatbot",
+						"message"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Chatbot Responses (Admin)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has success property\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Response has data array\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"    pm.expect(jsonData.data).to.be.an('array');",
+							"});",
+							"",
+							"pm.test(\"Response has pagination\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('pagination');",
+							"});",
+							"",
+							"if (pm.response.json().data.length > 0) {",
+							"    pm.test(\"Response objects have required properties\", function () {",
+							"        const response = pm.response.json().data[0];",
+							"        pm.expect(response).to.have.property('id');",
+							"        pm.expect(response).to.have.property('category');",
+							"        pm.expect(response).to.have.property('intent');",
+							"        pm.expect(response).to.have.property('component_type');",
+							"        pm.expect(response).to.have.property('content');",
+							"        pm.expect(response).to.have.property('priority');",
+							"    });",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{admin_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/chatbot/responses",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"chatbot",
+						"responses"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Responses with Filters",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Filtered responses returned\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    if (jsonData.data.length > 0) {",
+							"        jsonData.data.forEach(response => {",
+							"            pm.expect(response.category).to.equal('info_animo');",
+							"            pm.expect(response.component_type).to.equal('greeting');",
+							"        });",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{admin_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/chatbot/responses?category=info_animo&component_type=greeting&per_page=5",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"chatbot",
+						"responses"
+					],
+					"query": [
+						{
+							"key": "category",
+							"value": "info_animo"
+						},
+						{
+							"key": "component_type",
+							"value": "greeting"
+						},
+						{
+							"key": "per_page",
+							"value": "5"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test Response Generation (Admin)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response generated successfully\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"    pm.expect(jsonData).to.have.property('response');",
+							"});",
+							"",
+							"pm.test(\"Components breakdown provided\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('components');",
+							"    pm.expect(jsonData.components).to.have.property('greeting');",
+							"    pm.expect(jsonData.components).to.have.property('response');",
+							"    pm.expect(jsonData.components).to.have.property('call_to_action');",
+							"});",
+							"",
+							"pm.test(\"Complete response is not empty\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.response).to.be.a('string');",
+							"    pm.expect(jsonData.response.length).to.be.greaterThan(0);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{admin_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"category\": \"info_animo\",\n    \"intent\": \"info_request\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/chatbot/test-response",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"chatbot",
+						"test-response"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test Services Response",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Services response generated\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"    pm.expect(jsonData.response).to.be.a('string');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{admin_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"category\": \"services\",\n    \"intent\": \"service_info\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/chatbot/test-response",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"chatbot",
+						"test-response"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test Appointment Response",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Appointment response generated\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"    pm.expect(jsonData.response).to.be.a('string');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{admin_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"category\": \"appointment\",\n    \"intent\": \"booking_help\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/chatbot/test-response",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"chatbot",
+						"test-response"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test Validation Error (Admin)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 422\", function () {",
+							"    pm.response.to.have.status(422);",
+							"});",
+							"",
+							"pm.test(\"Validation error returned\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.false;",
+							"    pm.expect(jsonData).to.have.property('errors');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{admin_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"category\": \"info_animo\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/chatbot/test-response",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"chatbot",
+						"test-response"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Unauthorized Access Test",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 401 or 403\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([401, 403]);",
+							"});",
+							"",
+							"pm.test(\"Unauthorized response\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.false;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/chatbot/responses",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"chatbot",
+						"responses"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Long Message Test",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 422 for long message\", function () {",
+							"    pm.response.to.have.status(422);",
+							"});",
+							"",
+							"pm.test(\"Message length validation error\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.errors).to.have.property('message');",
+							"    pm.expect(jsonData.errors.message[0]).to.include('1000');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"message\": \"{{long_message}}\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/chatbot/message",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"chatbot",
+						"message"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Set default environment variables if not already set",
+					"if (!pm.environment.get('base_url')) {",
+					"    pm.environment.set('base_url', 'http://localhost:8000');",
+					"}",
+					"",
+					"// Generate a long message for testing validation",
+					"const longMessage = 'a'.repeat(1001);",
+					"pm.environment.set('long_message', longMessage);",
+					"",
+					"// Add timestamp for unique data",
+					"pm.environment.set('timestamp', Date.now());"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test to check response time",
+					"pm.test(\"Response time is less than 5000ms\", function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+					"});",
+					"",
+					"// Global test to check content type",
+					"pm.test(\"Content-Type is application/json\", function () {",
+					"    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+					"});"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "admin_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "long_message",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

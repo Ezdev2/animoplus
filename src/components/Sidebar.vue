@@ -1,25 +1,42 @@
 <template>
-    <div class="w-90 h-full p-6 bg-primary-600 flex flex-col justify-between">
-        <!-- Logo + Menu -->
-        <div class="flex flex-col gap-8">
+    <div class="w-90 h-full bg-primary-600 flex flex-col">
+        <!-- Logo fixe -->
+        <div class="flex-shrink-0 p-6 pb-4">
             <img class="w-28 h-9" src="../assets/animoplus_header.png" />
+        </div>
 
-            <!-- Menu principal -->
+        <!-- Menu principal scrollable -->
+        <div class="flex-1 overflow-y-auto px-6 pb-4">
             <nav class="flex flex-col gap-6">
-                <RouterLink v-for="item in filteredMenuItems" :key="item.label" :to="item.link"
-                    class="flex items-center gap-4 text-base hover:text-accent-400 transition"
-                    :class="route.path === item.link ? 'text-accent-400 font-bold' : 'text-white'">
-                    <component :is="item.icon"
-                        :class="route.path === item.link ? 'text-accent-400 font-bold' : 'text-white'" />
-                    <span>{{ item.label }}</span>
-                </RouterLink>
+                <template v-for="item in filteredMenuItems" :key="item.label">
+                    <!-- Séparateur Pro -->
+                    <div v-if="item.isProSeparator" class="border-t border-white border-opacity-30 pt-4 mt-2">
+                        <div class="flex items-center gap-2 text-yellow-300 text-sm font-semibold">
+                            <span class="text-lg">⭐</span>
+                            <span>FONCTIONNALITÉS PRO</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Élément de menu normal -->
+                    <RouterLink v-else :to="item.link"
+                        class="flex items-center gap-4 text-base hover:text-accent-400 transition"
+                        :class="[
+                            route.path === item.link ? 'text-accent-400 font-bold' : 'text-white',
+                            item.isPro ? 'pl-4 border-l-2 border-yellow-400 border-opacity-50' : ''
+                        ]">
+                        <component v-if="item.icon" :is="item.icon"
+                            :class="route.path === item.link ? 'text-accent-400 font-bold' : 'text-white'" />
+                        <span :class="item.isPro ? 'text-yellow-100' : ''">{{ item.label }}</span>
+                        <span v-if="item.isPro" class="ml-auto text-yellow-400 text-xs">PRO</span>
+                    </RouterLink>
+                </template>
             </nav>
         </div>
 
-        <!-- Bouton déconnexion -->
-        <div>
+        <!-- Bouton déconnexion fixe -->
+        <div class="flex-shrink-0 p-6 pt-4">
             <button @click="handleLogout"
-                class="px-4 py-2 bg-white rounded-xl shadow outline outline-1 outline-gray-200 flex items-center gap-2 hover:bg-gray-50 transition">
+                class="w-full px-4 py-2 bg-white rounded-xl shadow outline outline-1 outline-gray-200 flex items-center gap-2 hover:bg-gray-50 transition">
                 <span class="text-red-500 text-base font-['League_Spartan']">Déconnexion</span>
                 <img :src="logoutIcon" alt="log out" class="feature-icon w-6">
             </button>
@@ -30,6 +47,7 @@
 <script setup>
 import { useRoute } from 'vue-router';
 import { useSimpleAuth } from '@/composables/useSimpleAuth.js'
+import { useUserRole } from '@/composables/useUserRole.js'
 import { computed } from 'vue'
 
 import dashboardIcon from '@/assets/icons/sidebar/DasboardIcon.vue';
@@ -48,15 +66,10 @@ import logoutIcon from '@/assets/icons/logout.svg';
 
 const route = useRoute();
 const auth = useSimpleAuth()
+const { userRole, isClient, isVeterinarian, isVeterinarianPro, isAnyVeterinarian } = useUserRole()
 
-// Récupérer le rôle depuis les données utilisateur
-const role = computed(() => {
-  const user = auth.getCurrentUser.value
-  if (!user) return null
-  
-  // Adapter les différents formats de rôle
-  return user.user_type || user.role || 'client'
-})
+// Récupérer le rôle depuis les données utilisateur (pour compatibilité)
+const role = computed(() => userRole.value)
 
 // Fonction de déconnexion
 const logout = () => {
@@ -174,16 +187,108 @@ const menuItems = [
         user: "client",
         link: "/lost-animal"
     },
+    // Séparateur Pro
+    {
+        label: "--- FONCTIONNALITÉS PRO ---",
+        icon: null,
+        user: "pro_separator",
+        link: "#",
+        isProSeparator: true
+    },
+    {
+        label: "📊 Analytics Pro",
+        icon: sheetIcon,
+        user: "veterinarian_pro",
+        link: "/pro-analytics",
+        isPro: true
+    },
+    {
+        label: "📋 Rapports Pro",
+        icon: documentIcon,
+        user: "veterinarian_pro", 
+        link: "/pro-reports",
+        isPro: true
+    },
+    {
+        label: "Administration",
+        icon: userIcon,
+        user: "admin",
+        link: "/admin"
+    },
 ];
 
-const filteredMenuItems = menuItems.filter(item => {
-    // Adapter pour les nouveaux user_type
-    const userRole = role.value === 'veterinarian' ? 'pro' : role.value;
-    return item.user === "" || item.user === userRole || (Array.isArray(item.user) && item.user.includes(userRole));
-});
+const filteredMenuItems = computed(() => {
+    return menuItems.filter(item => {
+        // Gestion du séparateur Pro
+        if (item.user === "pro_separator") {
+            return isVeterinarianPro.value
+        }
+        
+        // Gestion des éléments spécifiques aux utilisateurs Pro
+        if (item.user === "veterinarian_pro") {
+            return isVeterinarianPro.value
+        }
+        
+        // Gestion des éléments pour vétérinaires (normaux et Pro)
+        if (item.user === "pro") {
+            return isAnyVeterinarian.value
+        }
+        
+        // Gestion des éléments pour clients
+        if (item.user === "client") {
+            return isClient.value
+        }
+        
+        // Gestion des éléments pour plusieurs rôles
+        if (Array.isArray(item.user)) {
+            // Adapter les rôles pour la compatibilité
+            const adaptedRoles = item.user.map(u => {
+                if (u === 'pro') return isAnyVeterinarian.value
+                if (u === 'client') return isClient.value
+                if (u === 'veterinarian_pro') return isVeterinarianPro.value
+                return false
+            })
+            return adaptedRoles.some(Boolean)
+        }
+        
+        // Éléments sans restriction
+        return item.user === ""
+    })
+})
 
 async function handleLogout() {
   await logout()
 }
 
 </script>
+
+<style scoped>
+/* Scrollbar personnalisée pour la sidebar */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 4px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Smooth scrolling */
+.overflow-y-auto {
+  scroll-behavior: smooth;
+}
+
+/* Assurer que les éléments Pro ne se chevauchent pas */
+nav {
+  min-height: fit-content;
+}
+</style>

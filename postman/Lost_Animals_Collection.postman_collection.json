@@ -128,6 +128,7 @@
 									"    pm.expect(jsonData.data).to.have.property('contact_name');",
 									"    pm.expect(jsonData.data).to.have.property('contact_phone');",
 									"    pm.expect(jsonData.data).to.have.property('contact_email');",
+<<<<<<< HEAD
 									"    pm.expect(jsonData.data.contact_email).to.eql(jsonData.data.user.email);",
 									"    ",
 									"    // Vérifier les informations complètes de l'utilisateur",
@@ -136,6 +137,11 @@
 									"    pm.expect(jsonData.data.user).to.have.property('clinic_name');",
 									"    pm.expect(jsonData.data.user).to.have.property('clinic_address');",
 									"    ",
+=======
+									"    pm.expect(jsonData.data.contact_name).to.eql(jsonData.data.user.name);",
+									"    pm.expect(jsonData.data.contact_email).to.eql(jsonData.data.user.email);",
+									"    ",
+>>>>>>> feature/cooperation
 									"    // Sauvegarder l'ID pour les autres tests",
 									"    pm.environment.set('lost_animal_id', jsonData.data.id);",
 									"    console.log('✅ Annonce créée avec ID:', jsonData.data.id);",
@@ -187,12 +193,18 @@
 									"    // Vérifier l'auto-remplissage des contacts",
 									"    pm.expect(jsonData.data).to.have.property('contact_name');",
 									"    pm.expect(jsonData.data).to.have.property('contact_email');",
+<<<<<<< HEAD
 									"    pm.expect(jsonData.data.contact_email).to.eql(jsonData.data.user.email);",
 									"    ",
 									"    // Vérifier les informations complètes de l'utilisateur",
 									"    pm.expect(jsonData.data.user).to.have.property('phone');",
 									"    pm.expect(jsonData.data.user).to.have.property('address');",
 									"    ",
+=======
+									"    pm.expect(jsonData.data.contact_name).to.eql(jsonData.data.user.name);",
+									"    pm.expect(jsonData.data.contact_email).to.eql(jsonData.data.user.email);",
+									"    ",
+>>>>>>> feature/cooperation
 									"    // Sauvegarder l'ID",
 									"    pm.environment.set('found_animal_id', jsonData.data.id);",
 									"    console.log('✅ Animal trouvé créé avec ID:', jsonData.data.id);",

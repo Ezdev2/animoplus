@@ -19,6 +19,7 @@ Cette collection Postman permet de tester complètement le module **Coopération
 - ✅ Filtrage par type d'animal
 - ✅ Recherche textuelle
 
+<<<<<<< HEAD
 ### 3. **📸 Gestion des Photos**
 - ✅ Ajouter des photos (URLs Cloudinary)
 - ✅ Supprimer une photo
@@ -29,11 +30,23 @@ Cette collection Postman permet de tester complètement le module **Coopération
 - ✅ Partage social (à venir)
 
 ### 5. **👨‍⚕️ Modération (Vétérinaires)**
+=======
+### 3. **⚡ Actions Spéciales**
+- ✅ Marquer comme résolu
+- ✅ Upload de photos (à venir)
+- ✅ Partage social (à venir)
+
+### 4. **👨‍⚕️ Modération (Vétérinaires)**
+>>>>>>> feature/cooperation
 - ✅ Approuver une annonce
 - ✅ Rejeter une annonce
 - ✅ Liste des annonces en attente
 
+<<<<<<< HEAD
 ### 6. **❌ Tests d'Erreurs**
+=======
+### 5. **❌ Tests d'Erreurs**
+>>>>>>> feature/cooperation
 - ✅ Validation des champs
 - ✅ Authentification
 - ✅ Autorisations

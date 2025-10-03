@@ -15,6 +15,14 @@ import Accounting from '@/pages/Accounting/Accounting.vue'
 import StockPage from '@/pages/StockManagement/StockPage.vue'
 import CacheManagementPage from '@/pages/Admin/CacheManagementPage.vue'
 
+// Pages Admin
+import AdminLayout from '@/pages/Admin/AdminLayout.vue'
+import AdminDashboard from '@/pages/Admin/AdminDashboard.vue'
+import ServiceTypes from '@/pages/Admin/ServiceTypes.vue'
+import CoopAdmin from '@/pages/Admin/CoopAdmin.vue'
+import AdminRedirect from '@/pages/Admin/AdminRedirect.vue'
+import AnnouncementsManagement from '@/pages/Admin/AnnouncementsManagement.vue'
+
 import { simpleGuard } from '@/router/simpleGuard.js'
 import Specialist from '@/pages/Homepage/Specialist.vue'
 import SignUp from '@/pages/Authentication/SignUp.vue'
@@ -31,6 +39,10 @@ import AccessDenied from '@/pages/Error/AccessDenied.vue'
 import CloudinaryTest from '@/pages/Test/CloudinaryTest.vue'
 import CacheTestPage from '@/pages/Test/CacheTestPage.vue'
 import ServiceTypesTestPage from '@/pages/Test/ServiceTypesTestPage.vue'
+import AdminAccessTest from '@/pages/Test/AdminAccessTest.vue'
+
+// Pages de debug
+import AuthDebugPage from '@/pages/Debug/AuthDebugPage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -81,7 +93,7 @@ const router = createRouter({
       path: '/dashboard',
       name: 'dashboard',
       component: Dashboard,
-      meta: { requiresAuth: true, roles: ['client', 'veterinarian'] }
+      meta: { requiresAuth: true, roles: ['client', 'veterinarian', 'veterinarian_pro'] }
     },
     {
       path: '/animals',
@@ -93,13 +105,13 @@ const router = createRouter({
       path: '/documents',
       name: 'documents',
       component: Documents,
-      meta: { requiresAuth: true, roles: ['client', 'veterinarian'] }
+      meta: { requiresAuth: true, roles: ['client', 'veterinarian', 'veterinarian_pro'] }
     },
     {
       path: '/profil',
       name: 'profil',
       component: ProfilePage,
-      meta: { requiresAuth: true, roles: ['client', 'veterinarian'] }
+      meta: { requiresAuth: true, roles: ['client', 'veterinarian', 'veterinarian_pro'] }
     },
     {
       path: '/speciality',
@@ -111,43 +123,43 @@ const router = createRouter({
       path: '/lost-animal',
       name: 'lost-animal',
       component: LostAnimal,
-      meta: { requiresAuth: true, roles: ['client', 'veterinarian'] }
+      meta: { requiresAuth: true, roles: ['client', 'veterinarian', 'veterinarian_pro'] }
     },
     {
       path: '/message',
       name: 'message',
       component: Message,
-      meta: { requiresAuth: true, roles: ['client', 'veterinarian'] }
+      meta: { requiresAuth: true, roles: ['client', 'veterinarian', 'veterinarian_pro'] }
     },
     {
       path: '/appointment',
       name: 'appointment',
       component: Appointment,
-      meta: { requiresAuth: true, roles: ['client', 'veterinarian'] }
+      meta: { requiresAuth: true, roles: ['client', 'veterinarian', 'veterinarian_pro'] }
     },
     {
       path: '/manage-patient',
       name: 'manage-patient',
       component: ManagePatient,
-      meta: { requiresAuth: true, roles: ['veterinarian'] }
+      meta: { requiresAuth: true, roles: ['veterinarian', 'veterinarian_pro'] }
     },
     {
       path: '/services',
       name: 'services',
       component: Services,
-      meta: { requiresAuth: true, roles: ['veterinarian'] }
+      meta: { requiresAuth: true, roles: ['veterinarian', 'veterinarian_pro'] }
     },
     {
       path: '/tasks',
       name: 'tasks',
       component: Tasks,
-      meta: { requiresAuth: true, roles: ['veterinarian'] }
+      meta: { requiresAuth: true, roles: ['veterinarian', 'veterinarian_pro'] }
     },
     {
       path: '/accounting',
       name: 'accounting',
       component: Accounting,
-      meta: { requiresAuth: true, roles: ['veterinarian'] }
+      meta: { requiresAuth: true, roles: ['veterinarian', 'veterinarian_pro'] }
     },
     {
       path: '/stockManagement',
@@ -155,12 +167,51 @@ const router = createRouter({
       component: StockPage,
       meta: { requiresAuth: true, roles: ['veterinarian'] }
     },
-    // Administration
+    // Redirection spéciale pour les admins
+    {
+      path: '/admin-redirect',
+      name: 'admin-redirect',
+      component: AdminRedirect,
+      meta: { requiresAuth: true, roles: ['admin'] }
+    },
+    // Administration - Routes protégées par user_type admin
+    {
+      path: '/admin',
+      component: AdminLayout,
+      meta: { requiresAuth: true, roles: ['admin'] },
+      children: [
+        {
+          path: '',
+          name: 'admin-dashboard',
+          component: AdminDashboard,
+          meta: { requiresAuth: true, roles: ['admin'] }
+        },
+        {
+          path: 'test/service-types',
+          name: 'admin-service-types',
+          component: ServiceTypes,
+          meta: { requiresAuth: true, roles: ['admin'] }
+        },
+        {
+          path: 'coop-admin',
+          name: 'admin-coop',
+          component: CoopAdmin,
+          meta: { requiresAuth: true, roles: ['admin'] }
+        },
+        {
+          path: 'announcements',
+          name: 'admin-announcements',
+          component: AnnouncementsManagement,
+          meta: { requiresAuth: true, roles: ['admin'] }
+        }
+      ]
+    },
+    // Administration legacy
     {
       path: '/admin/cache-management',
       name: 'admin-cache-management',
       component: CacheManagementPage,
-      meta: { requiresAuth: true, roles: ['veterinarian'] } // Accessible aux vétérinaires seulement
+      meta: { requiresAuth: true, roles: ['veterinarian', 'veterinarian_pro'] } // Accessible aux vétérinaires et Pro
     },
     // Page d'accès refusé
     {
@@ -189,8 +240,20 @@ const router = createRouter({
       meta: { requiresAuth: true, roles: ['veterinarian'] } // Test pour vétérinaires
     },
     {
+      path: '/debug/auth',
+      name: 'auth-debug',
+      component: AuthDebugPage,
+      meta: { requiresAuth: false } // Accessible même sans auth pour diagnostic
+    },
+    {
       path: '/test/service-type', // Alias sans "s"
       redirect: '/test/service-types'
+    },
+    {
+      path: '/test/admin-access',
+      name: 'admin-access-test',
+      component: AdminAccessTest,
+      meta: { requiresAuth: true, roles: ['admin', 'veterinarian', 'client'] } // Accessible à tous pour les tests
     },
     // Route 404 - DOIT ÊTRE LA DERNIÈRE
     {

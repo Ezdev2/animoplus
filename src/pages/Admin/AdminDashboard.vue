@@ -1,0 +1,167 @@
+<template>
+  <div class="space-y-6">
+    <!-- En-tête -->
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <h2 class="text-2xl font-bold text-gray-900 mb-2">Tableau de bord administrateur</h2>
+      <p class="text-gray-600">Bienvenue dans l'interface d'administration AnimoPlus</p>
+    </div>
+
+    <!-- Statistiques rapides -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center">
+          <div class="p-2 bg-blue-100 rounded-lg">
+            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"></path>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600">Utilisateurs totaux</p>
+            <p class="text-2xl font-semibold text-gray-900">1,234</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center">
+          <div class="p-2 bg-green-100 rounded-lg">
+            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600">Annonces approuvées</p>
+            <p class="text-2xl font-semibold text-gray-900">89</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center">
+          <div class="p-2 bg-yellow-100 rounded-lg">
+            <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600">En attente</p>
+            <p class="text-2xl font-semibold text-gray-900">12</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center">
+          <div class="p-2 bg-red-100 rounded-lg">
+            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600">Signalements</p>
+            <p class="text-2xl font-semibold text-gray-900">3</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions rapides -->
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">Actions rapides</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <RouterLink to="/admin/test/service-types" 
+          class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+          <div class="flex items-center gap-3">
+            <div class="p-2 bg-blue-100 rounded">
+              <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              </svg>
+            </div>
+            <div>
+              <p class="font-medium text-gray-900">Gérer les Service Types</p>
+              <p class="text-sm text-gray-600">Configuration des types de services</p>
+            </div>
+          </div>
+        </RouterLink>
+
+        <RouterLink to="/admin/coop-admin" 
+          class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+          <div class="flex items-center gap-3">
+            <div class="p-2 bg-green-100 rounded">
+              <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+              </svg>
+            </div>
+            <div>
+              <p class="font-medium text-gray-900">Administration Coopération</p>
+              <p class="text-sm text-gray-600">Modération des annonces</p>
+            </div>
+          </div>
+        </RouterLink>
+
+        <RouterLink to="/admin/announcements" 
+          class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+          <div class="flex items-center gap-3">
+            <div class="p-2 bg-purple-100 rounded">
+              <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+            </div>
+            <div>
+              <p class="font-medium text-gray-900">Gestion des Annonces</p>
+              <p class="text-sm text-gray-600">Toutes les annonces avec filtres</p>
+            </div>
+          </div>
+        </RouterLink>
+
+        <RouterLink to="/admin/users" 
+          class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+          <div class="flex items-center gap-3">
+            <div class="p-2 bg-indigo-100 rounded">
+              <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"></path>
+              </svg>
+            </div>
+            <div>
+              <p class="font-medium text-gray-900">Gestion Utilisateurs</p>
+              <p class="text-sm text-gray-600">Administrer les comptes</p>
+            </div>
+          </div>
+        </RouterLink>
+      </div>
+    </div>
+
+    <!-- Activité récente -->
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">Activité récente</h3>
+      <div class="space-y-3">
+        <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+          <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+          <p class="text-sm text-gray-700">
+            <span class="font-medium">Nouvelle annonce</span> - "Chat perdu à Paris" en attente de modération
+          </p>
+          <span class="text-xs text-gray-500 ml-auto">Il y a 5 min</span>
+        </div>
+        <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+          <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+          <p class="text-sm text-gray-700">
+            <span class="font-medium">Nouvel utilisateur</span> - Dr. Martin s'est inscrit
+          </p>
+          <span class="text-xs text-gray-500 ml-auto">Il y a 12 min</span>
+        </div>
+        <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+          <div class="w-2 h-2 bg-yellow-500 rounded-full"></div>
+          <p class="text-sm text-gray-700">
+            <span class="font-medium">Signalement</span> - Contenu inapproprié signalé
+          </p>
+          <span class="text-xs text-gray-500 ml-auto">Il y a 1h</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+// Logique du dashboard admin
+</script>

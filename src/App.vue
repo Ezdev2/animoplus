@@ -10,6 +10,7 @@ import Footer from './components/Footer.vue';
 
 import ChatPopup from './components/ChatPopup.vue';
 import ToastContainer from './components/common/ToastContainer.vue';
+import AdminTestHelper from './components/dev/AdminTestHelper.vue';
 import botIcon from '@/assets/icons/bot.svg';
 
 const isOpenBot = ref(false)
@@ -32,8 +33,17 @@ onMounted(async () => {
   console.log('📊 App.vue - État initial:', {
     isAuthenticated: isAuthenticated.value,
     user: currentUser.value?.name || 'Aucun',
-    role: role.value
+    role: role.value,
+    userData: currentUser.value
   })
+  
+  // Debugging détaillé
+  console.log('🔍 App.vue - Debugging détaillé:')
+  console.log('  - isAuthenticated:', isAuthenticated.value)
+  console.log('  - currentUser:', currentUser.value)
+  console.log('  - role:', role.value)
+  console.log('  - user_type:', currentUser.value?.user_type)
+  console.log('  - localStorage data:', localStorage.getItem('data'))
   
   setTimeout(() => {
     isOpenBot.value = true
@@ -69,8 +79,8 @@ onMounted(async () => {
     </div>
   </div>
 
-  <!-- Connecté - Vétérinaire -->
-  <div v-else-if="role === 'veterinarian'" class="layout">
+  <!-- Connecté - Vétérinaire (normal ou Pro) -->
+  <div v-else-if="role === 'veterinarian' || role === 'veterinarian_pro'" class="layout">
     <Sidebar role="pro" />
     <div class="main flex flex-col h-screen w-full overflow-hidden px-[24px]">
       <div class="appbar bg-white">
@@ -82,10 +92,28 @@ onMounted(async () => {
     </div>
   </div>
 
+  <!-- Connecté - Admin -->
+  <div v-else-if="role === 'admin'" class="layout">
+    <!-- Pour les admins, on utilise directement le RouterView car AdminLayout gère son propre sidebar -->
+    <RouterView />
+  </div>
+
+  <!-- Rôle non reconnu ou en attente -->
+  <div v-else class="flex items-center justify-center min-h-screen bg-gray-100">
+    <div class="text-center">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+      <p class="text-gray-600">Chargement...</p>
+      <p class="text-sm text-gray-500 mt-2">Rôle: {{ role || 'En cours de détection' }}</p>
+    </div>
+  </div>
+
   <ChatPopup v-if="isOpenBot" @close-pop-up="isOpenBot = false" />
   
   <!-- Container global pour les toasts -->
   <ToastContainer />
+  
+  <!-- Helper de test admin (dev uniquement) -->
+  <AdminTestHelper />
 </template>
 
 <style scoped>

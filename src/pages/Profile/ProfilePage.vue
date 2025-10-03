@@ -2,39 +2,21 @@
     <div>
         <UserProfile 
             v-if="!isEditprofile"
-            :is-client="auth.role == 'client' ? true : false"
+            :is-client="isClient"
             @edit-profile="isEditprofile = true"
         />
         <EditProfile v-if="isEditprofile" @back-to-list="isEditprofile = false" @profile-updated="handleProfileUpdated" />
     </div>
-
-    <!-- PROFIL PRO -->
-    <!-- <div v-if="auth.role === 'pro'">
-        <UserProfilePro v-if="!isEditprofile" @edit-profile="isEditprofile = true"/>
-        <EditProfilePro v-if="isEditprofile" @back-to-list="isEditprofile = false"/>
-    </div> -->
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import UserProfile from './components/UserProfile.vue'
 import EditProfile from './components/EditProfile.vue'
+import { useUserRole } from '@/composables/useUserRole.js'
 
-// import UserProfilePro from './components/UserProfilePro.vue'
-// import EditProfilePro from './components/EditProfilePro.vue'
-
-import { auth } from '@/stores/auth.js'
-import { useAuth } from '@/composables/useAuth.js'
-// import { useProfile, useUpdateProfile } from '@/services/users/userQueries.js'
-import { ref } from 'vue'
-
+const { isClient } = useUserRole()
 const isEditprofile = ref(false)
-
-// Nouveau système avec API (en mode fallback pour éviter les erreurs)
-const { role } = useAuth()
-
-// TODO: Activer quand l'API sera prête
-// const { data: profileData, isLoading: profileLoading, error: profileError } = useProfile()
-// const updateProfileMutation = useUpdateProfile()
 
 // Fonction pour sauvegarder le profil (préparée pour l'API)
 const handleSaveProfile = async (profileData) => {

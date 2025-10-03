@@ -16,7 +16,8 @@ const PROTECTED_ROUTES = [
   '/stockManagement',
   '/documents',
   '/speciality',
-  '/lost-animal'
+  '/lost-animal',
+  '/admin'  // Toutes les routes admin
 ]
 
 // Pages publiques (accessibles uniquement si NON connecté)
@@ -48,7 +49,17 @@ export const simpleGuard = (to, from, next) => {
       const parsed = JSON.parse(data)
       isAuth = !!(parsed.token && parsed.user && parsed.user.id)
       userData = parsed.user
-      userRole = userData?.user_type || userData?.role || 'client'
+      
+      // Déterminer le rôle avec support des utilisateurs Pro
+      let baseRole = userData?.user_type || userData?.role || 'client'
+      
+      // Si c'est un vétérinaire Pro, on garde les deux rôles
+      if (baseRole === 'veterinarian_pro') {
+        userRole = 'veterinarian_pro'
+      } else {
+        userRole = baseRole
+      }
+      
     } catch (error) {
       console.error('❌ Guard - Erreur parsing data:', error)
       isAuth = false
@@ -61,7 +72,12 @@ export const simpleGuard = (to, from, next) => {
   
   // Vérifier les permissions par rôle
   const requiredRoles = to.meta?.roles
-  const hasRoleAccess = !requiredRoles || requiredRoles.includes(userRole)
+  let hasRoleAccess = !requiredRoles || requiredRoles.includes(userRole)
+  
+  // Si c'est un vétérinaire Pro, il a accès à toutes les pages des vétérinaires normaux
+  if (userRole === 'veterinarian_pro' && requiredRoles && requiredRoles.includes('veterinarian')) {
+    hasRoleAccess = true
+  }
   
   console.log('📊 Guard - État détaillé:', {
     isAuthenticated: isAuth,
@@ -76,9 +92,13 @@ export const simpleGuard = (to, from, next) => {
     hasRoleAccess
   })
   
-  // RÈGLE 1: Si utilisateur connecté et va sur page publique → dashboard
+  // RÈGLE 1: Si utilisateur connecté et va sur page publique → dashboard approprié
   if (isAuth && isPublicRoute) {
     console.log('🔄 Guard - Utilisateur connecté sur page publique, redirection vers dashboard')
+    // Rediriger les admins vers leur interface
+    if (userRole === 'admin') {
+      return next('/admin')
+    }
     return next('/dashboard')
   }
   
@@ -88,9 +108,17 @@ export const simpleGuard = (to, from, next) => {
     return next('/login')
   }
   
-  // RÈGLE 3: Si utilisateur connecté mais n'a pas le bon rôle → access denied
+  // RÈGLE 3: Si utilisateur connecté mais n'a pas le bon rôle
   if (isAuth && isProtectedRoute && !hasRoleAccess) {
     console.log('🚫 Guard - Accès refusé pour le rôle:', userRole, 'requis:', requiredRoles)
+    
+    // Cas spécial : Admin qui essaie d'accéder au dashboard normal → rediriger vers admin
+    if (userRole === 'admin' && to.path === '/dashboard') {
+      console.log('🔄 Guard - Admin redirigé vers interface admin')
+      return next('/admin')
+    }
+    
+    // Sinon, accès refusé normal
     return next({
       path: '/access-denied',
       query: { 
