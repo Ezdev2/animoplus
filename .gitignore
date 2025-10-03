@@ -28,7 +28,6 @@ coverage
 *.sw?
 
 *.tsbuildinfo
-postman
 INTEGRATION_BACKEND_GUIDE.md
 PHASE1_IMPLEMENTATION_SUMMARY.md
 MIGRATION_AUTH_GUIDE.md
@@ -37,5 +36,6 @@ login_result.json
 data.json
 logs.txt
 userPro.txt
+postman
 
 .env

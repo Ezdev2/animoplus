@@ -41,6 +41,9 @@ import CacheTestPage from '@/pages/Test/CacheTestPage.vue'
 import ServiceTypesTestPage from '@/pages/Test/ServiceTypesTestPage.vue'
 import AdminAccessTest from '@/pages/Test/AdminAccessTest.vue'
 
+// Pages de debug
+import AuthDebugPage from '@/pages/Debug/AuthDebugPage.vue'
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [

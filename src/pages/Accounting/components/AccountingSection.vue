@@ -6,122 +6,85 @@
     <!-- Séparateur -->
     <hr class="h-px bg-[rgba(197,197,197,0.5)] my-4 border-none" />
 
-    <!-- Bloc Mois -->
-    <div class="mois-section">
-      <!-- Juin -->
-      <div class="mois-row">
-        <span class="mois-title">Juin</span>
-        <div class="cards-row">
-          <div class="stat-card gain">
-            <span class="card-title">Gain</span>
-            <div class="card-value">
-              <span class="value-main">7,265</span>
-              <span class="value-variation">
-                + 7,265
-                <img :src="arrowUp" alt="augmentation" class="arrow-icon" />
-              </span>
+    <!-- État de chargement -->
+    <div v-if="isLoadingStats" class="loading-section">
+      <div class="flex justify-center items-center py-8">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mr-3"></div>
+        <span class="text-gray-600">Chargement des statistiques...</span>
+      </div>
+    </div>
+
+    <!-- Erreur de chargement -->
+    <div v-else-if="statsError" class="error-section">
+      <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+        <div class="flex items-center">
+          <span class="text-red-600 mr-2">⚠️</span>
+          <span class="text-red-800">Erreur lors du chargement des statistiques: {{ statsError }}</span>
+        </div>
+        <button @click="loadMultiStats()" class="mt-2 text-red-600 hover:text-red-800 underline">
+          Réessayer
+        </button>
+      </div>
+    </div>
+
+    <!-- Statistiques par période (Année, Mois, Semaine) -->
+    <div v-else class="periods-section">
+      <template v-for="(period, index) in periodsData" :key="period.period">
+        <div class="period-row">
+          <span class="period-title">{{ period.name }}</span>
+          <div class="cards-row">
+            <!-- Gain/Revenus -->
+            <div class="stat-card gain">
+              <span class="card-title">Revenus</span>
+              <div class="card-value">
+                <span class="value-main">{{ formatCurrency(period.revenues) }}</span>
+                <span class="value-variation">
+                  {{ period.count_revenues }} transaction(s)
+                  <img :src="arrowUp" alt="info" class="arrow-icon" />
+                </span>
+              </div>
             </div>
-          </div>
-          <div class="stat-card depense">
-            <span class="card-title">Dépenses</span>
-            <div class="card-value">
-              <span class="value-main">7,265</span>
-              <span class="value-variation">
-                + 7,265
-                <img :src="arrowUp" alt="augmentation" class="arrow-icon" />
-              </span>
+            
+            <!-- Dépenses -->
+            <div class="stat-card depense">
+              <span class="card-title">Dépenses</span>
+              <div class="card-value">
+                <span class="value-main">{{ formatCurrency(period.expenses) }}</span>
+                <span class="value-variation">
+                  {{ period.count_expenses }} transaction(s)
+                  <img :src="arrowUp" alt="info" class="arrow-icon" />
+                </span>
+              </div>
             </div>
-          </div>
-          <div class="stat-card benefice">
-            <span class="card-title">Bénéfices</span>
-            <div class="card-value">
-              <span class="value-main">7,265</span>
-              <span class="value-variation">
-                + 7,265
-                <img :src="arrowUp" alt="augmentation" class="arrow-icon" />
-              </span>
+            
+            <!-- Bénéfices -->
+            <div class="stat-card benefice" :class="{ 'negative': period.profit < 0 }">
+              <span class="card-title">Bénéfices</span>
+              <div class="card-value">
+                <span class="value-main" :class="{ 'text-red-600': period.profit < 0, 'text-green-600': period.profit >= 0 }">
+                  {{ formatCurrency(period.profit) }}
+                </span>
+                <span class="value-variation" :class="{ 'text-red-600': period.profit < 0, 'text-green-600': period.profit >= 0 }">
+                  {{ period.isProfitable ? '✅ Profitable' : '❌ Déficitaire' }}
+                  <img :src="arrowUp" alt="status" class="arrow-icon" />
+                </span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Séparateur -->
-      <hr class="h-px bg-[rgba(197,197,197,0.5)] my-4 border-none" />
+        <!-- Séparateur (sauf pour le dernier élément) -->
+        <hr v-if="index < periodsData.length - 1" class="h-px bg-[rgba(197,197,197,0.5)] my-4 border-none" />
+      </template>
 
-      <!-- Mai -->
-      <div class="mois-row">
-        <span class="mois-title">Mai</span>
-        <div class="cards-row">
-          <div class="stat-card gain">
-            <span class="card-title">Gain</span>
-            <div class="card-value">
-              <span class="value-main">7,265</span>
-              <span class="value-variation">
-                + 7,265
-                <img :src="arrowUp" alt="augmentation" class="arrow-icon" />
-              </span>
-            </div>
-          </div>
-          <div class="stat-card depense">
-            <span class="card-title">Dépenses</span>
-            <div class="card-value">
-              <span class="value-main">7,265</span>
-              <span class="value-variation">
-                + 7,265
-                <img :src="arrowUp" alt="augmentation" class="arrow-icon" />
-              </span>
-            </div>
-          </div>
-          <div class="stat-card benefice">
-            <span class="card-title">Bénéfices</span>
-            <div class="card-value">
-              <span class="value-main">7,265</span>
-              <span class="value-variation">
-                + 7,265
-                <img :src="arrowUp" alt="augmentation" class="arrow-icon" />
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Séparateur -->
-      <hr class="h-px bg-[rgba(197,197,197,0.5)] my-4 border-none" />
-      
-      <!-- Avril -->
-      <div class="mois-row">
-        <span class="mois-title">Avril</span>
-        <div class="cards-row">
-          <div class="stat-card gain">
-            <span class="card-title">Gain</span>
-            <div class="card-value">
-              <span class="value-main">7,265</span>
-              <span class="value-variation">
-                + 7,265
-                <img :src="arrowUp" alt="augmentation" class="arrow-icon" />
-              </span>
-            </div>
-          </div>
-          <div class="stat-card depense">
-            <span class="card-title">Dépenses</span>
-            <div class="card-value">
-              <span class="value-main">7,265</span>
-              <span class="value-variation">
-                + 7,265
-                <img :src="arrowUp" alt="augmentation" class="arrow-icon" />
-              </span>
-            </div>
-          </div>
-          <div class="stat-card benefice">
-            <span class="card-title">Bénéfices</span>
-            <div class="card-value">
-              <span class="value-main">7,265</span>
-              <span class="value-variation">
-                + 7,265
-                <img :src="arrowUp" alt="augmentation" class="arrow-icon" />
-              </span>
-            </div>
-          </div>
+      <!-- Message si aucune donnée -->
+      <div v-if="periodsData.length === 0" class="no-data-section">
+        <div class="text-center py-8 text-gray-500">
+          <span class="text-4xl mb-4 block">📊</span>
+          <p>Aucune donnée comptable disponible</p>
+          <button @click="loadMultiStats()" class="mt-4 text-blue-600 hover:text-blue-800 underline">
+            Actualiser
+          </button>
         </div>
       </div>
     </div>
@@ -273,6 +236,8 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useExpenses } from '@/composables/useExpenses.js'
+import { useCompta } from '@/composables/useCompta.js'
+import { comptaService } from '@/services/compta/comptaService.js'
 import AddExpenseModal from './AddExpenseModal.vue'
 import EditExpenseModal from './EditExpenseModal.vue'
 import DeleteConfirmModal from '@/components/common/DeleteConfirmModal.vue'
@@ -295,6 +260,14 @@ const {
   validateExpenseData
 } = useExpenses()
 
+// Composable pour la comptabilité
+const { formatAmount: formatComptaAmount } = useCompta()
+
+// État pour les statistiques multiples
+const multiStats = ref(null)
+const isLoadingStats = ref(false)
+const statsError = ref(null)
+
 // État local
 const showAddModal = ref(false)
 const showEditModal = ref(false)
@@ -303,6 +276,30 @@ const selectedExpense = ref(null)
 const isDeleting = ref(false)
 
 console.log("bla bla 🚀 ~ AccountingSection.vue ~ expenses:", expenses.value)
+
+// Charger les statistiques multiples
+const loadMultiStats = async () => {
+  try {
+    isLoadingStats.value = true
+    statsError.value = null
+    console.log('📊 Chargement des statistiques multiples...')
+    
+    const response = await comptaService.getMultiStats()
+    
+    if (response.success) {
+      multiStats.value = response.data
+      console.log('✅ Statistiques multiples chargées:', response.data)
+    } else {
+      statsError.value = response.error
+      console.error('❌ Erreur récupération statistiques:', response.error)
+    }
+  } catch (error) {
+    statsError.value = error.message
+    console.error('❌ Erreur chargement statistiques multiples:', error)
+  } finally {
+    isLoadingStats.value = false
+  }
+}
 
 // Fetch initial des dépenses utilisateur (simplifié comme useStocks)
 const fetchMyExpenses = async () => {
@@ -313,6 +310,86 @@ const fetchMyExpenses = async () => {
   } catch (error) {
     console.error('❌ Erreur lors du chargement de mes dépenses:', error)
   }
+}
+
+// Computed properties pour les données par période
+const currentYearStats = computed(() => multiStats.value?.current_year || null)
+const currentMonthStats = computed(() => multiStats.value?.current_month || null)
+const currentWeekStats = computed(() => multiStats.value?.current_week || null)
+
+// Computed pour les 3 périodes principales (Année, Mois, Semaine)
+const periodsData = computed(() => {
+  if (!multiStats.value) return []
+  
+  const periods = []
+  
+  // 1. Cette année
+  if (currentYearStats.value) {
+    periods.push({
+      name: 'Cette année',
+      period: 'current_year',
+      period_label: currentYearStats.value.period_label || 'Cette année',
+      revenues: currentYearStats.value.revenues.total_brut || 0,
+      expenses: currentYearStats.value.expenses.total_brut || 0,
+      profit: currentYearStats.value.profit.benefice_brut || 0,
+      isProfitable: currentYearStats.value.profit.is_profitable || false,
+      count_revenues: currentYearStats.value.revenues.count || 0,
+      count_expenses: currentYearStats.value.expenses.count || 0
+    })
+  }
+  
+  // 2. Ce mois
+  if (currentMonthStats.value) {
+    periods.push({
+      name: 'Ce mois',
+      period: 'current_month',
+      period_label: currentMonthStats.value.period_label || 'Ce mois',
+      revenues: currentMonthStats.value.revenues.total_brut || 0,
+      expenses: currentMonthStats.value.expenses.total_brut || 0,
+      profit: currentMonthStats.value.profit.benefice_brut || 0,
+      isProfitable: currentMonthStats.value.profit.is_profitable || false,
+      count_revenues: currentMonthStats.value.revenues.count || 0,
+      count_expenses: currentMonthStats.value.expenses.count || 0
+    })
+  }
+  
+  // 3. Cette semaine
+  if (currentWeekStats.value) {
+    periods.push({
+      name: 'Cette semaine',
+      period: 'current_week',
+      period_label: currentWeekStats.value.period_label || 'Cette semaine',
+      revenues: currentWeekStats.value.revenues.total_brut || 0,
+      expenses: currentWeekStats.value.expenses.total_brut || 0,
+      profit: currentWeekStats.value.profit.benefice_brut || 0,
+      isProfitable: currentWeekStats.value.profit.is_profitable || false,
+      count_revenues: currentWeekStats.value.revenues.count || 0,
+      count_expenses: currentWeekStats.value.expenses.count || 0
+    })
+  }
+  
+  return periods
+})
+
+// Fonctions utilitaires pour l'affichage
+const formatCurrency = (amount) => {
+  if (!amount && amount !== 0) return '0 €'
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'EUR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(Math.abs(amount))
+}
+
+const getVariationText = (current, previous = 0) => {
+  const variation = current - previous
+  const sign = variation >= 0 ? '+' : '-'
+  return `${sign} ${formatCurrency(variation)}`
+}
+
+const getVariationIcon = (current, previous = 0) => {
+  return current >= previous ? arrowUp : arrowUp // On garde la même icône pour l'instant
 }
 
 // Fonctions pour la modal
@@ -423,8 +500,11 @@ const getStatusClass = (status) => {
 }
 
 // Chargement initial
-onMounted(() => {
-  fetchMyExpenses()
+onMounted(async () => {
+  // Charger les statistiques multiples en premier
+  await loadMultiStats()
+  // Puis charger les dépenses
+  await fetchMyExpenses()
 })
 </script>
 
@@ -444,26 +524,25 @@ onMounted(() => {
   font-family: "League Spartan";
   font-size: 24px;
   font-style: normal;
-  font-weight: 700;
-  line-height: normal;
 }
-.mois-section {
+.periods-section {
+  margin-bottom: 32px;
+}
+
+.period-row {
   display: flex;
-  flex-direction: column;
-  gap: 32px;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 16px;
 }
-.mois-row {
-  margin-bottom: 4px;
+
+.period-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #232323;
+  min-width: 120px;
 }
-.mois-title {
-  font-size: 20px;
-  font-weight: 500;
-  color: var(--Primary---600, #43A047);
-  font-family: "League Spartan";
-  margin-bottom: 10px;
-  display: block;
-  margin-left: 4px;
-}
+
 .cards-row {
   display: flex;
   gap: 20px;
