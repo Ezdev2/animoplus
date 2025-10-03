@@ -1,0 +1,823 @@
+{
+	"info": {
+		"_postman_id": "lost-animals-collection-id",
+		"name": "AnimoPlus - Lost Animals (Coopération)",
+		"description": "Collection complète pour tester le module Coopération - Animaux perdus/trouvés. MISE À JOUR: Les informations de contact (nom, téléphone, email) sont maintenant auto-remplies depuis l'utilisateur connecté lors de la création.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "📋 CRUD Operations",
+			"item": [
+				{
+					"name": "Liste des annonces (avec filtres)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success property', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});",
+									"",
+									"pm.test('Response has data with pagination', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('current_page');",
+									"    pm.expect(jsonData.data).to.have.property('per_page');",
+									"    console.log('✅ Found', jsonData.data.total, 'annonces');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/lost-animals?type=all&per_page=10",
+							"host": ["{{base_url}}"],
+							"path": ["api", "lost-animals"],
+							"query": [
+								{
+									"key": "type",
+									"value": "all",
+									"description": "Type: all, lost, found"
+								},
+								{
+									"key": "animal_type",
+									"value": "chien",
+									"description": "Type d'animal: chien, chat, oiseau, lapin, autre",
+									"disabled": true
+								},
+								{
+									"key": "latitude",
+									"value": "48.8566",
+									"description": "Latitude pour recherche géographique",
+									"disabled": true
+								},
+								{
+									"key": "longitude",
+									"value": "2.3522",
+									"description": "Longitude pour recherche géographique",
+									"disabled": true
+								},
+								{
+									"key": "radius",
+									"value": "10",
+									"description": "Rayon en km (défaut: 5)",
+									"disabled": true
+								},
+								{
+									"key": "search",
+									"value": "Max",
+									"description": "Terme de recherche",
+									"disabled": true
+								},
+								{
+									"key": "status",
+									"value": "approved",
+									"description": "Statut: pending, approved, rejected, resolved",
+									"disabled": true
+								},
+								{
+									"key": "per_page",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Créer une annonce (Animal perdu)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('Response has success property', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});",
+									"",
+									"pm.test('Annonce created with correct data', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('id');",
+									"    pm.expect(jsonData.data.type).to.equal('lost');",
+									"    pm.expect(jsonData.data.status).to.equal('pending');",
+									"    ",
+									"    // Vérifier l'auto-remplissage des contacts",
+									"    pm.expect(jsonData.data).to.have.property('contact_name');",
+									"    pm.expect(jsonData.data).to.have.property('contact_phone');",
+									"    pm.expect(jsonData.data).to.have.property('contact_email');",
+									"    pm.expect(jsonData.data.contact_email).to.eql(jsonData.data.user.email);",
+									"    ",
+									"    // Vérifier les informations complètes de l'utilisateur",
+									"    pm.expect(jsonData.data.user).to.have.property('phone');",
+									"    pm.expect(jsonData.data.user).to.have.property('address');",
+									"    pm.expect(jsonData.data.user).to.have.property('clinic_name');",
+									"    pm.expect(jsonData.data.user).to.have.property('clinic_address');",
+									"    ",
+									"    // Sauvegarder l'ID pour les autres tests",
+									"    pm.environment.set('lost_animal_id', jsonData.data.id);",
+									"    console.log('✅ Annonce créée avec ID:', jsonData.data.id);",
+									"    console.log('✅ Contact auto-rempli:', jsonData.data.contact_name, '-', jsonData.data.contact_email);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"lost\",\n  \"animal_type\": \"chien\",\n  \"name\": \"Max\",\n  \"description\": \"Berger allemand de 3 ans, très gentil. Porte un collier rouge avec médaille. Répond à son nom.\",\n  \"additional_info\": \"Craintif avec les étrangers mais très affectueux. Aime les enfants.\",\n  \"location\": \"Avenue de la République, Lyon 3ème\",\n  \"latitude\": 45.7640,\n  \"longitude\": 4.8357,\n  \"reward\": \"50€\",\n  \"authorize_diffusion\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/lost-animals",
+							"host": ["{{base_url}}"],
+							"path": ["api", "lost-animals"]
+						}
+					}
+				},
+				{
+					"name": "Créer une annonce (Animal trouvé)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('Animal trouvé created successfully', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.type).to.equal('found');",
+									"    pm.expect(jsonData.data.animal_type).to.equal('chat');",
+									"    ",
+									"    // Vérifier l'auto-remplissage des contacts",
+									"    pm.expect(jsonData.data).to.have.property('contact_name');",
+									"    pm.expect(jsonData.data).to.have.property('contact_email');",
+									"    pm.expect(jsonData.data.contact_email).to.eql(jsonData.data.user.email);",
+									"    ",
+									"    // Vérifier les informations complètes de l'utilisateur",
+									"    pm.expect(jsonData.data.user).to.have.property('phone');",
+									"    pm.expect(jsonData.data.user).to.have.property('address');",
+									"    ",
+									"    // Sauvegarder l'ID",
+									"    pm.environment.set('found_animal_id', jsonData.data.id);",
+									"    console.log('✅ Animal trouvé créé avec ID:', jsonData.data.id);",
+									"    console.log('✅ Contact auto-rempli:', jsonData.data.contact_name);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"found\",\n  \"animal_type\": \"chat\",\n  \"name\": \"Chat tigré trouvé\",\n  \"description\": \"Chat tigré gris et blanc, environ 2 ans. Très sociable et en bonne santé. Pas de collier.\",\n  \"additional_info\": \"Trouvé près du parc de la Tête d'Or. Semble habitué aux humains.\",\n  \"location\": \"Parc de la Tête d'Or, Lyon 6ème\",\n  \"latitude\": 45.7797,\n  \"longitude\": 4.8578,\n  \"authorize_diffusion\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/lost-animals",
+							"host": ["{{base_url}}"],
+							"path": ["api", "lost-animals"]
+						}
+					}
+				},
+				{
+					"name": "Détail d'une annonce",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response contains annonce details', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('id');",
+									"    pm.expect(jsonData.data).to.have.property('name');",
+									"    pm.expect(jsonData.data).to.have.property('description');",
+									"    pm.expect(jsonData.data).to.have.property('user');",
+									"    pm.expect(jsonData.data).to.have.property('photos');",
+									"    console.log('✅ Détails récupérés pour:', jsonData.data.name);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/lost-animals/{{lost_animal_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "lost-animals", "{{lost_animal_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Modifier une annonce",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Annonce modified successfully', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.data.reward).to.equal('100€');",
+									"    console.log('✅ Annonce modifiée:', jsonData.message);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"reward\": \"100€\",\n  \"additional_info\": \"URGENT: Récompense augmentée ! Max manque beaucoup à sa famille.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/lost-animals/{{lost_animal_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "lost-animals", "{{lost_animal_id}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "🔍 Recherche et Filtres",
+			"item": [
+				{
+					"name": "Recherche géographique (Paris 5km)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/lost-animals?latitude=48.8566&longitude=2.3522&radius=5",
+							"host": ["{{base_url}}"],
+							"path": ["api", "lost-animals"],
+							"query": [
+								{
+									"key": "latitude",
+									"value": "48.8566",
+									"description": "Latitude Paris"
+								},
+								{
+									"key": "longitude",
+									"value": "2.3522",
+									"description": "Longitude Paris"
+								},
+								{
+									"key": "radius",
+									"value": "5",
+									"description": "Rayon 5km"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Filtrer par type (animaux perdus)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/lost-animals?type=lost&animal_type=chien",
+							"host": ["{{base_url}}"],
+							"path": ["api", "lost-animals"],
+							"query": [
+								{
+									"key": "type",
+									"value": "lost"
+								},
+								{
+									"key": "animal_type",
+									"value": "chien"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Recherche textuelle",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/lost-animals?search=Max&type=lost",
+							"host": ["{{base_url}}"],
+							"path": ["api", "lost-animals"],
+							"query": [
+								{
+									"key": "search",
+									"value": "Max"
+								},
+								{
+									"key": "type",
+									"value": "lost"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "📸 Gestion des Photos",
+			"item": [
+				{
+					"name": "Ajouter des photos",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Photos added successfully', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.data).to.have.property('added_photos');",
+									"    pm.expect(jsonData.data.added_photos).to.be.an('array');",
+									"    ",
+									"    // Sauvegarder l'ID de la première photo",
+									"    if (jsonData.data.added_photos.length > 0) {",
+									"        pm.environment.set('photo_id', jsonData.data.added_photos[0].id);",
+									"        console.log('✅ Photos ajoutées, première photo ID:', jsonData.data.added_photos[0].id);",
+									"    }",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"photos\": [\n    {\n      \"photo_url\": \"https://res.cloudinary.com/demo/image/upload/v1234567890/sample.jpg\",\n      \"photo_public_id\": \"sample\",\n      \"is_primary\": true\n    },\n    {\n      \"photo_url\": \"https://res.cloudinary.com/demo/image/upload/v1234567890/sample2.jpg\",\n      \"photo_public_id\": \"sample2\",\n      \"is_primary\": false\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/lost-animals/{{lost_animal_id}}/photos",
+							"host": ["{{base_url}}"],
+							"path": ["api", "lost-animals", "{{lost_animal_id}}", "photos"]
+						}
+					}
+				},
+				{
+					"name": "Définir photo principale",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Photo set as primary', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.message).to.include('principale');",
+									"    console.log('✅ Photo définie comme principale');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/lost-animals/{{lost_animal_id}}/photos/{{photo_id}}/primary",
+							"host": ["{{base_url}}"],
+							"path": ["api", "lost-animals", "{{lost_animal_id}}", "photos", "{{photo_id}}", "primary"]
+						}
+					}
+				},
+				{
+					"name": "Supprimer une photo",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Photo deleted successfully', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.message).to.include('supprimée');",
+									"    console.log('✅ Photo supprimée avec succès');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/lost-animals/{{lost_animal_id}}/photos/{{photo_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "lost-animals", "{{lost_animal_id}}", "photos", "{{photo_id}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "⚡ Actions Spéciales",
+			"item": [
+				{
+					"name": "Marquer comme résolu",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Annonce marked as resolved', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.data.status).to.equal('resolved');",
+									"    pm.expect(jsonData.data.resolved_at).to.not.be.null;",
+									"    console.log('✅ Annonce résolue le:', jsonData.data.resolved_at);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/lost-animals/{{found_animal_id}}/resolve",
+							"host": ["{{base_url}}"],
+							"path": ["api", "lost-animals", "{{found_animal_id}}", "resolve"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "👨‍⚕️ Modération (Vétérinaires)",
+			"item": [
+				{
+					"name": "Approuver une annonce",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Annonce approved successfully', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.data.status).to.equal('approved');",
+									"    console.log('✅ Annonce approuvée par vétérinaire');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{vet_access_token}}",
+								"description": "Token vétérinaire requis"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/lost-animals/{{lost_animal_id}}/approve",
+							"host": ["{{base_url}}"],
+							"path": ["api", "lost-animals", "{{lost_animal_id}}", "approve"]
+						}
+					}
+				},
+				{
+					"name": "Rejeter une annonce",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Annonce rejected successfully', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    console.log('✅ Annonce rejetée par vétérinaire');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{vet_access_token}}",
+								"description": "Token vétérinaire requis"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/lost-animals/{{lost_animal_id}}/reject",
+							"host": ["{{base_url}}"],
+							"path": ["api", "lost-animals", "{{lost_animal_id}}", "reject"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "❌ Tests d'Erreurs",
+			"item": [
+				{
+					"name": "Validation - Champs manquants",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 422', function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test('Validation errors returned', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.false;",
+									"    pm.expect(jsonData).to.have.property('errors');",
+									"    console.log('✅ Erreurs de validation:', Object.keys(jsonData.errors));",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"lost\",\n  \"name\": \"Test\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/lost-animals",
+							"host": ["{{base_url}}"],
+							"path": ["api", "lost-animals"]
+						}
+					}
+				},
+				{
+					"name": "Non authentifié",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 401', function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test('Unauthorized error', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.false;",
+									"    console.log('✅ Erreur d\\'authentification correcte');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"lost\",\n  \"animal_type\": \"chien\",\n  \"name\": \"Test\",\n  \"description\": \"Test\",\n  \"location\": \"Test\",\n  \"contact_name\": \"Test\",\n  \"contact_phone\": \"0123456789\",\n  \"contact_email\": \"test@test.com\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/lost-animals",
+							"host": ["{{base_url}}"],
+							"path": ["api", "lost-animals"]
+						}
+					}
+				},
+				{
+					"name": "Annonce non trouvée",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 404', function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"pm.test('Not found error', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.false;",
+									"    pm.expect(jsonData.message).to.include('non trouvée');",
+									"    console.log('✅ Erreur 404 correcte');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/lost-animals/00000000-0000-0000-0000-000000000000",
+							"host": ["{{base_url}}"],
+							"path": ["api", "lost-animals", "00000000-0000-0000-0000-000000000000"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Vérifier que les variables d'environnement sont définies",
+					"if (!pm.environment.get('base_url')) {",
+					"    console.log('⚠️ Variable base_url non définie');",
+					"}",
+					"",
+					"if (!pm.environment.get('access_token') && pm.request.headers.get('Authorization')) {",
+					"    console.log('⚠️ Variable access_token non définie');",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		}
+	]
+}

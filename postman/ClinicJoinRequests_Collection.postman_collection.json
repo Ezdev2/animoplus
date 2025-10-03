@@ -1,0 +1,581 @@
+{
+	"info": {
+		"_postman_id": "clinic-join-requests-collection",
+		"name": "Clinic Join Requests API",
+		"description": "Collection for testing Clinic Join Requests API endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{jwt_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000/api",
+			"type": "string"
+		},
+		{
+			"key": "jwt_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "clinic_join_request_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "clinic_id",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login Veterinarian",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has token\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('token');",
+									"    pm.collectionVariables.set('jwt_token', jsonData.token);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"vet@example.com\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "login"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Clinic Join Requests CRUD",
+			"item": [
+				{
+					"name": "List Join Requests",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has success property\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success', true);",
+									"});",
+									"",
+									"pm.test(\"Response has data array\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/clinic-join-requests?per_page=10",
+							"host": ["{{base_url}}"],
+							"path": ["clinic-join-requests"],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Join Request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response has success property\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success', true);",
+									"});",
+									"",
+									"pm.test(\"Response has data with ID\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('id');",
+									"    pm.collectionVariables.set('clinic_join_request_id', jsonData.data.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"clinic_id\": \"{{clinic_id}}\",\n    \"message\": \"Je souhaite rejoindre votre équipe vétérinaire\",\n    \"motivation\": \"Passionné par la médecine vétérinaire depuis toujours, je souhaite développer mes compétences au sein d'une équipe expérimentée. Votre clinique jouit d'une excellente réputation et je pense que mon profil pourrait être un atout pour votre équipe.\",\n    \"experience\": {\n        \"years\": 2,\n        \"previous_clinics\": [\"Clinique Vétérinaire du Centre\"],\n        \"education\": \"Doctorat Vétérinaire - École Nationale Vétérinaire de Lyon (2022)\",\n        \"certifications\": [\"Certificat en Chirurgie des Petits Animaux\"],\n        \"languages\": [\"Français\", \"Anglais\"]\n    },\n    \"specialties\": [\"Chirurgie\", \"Médecine générale\"],\n    \"desired_role\": \"veterinarian\",\n    \"is_available_immediately\": true,\n    \"additional_notes\": \"Disponible pour un entretien à tout moment.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/clinic-join-requests",
+							"host": ["{{base_url}}"],
+							"path": ["clinic-join-requests"]
+						}
+					}
+				},
+				{
+					"name": "Get Join Request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has data with relationships\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('user');",
+									"    pm.expect(jsonData.data).to.have.property('clinic');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/clinic-join-requests/{{clinic_join_request_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["clinic-join-requests", "{{clinic_join_request_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Update Join Request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has success property\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success', true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"Message mis à jour\",\n    \"motivation\": \"Motivation mise à jour avec plus de détails sur mon expérience et mes objectifs professionnels.\",\n    \"additional_notes\": \"Notes additionnelles mises à jour.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/clinic-join-requests/{{clinic_join_request_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["clinic-join-requests", "{{clinic_join_request_id}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Join Request Actions",
+			"item": [
+				{
+					"name": "Approve Join Request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Request approved successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success', true);",
+									"    pm.expect(jsonData.data.status).to.equal('approved');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"review_notes\": \"Profil excellent, bienvenue dans notre équipe!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/clinic-join-requests/{{clinic_join_request_id}}/approve",
+							"host": ["{{base_url}}"],
+							"path": ["clinic-join-requests", "{{clinic_join_request_id}}", "approve"]
+						}
+					}
+				},
+				{
+					"name": "Reject Join Request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Request rejected successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success', true);",
+									"    pm.expect(jsonData.data.status).to.equal('rejected');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"review_notes\": \"Profil ne correspond pas aux besoins actuels de la clinique.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/clinic-join-requests/{{clinic_join_request_id}}/reject",
+							"host": ["{{base_url}}"],
+							"path": ["clinic-join-requests", "{{clinic_join_request_id}}", "reject"]
+						}
+					}
+				},
+				{
+					"name": "Cancel Join Request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Request cancelled successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success', true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/clinic-join-requests/{{clinic_join_request_id}}/cancel",
+							"host": ["{{base_url}}"],
+							"path": ["clinic-join-requests", "{{clinic_join_request_id}}", "cancel"]
+						}
+					}
+				},
+				{
+					"name": "Get Pending Requests",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has pending requests data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success', true);",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData).to.have.property('count');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/clinic-join-requests/pending/mine",
+							"host": ["{{base_url}}"],
+							"path": ["clinic-join-requests", "pending", "mine"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Filtering & Search",
+			"item": [
+				{
+					"name": "Filter by Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"All requests have pending status\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data.length > 0) {",
+									"        jsonData.data.forEach(function(request) {",
+									"            pm.expect(request.status).to.equal('pending');",
+									"        });",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/clinic-join-requests?status=pending",
+							"host": ["{{base_url}}"],
+							"path": ["clinic-join-requests"],
+							"query": [
+								{
+									"key": "status",
+									"value": "pending"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Filter by Clinic",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/clinic-join-requests?clinic_id={{clinic_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["clinic-join-requests"],
+							"query": [
+								{
+									"key": "clinic_id",
+									"value": "{{clinic_id}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Recent Requests",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/clinic-join-requests?recent_days=7",
+							"host": ["{{base_url}}"],
+							"path": ["clinic-join-requests"],
+							"query": [
+								{
+									"key": "recent_days",
+									"value": "7"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Error Handling",
+			"item": [
+				{
+					"name": "Create Request - Missing Required Fields",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 422\", function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test(\"Response has validation errors\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success', false);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"Test sans champs obligatoires\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/clinic-join-requests",
+							"host": ["{{base_url}}"],
+							"path": ["clinic-join-requests"]
+						}
+					}
+				},
+				{
+					"name": "Get Non-existent Request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"pm.test(\"Response has error message\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success', false);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/clinic-join-requests/00000000-0000-0000-0000-000000000000",
+							"host": ["{{base_url}}"],
+							"path": ["clinic-join-requests", "00000000-0000-0000-0000-000000000000"]
+						}
+					}
+				},
+				{
+					"name": "Unauthorized Access",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/clinic-join-requests",
+							"host": ["{{base_url}}"],
+							"path": ["clinic-join-requests"]
+						}
+					}
+				}
+			]
+		}
+	]
+}

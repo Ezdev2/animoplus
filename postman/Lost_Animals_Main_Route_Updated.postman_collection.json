@@ -1,0 +1,319 @@
+{
+	"info": {
+		"_postman_id": "lost-animals-main-updated",
+		"name": "AnimoPlus - Lost Animals Route Principale (Mise à jour)",
+		"description": "Tests pour la route principale /api/lost-animals mise à jour pour inclure toutes les annonces",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{jwt_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "{{base_url}}"
+		}
+	],
+	"item": [
+		{
+			"name": "📋 Route Principale Mise à Jour",
+			"item": [
+				{
+					"name": "Toutes les annonces (sans filtre)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response contains all statuses', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    ",
+									"    // Vérifier qu'on a des annonces de différents statuts",
+									"    if (jsonData.data.data.length > 0) {",
+									"        const statuses = jsonData.data.data.map(post => post.status);",
+									"        const uniqueStatuses = [...new Set(statuses)];",
+									"        console.log('✅ Statuts trouvés:', uniqueStatuses);",
+									"        console.log('✅ Total annonces:', jsonData.data.total);",
+									"    }",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/lost-animals?per_page=20",
+							"host": ["{{base_url}}"],
+							"path": ["api", "lost-animals"],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "20"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Filtrer par statut - Pending",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('All posts have pending status', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    ",
+									"    if (jsonData.data.data.length > 0) {",
+									"        jsonData.data.data.forEach(post => {",
+									"            pm.expect(post.status).to.eql('pending');",
+									"        });",
+									"        console.log('✅ Annonces pending:', jsonData.data.total);",
+									"    } else {",
+									"        console.log('ℹ️ Aucune annonce pending trouvée');",
+									"    }",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/lost-animals?status=pending&per_page=10",
+							"host": ["{{base_url}}"],
+							"path": ["api", "lost-animals"],
+							"query": [
+								{
+									"key": "status",
+									"value": "pending"
+								},
+								{
+									"key": "per_page",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Filtrer par statut - Approved",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('All posts have approved status', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    ",
+									"    if (jsonData.data.data.length > 0) {",
+									"        jsonData.data.data.forEach(post => {",
+									"            pm.expect(post.status).to.eql('approved');",
+									"        });",
+									"        console.log('✅ Annonces approved:', jsonData.data.total);",
+									"    } else {",
+									"        console.log('ℹ️ Aucune annonce approved trouvée');",
+									"    }",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/lost-animals?status=approved&per_page=10",
+							"host": ["{{base_url}}"],
+							"path": ["api", "lost-animals"],
+							"query": [
+								{
+									"key": "status",
+									"value": "approved"
+								},
+								{
+									"key": "per_page",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Filtrer par statut - Rejected",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/lost-animals?status=rejected&per_page=10",
+							"host": ["{{base_url}}"],
+							"path": ["api", "lost-animals"],
+							"query": [
+								{
+									"key": "status",
+									"value": "rejected"
+								},
+								{
+									"key": "per_page",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Filtrer par statut - Resolved",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/lost-animals?status=resolved&per_page=10",
+							"host": ["{{base_url}}"],
+							"path": ["api", "lost-animals"],
+							"query": [
+								{
+									"key": "status",
+									"value": "resolved"
+								},
+								{
+									"key": "per_page",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Combinaison de filtres",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Filters applied correctly', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    ",
+									"    if (jsonData.data.data.length > 0) {",
+									"        jsonData.data.data.forEach(post => {",
+									"            pm.expect(post.status).to.eql('approved');",
+									"            pm.expect(post.type).to.eql('lost');",
+									"            pm.expect(post.animal_type).to.eql('chien');",
+									"        });",
+									"        console.log('✅ Filtres combinés appliqués:', jsonData.data.total, 'résultats');",
+									"    } else {",
+									"        console.log('ℹ️ Aucun résultat pour cette combinaison de filtres');",
+									"    }",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/lost-animals?status=approved&type=lost&animal_type=chien&per_page=5",
+							"host": ["{{base_url}}"],
+							"path": ["api", "lost-animals"],
+							"query": [
+								{
+									"key": "status",
+									"value": "approved"
+								},
+								{
+									"key": "type",
+									"value": "lost"
+								},
+								{
+									"key": "animal_type",
+									"value": "chien"
+								},
+								{
+									"key": "per_page",
+									"value": "5"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "🔍 Comparaison avec Routes Dédiées",
+			"item": [
+				{
+					"name": "Route principale vs Route dédiée approved",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Ce test compare les résultats de la route principale avec filtre",
+									"// vs la route dédiée pour s'assurer qu'elles donnent les mêmes résultats",
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Results should match dedicated route', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    console.log('✅ Route principale avec status=approved:', jsonData.data.total, 'résultats');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/lost-animals?status=approved&per_page=10",
+							"host": ["{{base_url}}"],
+							"path": ["api", "lost-animals"],
+							"query": [
+								{
+									"key": "status",
+									"value": "approved"
+								},
+								{
+									"key": "per_page",
+									"value": "10"
+								}
+							]
+						}
+					}
+				}
+			]
+		}
+	]
+}

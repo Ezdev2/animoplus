@@ -1,0 +1,932 @@
+{
+	"info": {
+		"_postman_id": "appointments-collection-uuid",
+		"name": "AnimoPlus - Appointments API",
+		"description": "Collection complète pour tester les endpoints de gestion des rendez-vous vétérinaires",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "animoplus-appointments"
+	},
+	"item": [
+		{
+			"name": "Appointments Management",
+			"item": [
+				{
+					"name": "Get All Appointments",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success property', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});",
+									"",
+									"pm.test('Response has data with pagination', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('current_page');",
+									"    pm.expect(jsonData.data).to.have.property('data');",
+									"    console.log('✅ Appointments retrieved:', jsonData.data.total);",
+									"});",
+									"",
+									"// Store first appointment ID for other tests",
+									"const jsonData = pm.response.json();",
+									"if (jsonData.data.data.length > 0) {",
+									"    pm.environment.set('appointment_id', jsonData.data.data[0].id);",
+									"    console.log('📝 Stored appointment ID:', jsonData.data.data[0].id);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/appointments?per_page=10",
+							"host": ["{{base_url}}"],
+							"path": ["api", "appointments"],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Appointments with Filters",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Filtered results returned', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    console.log('✅ Filtered appointments:', jsonData.data.total);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/appointments?status=pending&with_relations=true&date={{current_date}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "appointments"],
+							"query": [
+								{
+									"key": "status",
+									"value": "pending"
+								},
+								{
+									"key": "with_relations",
+									"value": "true"
+								},
+								{
+									"key": "date",
+									"value": "{{current_date}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Appointment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('Appointment created successfully', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('id');",
+									"    pm.expect(jsonData.data).to.have.property('status');",
+									"    ",
+									"    // Store created appointment ID",
+									"    pm.environment.set('created_appointment_id', jsonData.data.id);",
+									"    console.log('✅ Appointment created with ID:', jsonData.data.id);",
+									"    console.log('📝 Status:', jsonData.data.status);",
+									"});",
+									"",
+									"pm.test('Appointment has correct properties', function () {",
+									"    const jsonData = pm.response.json();",
+									"    const appointment = jsonData.data;",
+									"    pm.expect(appointment.status).to.eql('pending');",
+									"    pm.expect(appointment).to.have.property('confirmation_token');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"service_id\": \"{{service_id}}\",\n  \"animal_id\": \"{{animal_id}}\",\n  \"date\": \"{{future_date}}\",\n  \"start_time\": \"10:00:00\",\n  \"end_time\": \"10:30:00\",\n  \"message\": \"Rendez-vous de contrôle pour {{$randomFirstName}}\",\n  \"status\": \"pending\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/appointments",
+							"host": ["{{base_url}}"],
+							"path": ["api", "appointments"]
+						}
+					}
+				},
+				{
+					"name": "Get Appointment by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Appointment retrieved successfully', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('id');",
+									"    console.log('✅ Appointment retrieved:', jsonData.data.id);",
+									"});",
+									"",
+									"pm.test('Appointment has all required fields', function () {",
+									"    const jsonData = pm.response.json();",
+									"    const appointment = jsonData.data;",
+									"    pm.expect(appointment).to.have.property('date');",
+									"    pm.expect(appointment).to.have.property('start_time');",
+									"    pm.expect(appointment).to.have.property('end_time');",
+									"    pm.expect(appointment).to.have.property('status');",
+									"    pm.expect(appointment).to.have.property('confirmation_token');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/appointments/{{appointment_id}}?with_relations=true",
+							"host": ["{{base_url}}"],
+							"path": ["api", "appointments", "{{appointment_id}}"],
+							"query": [
+								{
+									"key": "with_relations",
+									"value": "true"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Appointment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Appointment updated successfully', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    console.log('✅ Appointment updated:', jsonData.data.id);",
+									"});",
+									"",
+									"pm.test('Appointment has updated values', function () {",
+									"    const jsonData = pm.response.json();",
+									"    const appointment = jsonData.data;",
+									"    pm.expect(appointment.message).to.include('Updated');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"message\": \"Updated appointment message - {{$randomLoremSentence}}\",\n  \"start_time\": \"11:00:00\",\n  \"end_time\": \"11:30:00\",\n  \"status\": \"confirmed\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/appointments/{{created_appointment_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "appointments", "{{created_appointment_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Delete Appointment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Appointment deleted successfully', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    console.log('✅ Appointment deleted successfully');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/appointments/{{created_appointment_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "appointments", "{{created_appointment_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Restore Appointment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Appointment restored successfully', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    console.log('✅ Appointment restored:', jsonData.data.id);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/appointments/{{created_appointment_id}}/restore",
+							"host": ["{{base_url}}"],
+							"path": ["api", "appointments", "{{created_appointment_id}}", "restore"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Appointment Status Management",
+			"item": [
+				{
+					"name": "Get Pending Appointments",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Only pending appointments returned', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    if (jsonData.data.data.length > 0) {",
+									"        jsonData.data.data.forEach(appointment => {",
+									"            pm.expect(appointment.status).to.eql('pending');",
+									"        });",
+									"    }",
+									"    console.log('✅ Pending appointments:', jsonData.data.total);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/appointments?status=pending",
+							"host": ["{{base_url}}"],
+							"path": ["api", "appointments"],
+							"query": [
+								{
+									"key": "status",
+									"value": "pending"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Confirmed Appointments",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Only confirmed appointments returned', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    if (jsonData.data.data.length > 0) {",
+									"        jsonData.data.data.forEach(appointment => {",
+									"            pm.expect(appointment.status).to.eql('confirmed');",
+									"        });",
+									"    }",
+									"    console.log('✅ Confirmed appointments:', jsonData.data.total);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/appointments?status=confirmed",
+							"host": ["{{base_url}}"],
+							"path": ["api", "appointments"],
+							"query": [
+								{
+									"key": "status",
+									"value": "confirmed"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Appointments by Date",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Appointments for specific date returned', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    console.log('✅ Appointments for date:', jsonData.data.total);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/appointments?date={{current_date}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "appointments"],
+							"query": [
+								{
+									"key": "date",
+									"value": "{{current_date}}"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Validation Tests",
+			"item": [
+				{
+					"name": "Create Appointment - Missing Required Fields",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 422', function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test('Validation error for missing fields', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.false;",
+									"    pm.expect(jsonData).to.have.property('errors');",
+									"    console.log('✅ Validation working: required fields');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"message\": \"Rendez-vous sans champs requis\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/appointments",
+							"host": ["{{base_url}}"],
+							"path": ["api", "appointments"]
+						}
+					}
+				},
+				{
+					"name": "Create Appointment - Invalid Date Format",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 422', function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test('Validation error for invalid date', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.false;",
+									"    pm.expect(jsonData).to.have.property('errors');",
+									"    console.log('✅ Validation working: invalid date format');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"service_id\": \"{{service_id}}\",\n  \"animal_id\": \"{{animal_id}}\",\n  \"date\": \"invalid-date-format\",\n  \"start_time\": \"10:00:00\",\n  \"end_time\": \"10:30:00\",\n  \"message\": \"Test avec date invalide\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/appointments",
+							"host": ["{{base_url}}"],
+							"path": ["api", "appointments"]
+						}
+					}
+				},
+				{
+					"name": "Create Appointment - Invalid Time Format",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 422', function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test('Validation error for invalid time', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.false;",
+									"    pm.expect(jsonData).to.have.property('errors');",
+									"    console.log('✅ Validation working: invalid time format');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"service_id\": \"{{service_id}}\",\n  \"animal_id\": \"{{animal_id}}\",\n  \"date\": \"{{future_date}}\",\n  \"start_time\": \"25:00:00\",\n  \"end_time\": \"26:00:00\",\n  \"message\": \"Test avec heure invalide\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/appointments",
+							"host": ["{{base_url}}"],
+							"path": ["api", "appointments"]
+						}
+					}
+				},
+				{
+					"name": "Get Appointment - Invalid ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 422 or 404', function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([422, 404]);",
+									"});",
+									"",
+									"pm.test('Error response for invalid UUID', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.false;",
+									"    console.log('✅ Validation working: invalid UUID format');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/appointments/invalid-uuid-format",
+							"host": ["{{base_url}}"],
+							"path": ["api", "appointments", "invalid-uuid-format"]
+						}
+					}
+				},
+				{
+					"name": "Get Appointment - Not Found",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 404', function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"pm.test('Appointment not found error', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.false;",
+									"    pm.expect(jsonData.message).to.include('not found');",
+									"    console.log('✅ 404 handling working correctly');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/appointments/550e8400-e29b-41d4-a716-446655440000",
+							"host": ["{{base_url}}"],
+							"path": ["api", "appointments", "550e8400-e29b-41d4-a716-446655440000"]
+						}
+					}
+				},
+				{
+					"name": "Get My Appointments",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success property', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});",
+									"",
+									"pm.test('Response has data property', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"});",
+									"",
+									"pm.test('Data has pagination structure', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('current_page');",
+									"    pm.expect(jsonData.data).to.have.property('last_page');",
+									"    pm.expect(jsonData.data).to.have.property('per_page');",
+									"    pm.expect(jsonData.data).to.have.property('total');",
+									"    console.log('✅ My appointments retrieved:', jsonData.data.total);",
+									"});",
+									"",
+									"pm.test('All appointments belong to authenticated user', function () {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.data.data.length > 0) {",
+									"        // Tous les appointments doivent appartenir à l'utilisateur connecté",
+									"        jsonData.data.data.forEach(appointment => {",
+									"            pm.expect(appointment).to.have.property('user_id');",
+									"            console.log('✅ Appointment belongs to user:', appointment.user_id);",
+									"        });",
+									"    }",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/appointments/my-appointments",
+							"host": ["{{base_url}}"],
+							"path": ["api", "appointments", "my-appointments"]
+						}
+					}
+				},
+				{
+					"name": "Get My Appointments with Filters",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success property', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});",
+									"",
+									"pm.test('Filtered appointments have correct status', function () {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.data.data.length > 0) {",
+									"        jsonData.data.data.forEach(appointment => {",
+									"            pm.expect(appointment.status).to.eql('pending');",
+									"        });",
+									"        console.log('✅ All appointments have pending status');",
+									"    } else {",
+									"        console.log('ℹ️ No pending appointments found');",
+									"    }",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/appointments/my-appointments?status=pending&per_page=10",
+							"host": ["{{base_url}}"],
+							"path": ["api", "appointments", "my-appointments"],
+							"query": [
+								{
+									"key": "status",
+									"value": "pending"
+								},
+								{
+									"key": "per_page",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get My Appointments - Unauthorized",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 401', function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test('Response has error message', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.false;",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"    console.log('✅ Unauthorized access properly blocked');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/appointments/my-appointments",
+							"host": ["{{base_url}}"],
+							"path": ["api", "appointments", "my-appointments"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{access_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Set current date",
+					"const today = new Date();",
+					"const currentDate = today.toISOString().split('T')[0];",
+					"pm.environment.set('current_date', currentDate);",
+					"",
+					"// Set future date (tomorrow)",
+					"const tomorrow = new Date(today);",
+					"tomorrow.setDate(tomorrow.getDate() + 1);",
+					"const futureDate = tomorrow.toISOString().split('T')[0];",
+					"pm.environment.set('future_date', futureDate);",
+					"",
+					"console.log('📅 Current date set to:', currentDate);",
+					"console.log('📅 Future date set to:', futureDate);"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		}
+	]
+}

@@ -1,0 +1,901 @@
+{
+	"info": {
+		"_postman_id": "availability-schedule-collection",
+		"name": "Availability Schedules API",
+		"description": "Collection for testing Availability Schedules API endpoints in AnimoPlus platform",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    if (response.success && response.data && response.data.token) {",
+									"        pm.environment.set('auth_token', response.data.token);",
+									"        pm.test('Token saved to environment', function () {",
+									"            pm.expect(pm.environment.get('auth_token')).to.not.be.undefined;",
+									"        });",
+									"    }",
+									"}",
+									"",
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success property', function () {",
+									"    pm.expect(pm.response.json()).to.have.property('success');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"{{test_email}}\",\n    \"password\": \"{{test_password}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Availability Schedules",
+			"item": [
+				{
+					"name": "List Availability Schedules",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response is JSON', function () {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test('Response has success property', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', true);",
+									"});",
+									"",
+									"pm.test('Response has data array', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('data');",
+									"    pm.expect(response.data).to.be.an('array');",
+									"});",
+									"",
+									"pm.test('Response has pagination', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('pagination');",
+									"    pm.expect(response.pagination).to.have.property('current_page');",
+									"    pm.expect(response.pagination).to.have.property('total');",
+									"});",
+									"",
+									"if (pm.response.json().data.length > 0) {",
+									"    const schedule = pm.response.json().data[0];",
+									"    pm.environment.set('schedule_id', schedule.id);",
+									"    ",
+									"    pm.test('Schedule has required properties', function () {",
+									"        pm.expect(schedule).to.have.property('id');",
+									"        pm.expect(schedule).to.have.property('user_id');",
+									"        pm.expect(schedule).to.have.property('start_time');",
+									"        pm.expect(schedule).to.have.property('end_time');",
+									"        pm.expect(schedule).to.have.property('is_available');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/availability-schedules?per_page=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"availability-schedules"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Availability Schedule - Recurring",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('Response has success property', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', true);",
+									"});",
+									"",
+									"pm.test('Response has created schedule data', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('data');",
+									"    pm.expect(response.data).to.have.property('id');",
+									"    pm.expect(response.data).to.have.property('day_of_week', 'monday');",
+									"    pm.expect(response.data).to.have.property('is_recurring', true);",
+									"});",
+									"",
+									"if (pm.response.code === 201) {",
+									"    const schedule = pm.response.json().data;",
+									"    pm.environment.set('created_schedule_id', schedule.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"day_of_week\": \"monday\",\n    \"start_time\": \"09:00\",\n    \"end_time\": \"12:00\",\n    \"is_available\": true,\n    \"is_recurring\": true,\n    \"notes\": \"Disponibilité matinale du lundi\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/availability-schedules",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"availability-schedules"
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Availability Schedule - Specific Date",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('Response has success property', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', true);",
+									"});",
+									"",
+									"pm.test('Response has created schedule data', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('data');",
+									"    pm.expect(response.data).to.have.property('id');",
+									"    pm.expect(response.data).to.have.property('specific_date');",
+									"    pm.expect(response.data).to.have.property('is_recurring', false);",
+									"});",
+									"",
+									"if (pm.response.code === 201) {",
+									"    const schedule = pm.response.json().data;",
+									"    pm.environment.set('specific_schedule_id', schedule.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"specific_date\": \"2024-12-25\",\n    \"start_time\": \"10:00\",\n    \"end_time\": \"16:00\",\n    \"is_available\": false,\n    \"is_recurring\": false,\n    \"notes\": \"Congé de Noël - Indisponible\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/availability-schedules",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"availability-schedules"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Specific Availability Schedule",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success property', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', true);",
+									"});",
+									"",
+									"pm.test('Response has schedule data', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('data');",
+									"    pm.expect(response.data).to.have.property('id');",
+									"});",
+									"",
+									"pm.test('Schedule has user relation', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.data).to.have.property('user');",
+									"    pm.expect(response.data.user).to.have.property('name');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/availability-schedules/{{created_schedule_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"availability-schedules",
+								"{{created_schedule_id}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Availability Schedule",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success property', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', true);",
+									"});",
+									"",
+									"pm.test('Schedule was updated', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.data).to.have.property('end_time');",
+									"    pm.expect(response.data.notes).to.include('Mis à jour');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"day_of_week\": \"monday\",\n    \"start_time\": \"09:00\",\n    \"end_time\": \"13:00\",\n    \"is_available\": true,\n    \"is_recurring\": true,\n    \"notes\": \"Disponibilité matinale du lundi - Mis à jour\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/availability-schedules/{{created_schedule_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"availability-schedules",
+								"{{created_schedule_id}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Check User Availability",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success property', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', true);",
+									"});",
+									"",
+									"pm.test('Response has availability data', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('data');",
+									"    pm.expect(response.data).to.have.property('is_available');",
+									"    pm.expect(response.data).to.have.property('user_id');",
+									"    pm.expect(response.data).to.have.property('date');",
+									"    pm.expect(response.data).to.have.property('time_range');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user_id\": \"{{test_user_id}}\",\n    \"date\": \"2024-12-23\",\n    \"start_time\": \"10:00\",\n    \"end_time\": \"11:00\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/availability-schedules/check-availability",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"availability-schedules",
+								"check-availability"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Available Slots",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success property', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', true);",
+									"});",
+									"",
+									"pm.test('Response has slots data', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('data');",
+									"    pm.expect(response.data).to.have.property('available_slots');",
+									"    pm.expect(response.data.available_slots).to.be.an('array');",
+									"});",
+									"",
+									"if (pm.response.json().data.available_slots.length > 0) {",
+									"    pm.test('Slots have required properties', function () {",
+									"        const slot = pm.response.json().data.available_slots[0];",
+									"        pm.expect(slot).to.have.property('id');",
+									"        pm.expect(slot).to.have.property('start_time');",
+									"        pm.expect(slot).to.have.property('end_time');",
+									"        pm.expect(slot).to.have.property('duration_minutes');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/availability-schedules/available-slots?user_id={{test_user_id}}&date=2024-12-23",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"availability-schedules",
+								"available-slots"
+							],
+							"query": [
+								{
+									"key": "user_id",
+									"value": "{{test_user_id}}"
+								},
+								{
+									"key": "date",
+									"value": "2024-12-23"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Filter by Day of Week",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('All schedules are for Monday', function () {",
+									"    const response = pm.response.json();",
+									"    if (response.data.length > 0) {",
+									"        response.data.forEach(schedule => {",
+									"            if (schedule.day_of_week) {",
+									"                pm.expect(schedule.day_of_week).to.equal('monday');",
+									"            }",
+									"        });",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/availability-schedules?day_of_week=monday",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"availability-schedules"
+							],
+							"query": [
+								{
+									"key": "day_of_week",
+									"value": "monday"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Filter Available Only",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('All schedules are available', function () {",
+									"    const response = pm.response.json();",
+									"    if (response.data.length > 0) {",
+									"        response.data.forEach(schedule => {",
+									"            pm.expect(schedule.is_available).to.be.true;",
+									"        });",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/availability-schedules?is_available=true",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"availability-schedules"
+							],
+							"query": [
+								{
+									"key": "is_available",
+									"value": "true"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Delete Availability Schedule",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success property', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', true);",
+									"});",
+									"",
+									"pm.test('Success message is correct', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.include('supprimé');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/availability-schedules/{{created_schedule_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"availability-schedules",
+								"{{created_schedule_id}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Restore Availability Schedule",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success property', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', true);",
+									"});",
+									"",
+									"pm.test('Schedule was restored', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('data');",
+									"    pm.expect(response.data).to.have.property('id');",
+									"});",
+									"",
+									"pm.test('Success message is correct', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.include('restauré');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/availability-schedules/{{created_schedule_id}}/restore",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"availability-schedules",
+								"{{created_schedule_id}}",
+								"restore"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Error Handling",
+			"item": [
+				{
+					"name": "Create Schedule - Validation Error",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 422', function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test('Response has error information', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', false);",
+									"    pm.expect(response).to.have.property('message');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"start_time\": \"17:00\",\n    \"end_time\": \"09:00\",\n    \"is_available\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/availability-schedules",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"availability-schedules"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Non-existent Schedule",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 404', function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"pm.test('Response has error information', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', false);",
+									"    pm.expect(response.message).to.include('non trouvé');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/availability-schedules/00000000-0000-0000-0000-000000000000",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"availability-schedules",
+								"00000000-0000-0000-0000-000000000000"
+							]
+						}
+					}
+				},
+				{
+					"name": "Unauthorized Access",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 401', function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test('Response indicates unauthorized', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', false);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/availability-schedules",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"availability-schedules"
+							]
+						}
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Set default environment variables if not set",
+					"if (!pm.environment.get('base_url')) {",
+					"    pm.environment.set('base_url', 'http://localhost:8000');",
+					"}",
+					"",
+					"if (!pm.environment.get('test_email')) {",
+					"    pm.environment.set('test_email', 'veterinarian@example.com');",
+					"}",
+					"",
+					"if (!pm.environment.get('test_password')) {",
+					"    pm.environment.set('test_password', 'password123');",
+					"}",
+					"",
+					"// Generate test user ID if not set",
+					"if (!pm.environment.get('test_user_id')) {",
+					"    pm.environment.set('test_user_id', '550e8400-e29b-41d4-a716-446655440000');",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test to check response time",
+					"pm.test('Response time is less than 5000ms', function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+					"});",
+					"",
+					"// Global test for content type",
+					"if (pm.response.headers.get('Content-Type')) {",
+					"    pm.test('Content-Type is application/json', function () {",
+					"        pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+					"    });",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "test_email",
+			"value": "veterinarian@example.com",
+			"type": "string"
+		},
+		{
+			"key": "test_password",
+			"value": "password123",
+			"type": "string"
+		}
+	]
+}

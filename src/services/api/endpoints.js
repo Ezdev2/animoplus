@@ -294,3 +294,57 @@ export const buildQueryString = (params) => {
   
   return searchParams.toString()
 }
+
+// === COMPTABILITÉ ===
+export const COMPTA_ENDPOINTS = {
+  // Statistiques financières
+  STATS: '/compta/stats',
+  
+  // Statistiques multiples (année, mois, semaine)
+  MULTI_STATS: '/compta/multi-stats',
+  
+  // Tendances et évolutions
+  TRENDS: '/compta/trends',
+  
+  // Comparaisons périodiques
+  COMPARISON: '/compta/comparison',
+  
+  // Rapports financiers
+  REPORTS: '/compta/reports',
+  
+  // Analyses détaillées
+  ANALYSIS: '/compta/analysis',
+  
+  // Prévisions
+  FORECASTS: '/compta/forecasts'
+}
+
+// === REVENUS ===
+export const REVENUE_ENDPOINTS = {
+  // CRUD de base
+  LIST: '/revenues',
+  CREATE: '/revenues',
+  DETAIL: (id) => `/revenues/${id}`,
+  UPDATE: (id) => `/revenues/${id}`,
+  DELETE: (id) => `/revenues/${id}`,
+  
+  // Statistiques revenus
+  STATS: '/revenues/stats',
+  
+  // Catégories de revenus
+  CATEGORIES: '/revenues/categories',
+  
+  // Recherche et filtres
+  SEARCH: '/revenues/search',
+  
+  // Validation et approbation
+  VALIDATE: (id) => `/revenues/${id}/validate`,
+  APPROVE: (id) => `/revenues/${id}/approve`,
+  REJECT: (id) => `/revenues/${id}/reject`,
+  
+  // Rapports revenus
+  REPORTS: '/revenues/reports',
+  
+  // Export données
+  EXPORT: '/revenues/export'
+}

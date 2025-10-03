@@ -1,0 +1,676 @@
+{
+	"info": {
+		"_postman_id": "specialized-services-collection",
+		"name": "SpecializedServices API Collection",
+		"description": "Complete API collection for SpecializedServices CRUD operations with authentication and validation tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{jwt_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"exec": [
+					"// Set base URL if not already set",
+					"if (!pm.environment.get('base_url')) {",
+					"    pm.environment.set('base_url', 'http://localhost:8000');",
+					"}"
+				],
+				"type": "text/javascript"
+			}
+		}
+	],
+	"item": [
+		{
+			"name": "Get All Specialized Services",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('Response has success property', function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson).to.have.property('success', true);",
+							"});",
+							"",
+							"pm.test('Response has data property', function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson).to.have.property('data');",
+							"});",
+							"",
+							"pm.test('Data contains pagination info', function () {",
+							"    const responseJson = pm.response.json();",
+							"    if (responseJson.data.data) {",
+							"        pm.expect(responseJson.data).to.have.property('current_page');",
+							"        pm.expect(responseJson.data).to.have.property('last_page');",
+							"        pm.expect(responseJson.data).to.have.property('per_page');",
+							"        pm.expect(responseJson.data).to.have.property('total');",
+							"    }",
+							"});",
+							"",
+							"// Store first specialized service ID for other tests",
+							"const responseJson = pm.response.json();",
+							"if (responseJson.success && responseJson.data.data && responseJson.data.data.length > 0) {",
+							"    pm.environment.set('specialized_service_id', responseJson.data.data[0].id);",
+							"    pm.environment.set('service_id', responseJson.data.data[0].service_id);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/specialized-services?per_page=10&active=true",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"specialized-services"
+					],
+					"query": [
+						{
+							"key": "per_page",
+							"value": "10"
+						},
+						{
+							"key": "active",
+							"value": "true"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Specialized Services by Service ID",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('All results belong to specified service', function () {",
+							"    const responseJson = pm.response.json();",
+							"    const serviceId = pm.environment.get('service_id');",
+							"    if (responseJson.success && responseJson.data.data) {",
+							"        responseJson.data.data.forEach(function(item) {",
+							"            pm.expect(item.service_id).to.eql(serviceId);",
+							"        });",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/specialized-services?service_id={{service_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"specialized-services"
+					],
+					"query": [
+						{
+							"key": "service_id",
+							"value": "{{service_id}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Filter by Weight Range",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('Response contains weight-appropriate variants', function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson).to.have.property('success', true);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/specialized-services?weight=2.5",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"specialized-services"
+					],
+					"query": [
+						{
+							"key": "weight",
+							"value": "2.5"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Search Specialized Services",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('Search results contain search term', function () {",
+							"    const responseJson = pm.response.json();",
+							"    if (responseJson.success && responseJson.data.data && responseJson.data.data.length > 0) {",
+							"        const searchTerm = 'chat';",
+							"        responseJson.data.data.forEach(function(item) {",
+							"            const nameMatch = item.name.toLowerCase().includes(searchTerm);",
+							"            const descMatch = item.description && item.description.toLowerCase().includes(searchTerm);",
+							"            pm.expect(nameMatch || descMatch).to.be.true;",
+							"        });",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/specialized-services?search=chat",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"specialized-services"
+					],
+					"query": [
+						{
+							"key": "search",
+							"value": "chat"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Specialized Service",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 201', function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test('Response has success property', function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson).to.have.property('success', true);",
+							"});",
+							"",
+							"pm.test('Response contains created specialized service data', function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson).to.have.property('data');",
+							"    pm.expect(responseJson.data).to.have.property('id');",
+							"    pm.expect(responseJson.data).to.have.property('name');",
+							"    pm.expect(responseJson.data).to.have.property('price');",
+							"});",
+							"",
+							"// Store created specialized service ID for other tests",
+							"const responseJson = pm.response.json();",
+							"if (responseJson.success && responseJson.data) {",
+							"    pm.environment.set('created_specialized_service_id', responseJson.data.id);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"service_id\": \"{{service_id}}\",\n    \"name\": \"Test Specialized Service - Small\",\n    \"description\": \"Test specialized service for small animals\",\n    \"price\": 89.99,\n    \"duration\": 30,\n    \"size\": \"small\",\n    \"min_weight\": 0.5,\n    \"max_weight\": 2.0,\n    \"min_height\": 10.0,\n    \"max_height\": 25.0,\n    \"is_active\": true\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/specialized-services",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"specialized-services"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Specialized Service - Validation Error",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 422', function () {",
+							"    pm.response.to.have.status(422);",
+							"});",
+							"",
+							"pm.test('Response has validation errors', function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson).to.have.property('success', false);",
+							"    pm.expect(responseJson).to.have.property('errors');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"service_id\": \"invalid-uuid\",\n    \"name\": \"\",\n    \"price\": -10,\n    \"duration\": 0,\n    \"max_weight\": 1.0,\n    \"min_weight\": 2.0\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/specialized-services",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"specialized-services"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Specific Specialized Service",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('Response contains specialized service data', function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson).to.have.property('success', true);",
+							"    pm.expect(responseJson).to.have.property('data');",
+							"    pm.expect(responseJson.data).to.have.property('id');",
+							"    pm.expect(responseJson.data).to.have.property('service');",
+							"});",
+							"",
+							"pm.test('Specialized service ID matches requested ID', function () {",
+							"    const responseJson = pm.response.json();",
+							"    const requestedId = pm.environment.get('specialized_service_id');",
+							"    pm.expect(responseJson.data.id).to.eql(requestedId);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/specialized-services/{{specialized_service_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"specialized-services",
+						"{{specialized_service_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Specialized Service",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('Response has success property', function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson).to.have.property('success', true);",
+							"});",
+							"",
+							"pm.test('Updated data is returned', function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson).to.have.property('data');",
+							"    pm.expect(responseJson.data.name).to.include('Updated');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"service_id\": \"{{service_id}}\",\n    \"name\": \"Updated Test Specialized Service\",\n    \"description\": \"Updated description for test specialized service\",\n    \"price\": 99.99,\n    \"duration\": 45,\n    \"size\": \"medium\",\n    \"min_weight\": 2.0,\n    \"max_weight\": 5.0,\n    \"is_active\": true\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/specialized-services/{{created_specialized_service_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"specialized-services",
+						"{{created_specialized_service_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Specialized Service - Not Found",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 404', function () {",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"",
+							"pm.test('Response indicates not found', function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson).to.have.property('success', false);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"service_id\": \"{{service_id}}\",\n    \"name\": \"Updated Non-existent Service\",\n    \"price\": 99.99,\n    \"duration\": 45\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/specialized-services/550e8400-e29b-41d4-a716-446655440999",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"specialized-services",
+						"550e8400-e29b-41d4-a716-446655440999"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Specialized Service",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('Response confirms deletion', function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson).to.have.property('success', true);",
+							"    pm.expect(responseJson.message).to.include('supprimé');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/specialized-services/{{created_specialized_service_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"specialized-services",
+						"{{created_specialized_service_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Restore Specialized Service",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('Response confirms restoration', function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson).to.have.property('success', true);",
+							"    pm.expect(responseJson.message).to.include('restauré');",
+							"});",
+							"",
+							"pm.test('Restored data is returned', function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson).to.have.property('data');",
+							"    pm.expect(responseJson.data).to.have.property('id');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/specialized-services/{{created_specialized_service_id}}/restore",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"specialized-services",
+						"{{created_specialized_service_id}}",
+						"restore"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Specialized Service - Not Found",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 404', function () {",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"",
+							"pm.test('Response indicates not found', function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson).to.have.property('success', false);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/specialized-services/550e8400-e29b-41d4-a716-446655440999",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"specialized-services",
+						"550e8400-e29b-41d4-a716-446655440999"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		}
+	]
+}

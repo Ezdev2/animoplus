@@ -1,0 +1,354 @@
+{
+	"info": {
+		"_postman_id": "races-collection-id",
+		"name": "AnimoPlus - Races Management",
+		"description": "Races management endpoints for AnimoPlus API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Races CRUD",
+			"item": [
+				{
+					"name": "Get All Races",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/races?page=1&per_page=10&search=&espece_id=&active_only=true&with_espece=false",
+							"host": ["{{base_url}}"],
+							"path": ["api", "races"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number for pagination"
+								},
+								{
+									"key": "per_page",
+									"value": "10",
+									"description": "Items per page (max 50)"
+								},
+								{
+									"key": "search",
+									"value": "",
+									"description": "Search in name or description"
+								},
+								{
+									"key": "espece_id",
+									"value": "",
+									"description": "Filter by species UUID"
+								},
+								{
+									"key": "active_only",
+									"value": "true",
+									"description": "Filter only active races"
+								},
+								{
+									"key": "with_espece",
+									"value": "false",
+									"description": "Include species information"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Race",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('race_id', response.data.id);",
+									"    console.log('✅ Race created - ID saved: ' + response.data.id);",
+									"} else {",
+									"    console.log('❌ Race creation failed');",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nom\": \"Golden Retriever\",\n  \"espece_id\": \"{{species_id}}\",\n  \"description\": \"Chien de grande taille, doux et intelligent, excellent avec les enfants\",\n  \"image_url\": \"https://example.com/images/golden-retriever.jpg\",\n  \"caracteristiques\": {\n    \"taille_moyenne\": \"56-61 cm\",\n    \"poids_moyen\": \"27-36 kg\",\n    \"esperance_vie\": \"10-12 ans\",\n    \"temperament\": \"Doux, intelligent, fiable\",\n    \"niveau_activite\": \"Élevé\",\n    \"entretien\": \"Modéré à élevé\",\n    \"couleur_pelage\": \"Doré clair à foncé\"\n  },\n  \"is_active\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/races",
+							"host": ["{{base_url}}"],
+							"path": ["api", "races"]
+						}
+					}
+				},
+				{
+					"name": "Get Race by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/races/{{race_id}}?with_espece=true",
+							"host": ["{{base_url}}"],
+							"path": ["api", "races", "{{race_id}}"],
+							"query": [
+								{
+									"key": "with_espece",
+									"value": "true",
+									"description": "Include species information"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Race",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nom\": \"Golden Retriever Anglais\",\n  \"description\": \"Chien de grande taille, doux et intelligent, excellent avec les enfants. Variété anglaise du Golden Retriever.\",\n  \"image_url\": \"https://example.com/images/golden-retriever-english.jpg\",\n  \"caracteristiques\": {\n    \"taille_moyenne\": \"56-61 cm\",\n    \"poids_moyen\": \"27-36 kg\",\n    \"esperance_vie\": \"10-12 ans\",\n    \"temperament\": \"Très doux, intelligent, fiable\",\n    \"niveau_activite\": \"Élevé\",\n    \"entretien\": \"Modéré à élevé\",\n    \"couleur_pelage\": \"Doré clair à foncé\",\n    \"origine\": \"Angleterre\"\n  },\n  \"is_active\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/races/{{race_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "races", "{{race_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Delete Race",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/races/{{race_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "races", "{{race_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Restore Race",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/races/{{race_id}}/restore",
+							"host": ["{{base_url}}"],
+							"path": ["api", "races", "{{race_id}}", "restore"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Test Data Examples",
+			"item": [
+				{
+					"name": "Create Labrador Race",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nom\": \"Labrador Retriever\",\n  \"espece_id\": \"{{species_id}}\",\n  \"description\": \"Chien de taille moyenne à grande, très amical et énergique\",\n  \"image_url\": \"https://example.com/images/labrador.jpg\",\n  \"caracteristiques\": {\n    \"taille_moyenne\": \"54-57 cm\",\n    \"poids_moyen\": \"25-36 kg\",\n    \"esperance_vie\": \"10-14 ans\",\n    \"temperament\": \"Amical, actif, extraverti\",\n    \"niveau_activite\": \"Très élevé\",\n    \"entretien\": \"Modéré\",\n    \"couleur_pelage\": \"Noir, chocolat, jaune\"\n  },\n  \"is_active\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/races",
+							"host": ["{{base_url}}"],
+							"path": ["api", "races"]
+						}
+					}
+				},
+				{
+					"name": "Create Persian Cat Race",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nom\": \"Persan\",\n  \"espece_id\": \"REPLACE_WITH_CAT_SPECIES_ID\",\n  \"description\": \"Chat à poil long avec un visage plat caractéristique\",\n  \"image_url\": \"https://example.com/images/persian-cat.jpg\",\n  \"caracteristiques\": {\n    \"taille_moyenne\": \"25-38 cm\",\n    \"poids_moyen\": \"3.2-5.5 kg\",\n    \"esperance_vie\": \"12-17 ans\",\n    \"temperament\": \"Calme, doux, affectueux\",\n    \"niveau_activite\": \"Faible à modéré\",\n    \"entretien\": \"Très élevé\",\n    \"couleur_pelage\": \"Diverses couleurs\",\n    \"type_pelage\": \"Long et soyeux\"\n  },\n  \"is_active\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/races",
+							"host": ["{{base_url}}"],
+							"path": ["api", "races"]
+						}
+					}
+				},
+				{
+					"name": "Create Canary Bird Race",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nom\": \"Canari\",\n  \"espece_id\": \"REPLACE_WITH_BIRD_SPECIES_ID\",\n  \"description\": \"Petit oiseau chanteur aux couleurs vives\",\n  \"image_url\": \"https://example.com/images/canary.jpg\",\n  \"caracteristiques\": {\n    \"taille_moyenne\": \"12-20 cm\",\n    \"poids_moyen\": \"15-20 g\",\n    \"esperance_vie\": \"10-15 ans\",\n    \"temperament\": \"Actif, chanteur, social\",\n    \"niveau_activite\": \"Élevé\",\n    \"entretien\": \"Modéré\",\n    \"couleur_plumage\": \"Jaune, orange, rouge, blanc\",\n    \"type_chant\": \"Mélodieux\"\n  },\n  \"is_active\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/races",
+							"host": ["{{base_url}}"],
+							"path": ["api", "races"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Validation Tests",
+			"item": [
+				{
+					"name": "Test Duplicate Race Name",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nom\": \"Golden Retriever\",\n  \"espece_id\": \"{{species_id}}\",\n  \"description\": \"This should fail due to duplicate name\",\n  \"is_active\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/races",
+							"host": ["{{base_url}}"],
+							"path": ["api", "races"]
+						}
+					}
+				},
+				{
+					"name": "Test Invalid Species ID",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nom\": \"Test Race\",\n  \"espece_id\": \"invalid-uuid-format\",\n  \"description\": \"This should fail due to invalid UUID\",\n  \"is_active\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/races",
+							"host": ["{{base_url}}"],
+							"path": ["api", "races"]
+						}
+					}
+				},
+				{
+					"name": "Test Missing Required Fields",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"description\": \"Missing nom and espece_id - should fail\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/races",
+							"host": ["{{base_url}}"],
+							"path": ["api", "races"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000"
+		}
+	]
+}
