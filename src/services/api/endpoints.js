@@ -30,7 +30,8 @@ export const API_ENDPOINTS = {
     REVOKE_SESSION: '/user/sessions/revoke', // DELETE - Révoquer session
     REVOKE_ALL_SESSIONS: '/user/sessions/revoke-all', // DELETE - Révoquer toutes
     UPLOAD_AVATAR: '/users/avatar',
-    UPDATE_AVATAR: '/user/avatar' // PUT - Mettre à jour l'avatar avec URL
+    UPDATE_AVATAR: '/user/avatar', // PUT - Mettre à jour l'avatar avec URL
+    UPGRADE_TO_PRO: '/user/upgrade-to-pro' // POST - Passer au compte Pro
   },
 
   // Clients

@@ -32,8 +32,17 @@ onMounted(async () => {
   console.log('📊 App.vue - État initial:', {
     isAuthenticated: isAuthenticated.value,
     user: currentUser.value?.name || 'Aucun',
-    role: role.value
+    role: role.value,
+    userData: currentUser.value
   })
+  
+  // Debugging détaillé
+  console.log('🔍 App.vue - Debugging détaillé:')
+  console.log('  - isAuthenticated:', isAuthenticated.value)
+  console.log('  - currentUser:', currentUser.value)
+  console.log('  - role:', role.value)
+  console.log('  - user_type:', currentUser.value?.user_type)
+  console.log('  - localStorage data:', localStorage.getItem('data'))
   
   setTimeout(() => {
     isOpenBot.value = true
@@ -69,8 +78,8 @@ onMounted(async () => {
     </div>
   </div>
 
-  <!-- Connecté - Vétérinaire -->
-  <div v-else-if="role === 'veterinarian'" class="layout">
+  <!-- Connecté - Vétérinaire (normal ou Pro) -->
+  <div v-else-if="role === 'veterinarian' || role === 'veterinarian_pro'" class="layout">
     <Sidebar role="pro" />
     <div class="main flex flex-col h-screen w-full overflow-hidden px-[24px]">
       <div class="appbar bg-white">
@@ -79,6 +88,18 @@ onMounted(async () => {
       <div class="content flex-1 overflow-y-auto">
         <RouterView />
       </div>
+    </div>
+  </div>
+
+  <!-- Fallback pour rôles non reconnus -->
+  <div v-else-if="isAuthenticated" class="layout">
+    <div class="p-8 bg-red-50 border border-red-200 rounded-lg m-4">
+      <h2 class="text-red-800 font-bold mb-2">⚠️ Rôle utilisateur non reconnu</h2>
+      <p class="text-red-600 mb-4">Rôle détecté: <code class="bg-red-100 px-2 py-1 rounded">{{ role }}</code></p>
+      <p class="text-red-600 mb-4">Utilisateur: <code class="bg-red-100 px-2 py-1 rounded">{{ currentUser?.name }}</code></p>
+      <button @click="auth.logout()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+        Se déconnecter
+      </button>
     </div>
   </div>
 

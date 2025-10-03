@@ -7,26 +7,10 @@
     <input v-model="formData.password" type="password" placeholder="Mot de passe *" class="w-full h-12 px-4 border border-gray-300 rounded" required />
     <input v-model="formData.password_confirmation" type="password" placeholder="Confirmer le mot de passe *" class="w-full h-12 px-4 border border-gray-300 rounded" required />
     
-    <!-- Champs spécifiques vétérinaire -->
-    <input v-model="formData.license_number" placeholder="Numéro de licence vétérinaire *" class="w-full h-12 px-4 border border-gray-300 rounded" required />
-    <input v-model="formData.clinic_name" placeholder="Nom de la clinique *" class="w-full h-12 px-4 border border-gray-300 rounded" required />
-    <textarea v-model="formData.clinic_address" placeholder="Adresse de la clinique *" class="w-full h-20 px-4 py-2 border border-gray-300 rounded resize-none" required></textarea>
-
-    <!-- Acceptations légales -->
+    <!-- Acceptation des règlements -->
     <label class="flex items-center gap-2 text-sm">
-      <input type="checkbox" v-model="formData.cgu" required /> Accepter les CGU *
-    </label>
-    <label class="flex items-center gap-2 text-sm">
-      <input type="checkbox" v-model="formData.cgv" required /> Accepter les CGV *
-    </label>
-    <label class="flex items-center gap-2 text-sm">
-      <input type="checkbox" v-model="formData.mentions" required /> Mentions légales *
-    </label>
-    <label class="flex items-center gap-2 text-sm">
-      <input type="checkbox" v-model="formData.contrat" required /> Accepter les termes du contrat *
-    </label>
-    <label class="flex items-center gap-2 text-sm">
-      <input type="checkbox" v-model="formData.newsletter" /> S'inscrire à la newsletter
+      <input type="checkbox" v-model="formData.acceptTerms" required /> 
+      <span>J'accepte les <a href="#" class="text-primary-600 underline">règlements et conditions d'utilisation</a> *</span>
     </label>
 
     <button class="w-full py-3 px-4 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-500 disabled:opacity-50" 
@@ -66,13 +50,7 @@ const isFormValid = computed(() => {
          props.formData.password && 
          props.formData.password_confirmation && 
          props.formData.password === props.formData.password_confirmation &&
-         props.formData.license_number &&
-         props.formData.clinic_name &&
-         props.formData.clinic_address &&
-         props.formData.cgu &&
-         props.formData.cgv &&
-         props.formData.mentions &&
-         props.formData.contrat
+         props.formData.acceptTerms
 })
 
 async function handleRegister() {
@@ -81,17 +59,14 @@ async function handleRegister() {
   isLoading.value = true
   
   try {
-    // Préparer les données selon l'API
+    // Préparer les données selon l'API (champs requis seulement)
     const registrationData = {
       name: props.formData.name,
       email: props.formData.email,
       password: props.formData.password,
       password_confirmation: props.formData.password_confirmation,
       user_type: 'veterinarian',
-      phone: props.formData.phone,
-      license_number: props.formData.license_number,
-      clinic_name: props.formData.clinic_name,
-      clinic_address: props.formData.clinic_address
+      phone: props.formData.phone
     }
     
     console.log('📝 Inscription vétérinaire - Payload envoyé:', registrationData)
@@ -101,10 +76,7 @@ async function handleRegister() {
       password: !!registrationData.password,
       password_confirmation: !!registrationData.password_confirmation,
       user_type: registrationData.user_type,
-      phone: !!registrationData.phone,
-      license_number: !!registrationData.license_number,
-      clinic_name: !!registrationData.clinic_name,
-      clinic_address: !!registrationData.clinic_address
+      phone: !!registrationData.phone
     })
     
     // Appeler l'API d'inscription via le service

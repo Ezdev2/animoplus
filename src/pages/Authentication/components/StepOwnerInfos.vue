@@ -39,33 +39,15 @@
     <input v-model="formData.password_confirmation" type="password" placeholder="Confirmer le mot de passe *" 
            :class="['w-full h-12 px-4 border rounded', formData.password_confirmation && formData.password === formData.password_confirmation ? 'border-gray-300' : 'border-red-300']" required />
 
-    <!-- Champs optionnels -->
-    <div class="border-t pt-4 mt-2">
-      <p class="text-sm text-gray-600 mb-3">Informations optionnelles :</p>
-      
-      <div class="flex items-center gap-4 mb-3">
-        <span class="text-sm font-medium">Sexe :</span>
-        <label class="flex items-center gap-1">
-          <input type="radio" value="M" v-model="formData.gender" /> Masculin
-        </label>
-        <label class="flex items-center gap-1">
-          <input type="radio" value="F" v-model="formData.gender" /> Féminin
-        </label>
-      </div>
-
-      <input type="date" v-model="formData.birthdate" placeholder="Date de naissance" class="w-full h-12 px-4 border border-gray-300 rounded" />
-    </div>
-
-
-    <!-- CGU -->
+    <!-- Acceptation des règlements -->
     <label :class="['flex items-center gap-2 text-sm', formData.termsAccepted ? 'text-gray-700' : 'text-red-600']">
       <input type="checkbox" v-model="formData.termsAccepted" required />
-      J'accepte les CGU *
+      <span>J'accepte les <a href="#" class="text-primary-600 underline">règlements et conditions d'utilisation</a> *</span>
     </label>
 
     <!-- Message d'aide si formulaire invalide -->
     <div v-if="!isFormValid && !isLoading" class="text-red-600 text-sm bg-red-50 p-3 rounded">
-      ⚠️ Veuillez remplir tous les champs obligatoires et accepter les CGU
+      ⚠️ Veuillez remplir tous les champs obligatoires et accepter les règlements
     </div>
 
     <button class="w-full py-3 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-500 disabled:opacity-50"
@@ -155,7 +137,7 @@ async function handleClientRegistration() {
   isLoading.value = true
   
   try {
-    // Préparer les données selon l'API
+    // Préparer les données selon l'API (champs requis seulement)
     const registrationData = {
       name: props.formData.name,
       email: props.formData.email,
@@ -163,15 +145,6 @@ async function handleClientRegistration() {
       password_confirmation: props.formData.password_confirmation,
       user_type: 'client',
       phone: props.formData.phone
-    }
-
-    // Ajouter les champs optionnels s'ils sont remplis
-    if (props.formData.gender) {
-      registrationData.gender = props.formData.gender
-    }
-    
-    if (props.formData.birthdate) {
-      registrationData.birthdate = props.formData.birthdate
     }
     
     console.log('📝 Inscription client - Payload envoyé:', registrationData)
