@@ -1,0 +1,951 @@
+{
+	"info": {
+		"_postman_id": "clinic-api-collection",
+		"name": "Clinics API Collection",
+		"description": "Collection for testing Clinics API endpoints in AnimoPlus platform",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    if (response.success && response.data && response.data.access_token) {",
+									"        pm.environment.set('access_token', response.data.access_token);",
+									"        pm.test('Login successful', function () {",
+									"            pm.expect(response.success).to.be.true;",
+									"        });",
+									"    }",
+									"} else {",
+									"    pm.test('Login failed', function () {",
+									"        pm.expect.fail('Login request failed');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"{{test_email}}\",\n    \"password\": \"{{test_password}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Clinics CRUD",
+			"item": [
+				{
+					"name": "Get All Clinics",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success property', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success');",
+									"    pm.expect(response.success).to.be.true;",
+									"});",
+									"",
+									"pm.test('Response has data array', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('data');",
+									"    pm.expect(response.data).to.be.an('array');",
+									"});",
+									"",
+									"pm.test('Response has pagination', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('pagination');",
+									"    pm.expect(response.pagination).to.have.property('current_page');",
+									"    pm.expect(response.pagination).to.have.property('total');",
+									"});",
+									"",
+									"if (pm.response.json().data.length > 0) {",
+									"    const firstClinic = pm.response.json().data[0];",
+									"    pm.environment.set('clinic_id', firstClinic.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/clinics?per_page=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"clinics"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Clinic",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('Clinic created successfully', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.true;",
+									"    pm.expect(response.message).to.include('créée avec succès');",
+									"});",
+									"",
+									"pm.test('Response contains clinic data', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('data');",
+									"    pm.expect(response.data).to.have.property('id');",
+									"    pm.expect(response.data).to.have.property('name');",
+									"    pm.expect(response.data.name).to.equal('Clinique Test Postman');",
+									"});",
+									"",
+									"if (pm.response.code === 201) {",
+									"    const clinic = pm.response.json().data;",
+									"    pm.environment.set('created_clinic_id', clinic.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Clinique Test Postman\",\n    \"description\": \"Clinique créée via Postman pour les tests\",\n    \"address\": \"123 Rue de Test\",\n    \"city\": \"Paris\",\n    \"postal_code\": \"75001\",\n    \"country\": \"France\",\n    \"phone\": \"0123456789\",\n    \"email\": \"test@clinique-postman.fr\",\n    \"website\": \"https://www.clinique-postman.fr\",\n    \"latitude\": 48.8566,\n    \"longitude\": 2.3522,\n    \"max_veterinarians\": 5,\n    \"services_offered\": [\"Consultations\", \"Chirurgie\", \"Urgences\"],\n    \"notes\": \"Clinique de test créée via Postman\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/clinics",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"clinics"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Clinic by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Clinic retrieved successfully', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.true;",
+									"    pm.expect(response).to.have.property('data');",
+									"});",
+									"",
+									"pm.test('Clinic has required properties', function () {",
+									"    const clinic = pm.response.json().data;",
+									"    pm.expect(clinic).to.have.property('id');",
+									"    pm.expect(clinic).to.have.property('name');",
+									"    pm.expect(clinic).to.have.property('address');",
+									"    pm.expect(clinic).to.have.property('city');",
+									"    pm.expect(clinic).to.have.property('owner');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/clinics/{{clinic_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"clinics",
+								"{{clinic_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Clinic",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Clinic updated successfully', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.true;",
+									"    pm.expect(response.message).to.include('mise à jour avec succès');",
+									"});",
+									"",
+									"pm.test('Updated data is correct', function () {",
+									"    const clinic = pm.response.json().data;",
+									"    pm.expect(clinic.description).to.include('MISE À JOUR');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Clinique Test Postman\",\n    \"description\": \"Clinique MISE À JOUR via Postman pour les tests\",\n    \"address\": \"123 Rue de Test Modifiée\",\n    \"city\": \"Paris\",\n    \"postal_code\": \"75001\",\n    \"phone\": \"0123456789\",\n    \"email\": \"test-updated@clinique-postman.fr\",\n    \"max_veterinarians\": 8\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/clinics/{{created_clinic_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"clinics",
+								"{{created_clinic_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Clinic",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Clinic deleted successfully', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.true;",
+									"    pm.expect(response.message).to.include('supprimée avec succès');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/clinics/{{created_clinic_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"clinics",
+								"{{created_clinic_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Restore Clinic",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Clinic restored successfully', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.true;",
+									"    pm.expect(response.message).to.include('restaurée avec succès');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/clinics/{{created_clinic_id}}/restore",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"clinics",
+								"{{created_clinic_id}}",
+								"restore"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Clinic Filtering & Search",
+			"item": [
+				{
+					"name": "Search Clinics by Name",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Search results contain search term', function () {",
+									"    const response = pm.response.json();",
+									"    if (response.data.length > 0) {",
+									"        const clinic = response.data[0];",
+									"        const searchTerm = 'centre';",
+									"        const containsSearchTerm = clinic.name.toLowerCase().includes(searchTerm) ||",
+									"                                 (clinic.description && clinic.description.toLowerCase().includes(searchTerm));",
+									"        pm.expect(containsSearchTerm).to.be.true;",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/clinics?search=centre",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"clinics"
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "centre"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Filter Clinics by City",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('All results are from specified city', function () {",
+									"    const response = pm.response.json();",
+									"    if (response.data.length > 0) {",
+									"        response.data.forEach(clinic => {",
+									"            pm.expect(clinic.city.toLowerCase()).to.include('paris');",
+									"        });",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/clinics?city=Paris",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"clinics"
+							],
+							"query": [
+								{
+									"key": "city",
+									"value": "Paris"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Geographic Search",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Results include distance property', function () {",
+									"    const response = pm.response.json();",
+									"    if (response.data.length > 0) {",
+									"        const clinic = response.data[0];",
+									"        pm.expect(clinic).to.have.property('distance');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/clinics?latitude=48.8566&longitude=2.3522&radius=25",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"clinics"
+							],
+							"query": [
+								{
+									"key": "latitude",
+									"value": "48.8566"
+								},
+								{
+									"key": "longitude",
+									"value": "2.3522"
+								},
+								{
+									"key": "radius",
+									"value": "25"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Active Clinics Only",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('All results are active clinics', function () {",
+									"    const response = pm.response.json();",
+									"    response.data.forEach(clinic => {",
+									"        pm.expect(clinic.is_active).to.be.true;",
+									"    });",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/clinics?active_only=true",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"clinics"
+							],
+							"query": [
+								{
+									"key": "active_only",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Veterinarian Management",
+			"item": [
+				{
+					"name": "Add Veterinarian to Clinic",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Veterinarian added successfully', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.true;",
+									"    pm.expect(response.message).to.include('ajouté avec succès');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"veterinarian_id\": \"{{veterinarian_id}}\",\n    \"role\": \"veterinarian\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/clinics/{{clinic_id}}/veterinarians",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"clinics",
+								"{{clinic_id}}",
+								"veterinarians"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Veterinarian from Clinic",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Veterinarian removed successfully', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.true;",
+									"    pm.expect(response.message).to.include('retiré avec succès');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"veterinarian_id\": \"{{veterinarian_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/clinics/{{clinic_id}}/veterinarians",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"clinics",
+								"{{clinic_id}}",
+								"veterinarians"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Clinic Coordinates",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Coordinates updated successfully', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.true;",
+									"    pm.expect(response.message).to.include('mises à jour avec succès');",
+									"});",
+									"",
+									"pm.test('Response contains updated coordinates', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.data).to.have.property('latitude');",
+									"    pm.expect(response.data).to.have.property('longitude');",
+									"    pm.expect(response.data.latitude).to.equal(48.8606);",
+									"    pm.expect(response.data.longitude).to.equal(2.3376);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"latitude\": 48.8606,\n    \"longitude\": 2.3376\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/clinics/{{clinic_id}}/coordinates",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"clinics",
+								"{{clinic_id}}",
+								"coordinates"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Error Handling",
+			"item": [
+				{
+					"name": "Create Clinic - Validation Error",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 422', function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test('Validation error response', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.false;",
+									"    pm.expect(response).to.have.property('errors');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"\",\n    \"address\": \"\",\n    \"city\": \"\",\n    \"postal_code\": \"invalid\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/clinics",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"clinics"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Non-existent Clinic",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 404', function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"pm.test('Not found error response', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.false;",
+									"    pm.expect(response.message).to.include('non trouvée');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/clinics/00000000-0000-0000-0000-000000000000",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"clinics",
+								"00000000-0000-0000-0000-000000000000"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Unauthorized Access",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 401', function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test('Unauthorized error response', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.false;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/clinics",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"clinics"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "test_email",
+			"value": "veterinarian@example.com",
+			"type": "string"
+		},
+		{
+			"key": "test_password",
+			"value": "password123",
+			"type": "string"
+		}
+	]
+}

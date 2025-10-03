@@ -1,0 +1,560 @@
+{
+	"info": {
+		"_postman_id": "service-types-collection-uuid",
+		"name": "AnimoPlus - Service Types API",
+		"description": "Collection complète pour tester les endpoints de gestion des types de services vétérinaires",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "animoplus-service-types"
+	},
+	"item": [
+		{
+			"name": "Service Types Management",
+			"item": [
+				{
+					"name": "Get All Service Types",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success property', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});",
+									"",
+									"pm.test('Response has data with pagination', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('current_page');",
+									"    pm.expect(jsonData.data).to.have.property('data');",
+									"    console.log('✅ Service types retrieved:', jsonData.data.total);",
+									"});",
+									"",
+									"// Store first service type ID for other tests",
+									"const jsonData = pm.response.json();",
+									"if (jsonData.data.data.length > 0) {",
+									"    pm.environment.set('service_type_id', jsonData.data.data[0].id);",
+									"    console.log('📝 Stored service type ID:', jsonData.data.data[0].id);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/service-types?per_page=10",
+							"host": ["{{base_url}}"],
+							"path": ["api", "service-types"],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Service Types with Filters",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Filtered results returned', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    console.log('✅ Filtered service types:', jsonData.data.total);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/service-types?active_only=true&with_services=true&search=consultation",
+							"host": ["{{base_url}}"],
+							"path": ["api", "service-types"],
+							"query": [
+								{
+									"key": "active_only",
+									"value": "true"
+								},
+								{
+									"key": "with_services",
+									"value": "true"
+								},
+								{
+									"key": "search",
+									"value": "consultation"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Service Type",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('Service type created successfully', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('id');",
+									"    pm.expect(jsonData.data).to.have.property('name');",
+									"    ",
+									"    // Store created service type ID",
+									"    pm.environment.set('created_service_type_id', jsonData.data.id);",
+									"    console.log('✅ Service type created:', jsonData.data.name);",
+									"    console.log('📝 Stored created ID:', jsonData.data.id);",
+									"});",
+									"",
+									"pm.test('Service type has correct properties', function () {",
+									"    const jsonData = pm.response.json();",
+									"    const serviceType = jsonData.data;",
+									"    pm.expect(serviceType.name).to.include('Test');",
+									"    pm.expect(serviceType.is_active).to.be.true;",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Test Service Type {{$randomInt}}\",\n  \"description\": \"Type de service créé pour les tests automatisés\",\n  \"icon\": \"fas fa-test-tube\",\n  \"color\": \"#{{$randomColor}}\",\n  \"is_active\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/service-types",
+							"host": ["{{base_url}}"],
+							"path": ["api", "service-types"]
+						}
+					}
+				},
+				{
+					"name": "Get Service Type by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Service type retrieved successfully', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('id');",
+									"    console.log('✅ Service type retrieved:', jsonData.data.name);",
+									"});",
+									"",
+									"pm.test('Service type has all required fields', function () {",
+									"    const jsonData = pm.response.json();",
+									"    const serviceType = jsonData.data;",
+									"    pm.expect(serviceType).to.have.property('name');",
+									"    pm.expect(serviceType).to.have.property('is_active');",
+									"    pm.expect(serviceType).to.have.property('created_at');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/service-types/{{service_type_id}}?with_services=true&with_specialites=true",
+							"host": ["{{base_url}}"],
+							"path": ["api", "service-types", "{{service_type_id}}"],
+							"query": [
+								{
+									"key": "with_services",
+									"value": "true"
+								},
+								{
+									"key": "with_specialites",
+									"value": "true"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Service Type",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Service type updated successfully', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    console.log('✅ Service type updated:', jsonData.data.name);",
+									"});",
+									"",
+									"pm.test('Service type has updated values', function () {",
+									"    const jsonData = pm.response.json();",
+									"    const serviceType = jsonData.data;",
+									"    pm.expect(serviceType.name).to.include('Updated');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Updated Test Service Type {{$randomInt}}\",\n  \"description\": \"Description mise à jour pour les tests\",\n  \"icon\": \"fas fa-edit\",\n  \"color\": \"#e74c3c\",\n  \"is_active\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/service-types/{{created_service_type_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "service-types", "{{created_service_type_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Delete Service Type",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Service type deleted successfully', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    console.log('✅ Service type deleted successfully');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/service-types/{{created_service_type_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "service-types", "{{created_service_type_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Restore Service Type",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Service type restored successfully', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    console.log('✅ Service type restored:', jsonData.data.name);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/service-types/{{created_service_type_id}}/restore",
+							"host": ["{{base_url}}"],
+							"path": ["api", "service-types", "{{created_service_type_id}}", "restore"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Validation Tests",
+			"item": [
+				{
+					"name": "Create Service Type - Missing Name",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 422', function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test('Validation error for missing name', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.false;",
+									"    pm.expect(jsonData).to.have.property('errors');",
+									"    pm.expect(jsonData.errors).to.have.property('name');",
+									"    console.log('✅ Validation working: name required');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"description\": \"Service type sans nom pour tester la validation\",\n  \"is_active\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/service-types",
+							"host": ["{{base_url}}"],
+							"path": ["api", "service-types"]
+						}
+					}
+				},
+				{
+					"name": "Create Service Type - Invalid Color",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 422', function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test('Validation error for invalid color', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.false;",
+									"    pm.expect(jsonData).to.have.property('errors');",
+									"    pm.expect(jsonData.errors).to.have.property('color');",
+									"    console.log('✅ Validation working: invalid color format');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Test Invalid Color\",\n  \"description\": \"Test avec couleur invalide\",\n  \"color\": \"invalid-color\",\n  \"is_active\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/service-types",
+							"host": ["{{base_url}}"],
+							"path": ["api", "service-types"]
+						}
+					}
+				},
+				{
+					"name": "Get Service Type - Invalid ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 422', function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test('Validation error for invalid UUID', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.false;",
+									"    console.log('✅ Validation working: invalid UUID format');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/service-types/invalid-uuid-format",
+							"host": ["{{base_url}}"],
+							"path": ["api", "service-types", "invalid-uuid-format"]
+						}
+					}
+				},
+				{
+					"name": "Get Service Type - Not Found",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 404', function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"pm.test('Service type not found error', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.false;",
+									"    pm.expect(jsonData.message).to.include('not found');",
+									"    console.log('✅ 404 handling working correctly');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/service-types/550e8400-e29b-41d4-a716-446655440000",
+							"host": ["{{base_url}}"],
+							"path": ["api", "service-types", "550e8400-e29b-41d4-a716-446655440000"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{access_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Auto-generate random color for tests",
+					"const colors = ['3498db', 'e74c3c', '2ecc71', 'f39c12', '9b59b6', '1abc9c'];",
+					"const randomColor = colors[Math.floor(Math.random() * colors.length)];",
+					"pm.globals.set('randomColor', randomColor);"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		}
+	]
+}

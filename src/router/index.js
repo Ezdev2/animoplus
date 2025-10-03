@@ -15,6 +15,14 @@ import Accounting from '@/pages/Accounting/Accounting.vue'
 import StockPage from '@/pages/StockManagement/StockPage.vue'
 import CacheManagementPage from '@/pages/Admin/CacheManagementPage.vue'
 
+// Pages Admin
+import AdminLayout from '@/pages/Admin/AdminLayout.vue'
+import AdminDashboard from '@/pages/Admin/AdminDashboard.vue'
+import ServiceTypes from '@/pages/Admin/ServiceTypes.vue'
+import CoopAdmin from '@/pages/Admin/CoopAdmin.vue'
+import AdminRedirect from '@/pages/Admin/AdminRedirect.vue'
+import AnnouncementsManagement from '@/pages/Admin/AnnouncementsManagement.vue'
+
 import { simpleGuard } from '@/router/simpleGuard.js'
 import Specialist from '@/pages/Homepage/Specialist.vue'
 import SignUp from '@/pages/Authentication/SignUp.vue'
@@ -31,7 +39,7 @@ import AccessDenied from '@/pages/Error/AccessDenied.vue'
 import CloudinaryTest from '@/pages/Test/CloudinaryTest.vue'
 import CacheTestPage from '@/pages/Test/CacheTestPage.vue'
 import ServiceTypesTestPage from '@/pages/Test/ServiceTypesTestPage.vue'
-import AuthDebugPage from '@/pages/Debug/AuthDebugPage.vue'
+import AdminAccessTest from '@/pages/Test/AdminAccessTest.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -154,28 +162,48 @@ const router = createRouter({
       path: '/stockManagement',
       name: 'stockManagement',
       component: StockPage,
-      meta: { requiresAuth: true, roles: ['veterinarian', 'veterinarian_pro'] }
+      meta: { requiresAuth: true, roles: ['veterinarian'] }
     },
-    // Pages Pro (accessibles seulement aux vétérinaires Pro)
+    // Redirection spéciale pour les admins
     {
-      path: '/pro-dashboard',
-      name: 'pro-dashboard',
-      component: Dashboard, // Réutiliser le dashboard avec affichage conditionnel
-      meta: { requiresAuth: true, roles: ['veterinarian_pro'] }
+      path: '/admin-redirect',
+      name: 'admin-redirect',
+      component: AdminRedirect,
+      meta: { requiresAuth: true, roles: ['admin'] }
     },
+    // Administration - Routes protégées par user_type admin
     {
-      path: '/pro-analytics',
-      name: 'pro-analytics',
-      component: () => import('@/pages/Pro/ProAnalytics.vue'),
-      meta: { requiresAuth: true, roles: ['veterinarian_pro'] }
+      path: '/admin',
+      component: AdminLayout,
+      meta: { requiresAuth: true, roles: ['admin'] },
+      children: [
+        {
+          path: '',
+          name: 'admin-dashboard',
+          component: AdminDashboard,
+          meta: { requiresAuth: true, roles: ['admin'] }
+        },
+        {
+          path: 'test/service-types',
+          name: 'admin-service-types',
+          component: ServiceTypes,
+          meta: { requiresAuth: true, roles: ['admin'] }
+        },
+        {
+          path: 'coop-admin',
+          name: 'admin-coop',
+          component: CoopAdmin,
+          meta: { requiresAuth: true, roles: ['admin'] }
+        },
+        {
+          path: 'announcements',
+          name: 'admin-announcements',
+          component: AnnouncementsManagement,
+          meta: { requiresAuth: true, roles: ['admin'] }
+        }
+      ]
     },
-    {
-      path: '/pro-reports',
-      name: 'pro-reports',
-      component: () => import('@/pages/Pro/ProReports.vue'),
-      meta: { requiresAuth: true, roles: ['veterinarian_pro'] }
-    },
-    // Administration
+    // Administration legacy
     {
       path: '/admin/cache-management',
       name: 'admin-cache-management',
@@ -217,6 +245,12 @@ const router = createRouter({
     {
       path: '/test/service-type', // Alias sans "s"
       redirect: '/test/service-types'
+    },
+    {
+      path: '/test/admin-access',
+      name: 'admin-access-test',
+      component: AdminAccessTest,
+      meta: { requiresAuth: true, roles: ['admin', 'veterinarian', 'client'] } // Accessible à tous pour les tests
     },
     // Route 404 - DOIT ÊTRE LA DERNIÈRE
     {

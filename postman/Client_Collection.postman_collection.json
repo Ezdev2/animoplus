@@ -1,0 +1,354 @@
+{
+	"info": {
+		"_postman_id": "client-collection-id",
+		"name": "AnimoPlus - Client",
+		"description": "Client-specific endpoints for AnimoPlus API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Dashboard",
+			"item": [
+				{
+					"name": "Get Client Dashboard",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/client/dashboard",
+							"host": ["{{base_url}}"],
+							"path": ["api", "client", "dashboard"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Profile Management",
+			"item": [
+				{
+					"name": "Get Client Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/client/profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "client", "profile"]
+						}
+					}
+				},
+				{
+					"name": "Update Client Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"{{$randomFullName}}\",\n  \"phone\": \"{{$randomPhoneNumber}}\",\n  \"address\": \"{{$randomStreetAddress}}\",\n  \"emergency_contact\": \"{{$randomFullName}}\",\n  \"emergency_phone\": \"{{$randomPhoneNumber}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/client/profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "client", "profile"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Pet Management",
+			"item": [
+				{
+					"name": "Get My Pets",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/client/pets",
+							"host": ["{{base_url}}"],
+							"path": ["api", "client", "pets"]
+						}
+					}
+				},
+				{
+					"name": "Add Pet",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"{{$randomFirstName}}\",\n  \"species\": \"dog\",\n  \"breed\": \"Golden Retriever\",\n  \"age\": 3,\n  \"weight\": 25.5,\n  \"gender\": \"male\",\n  \"color\": \"golden\",\n  \"microchip_id\": \"{{$randomAlphaNumeric}}\",\n  \"medical_conditions\": \"None\",\n  \"allergies\": \"None\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/client/pets",
+							"host": ["{{base_url}}"],
+							"path": ["api", "client", "pets"]
+						}
+					}
+				},
+				{
+					"name": "Update Pet",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"{{$randomFirstName}}\",\n  \"age\": 4,\n  \"weight\": 26.0,\n  \"medical_conditions\": \"Hip dysplasia\",\n  \"allergies\": \"Chicken\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/client/pets/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "client", "pets", "1"]
+						}
+					}
+				},
+				{
+					"name": "Get Pet Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/client/pets/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "client", "pets", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Appointments",
+			"item": [
+				{
+					"name": "Get My Appointments",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/client/appointments?status=upcoming&pet_id=1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "client", "appointments"],
+							"query": [
+								{
+									"key": "status",
+									"value": "upcoming"
+								},
+								{
+									"key": "pet_id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Book Appointment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"pet_id\": 1,\n  \"veterinarian_id\": 1,\n  \"preferred_date\": \"2024-12-25T10:00:00Z\",\n  \"type\": \"checkup\",\n  \"reason\": \"Annual health checkup\",\n  \"notes\": \"Pet seems healthy but due for routine examination\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/client/appointments",
+							"host": ["{{base_url}}"],
+							"path": ["api", "client", "appointments"]
+						}
+					}
+				},
+				{
+					"name": "Cancel Appointment",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"reason\": \"Schedule conflict\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/client/appointments/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "client", "appointments", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Medical Records",
+			"item": [
+				{
+					"name": "Get Pet Medical Records",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/client/pets/1/medical-records",
+							"host": ["{{base_url}}"],
+							"path": ["api", "client", "pets", "1", "medical-records"]
+						}
+					}
+				},
+				{
+					"name": "Get Medical Record Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/client/medical-records/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "client", "medical-records", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Veterinarians",
+			"item": [
+				{
+					"name": "Find Veterinarians",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/client/veterinarians?location={{$randomCity}}&specialization=small_animal",
+							"host": ["{{base_url}}"],
+							"path": ["api", "client", "veterinarians"],
+							"query": [
+								{
+									"key": "location",
+									"value": "{{$randomCity}}"
+								},
+								{
+									"key": "specialization",
+									"value": "small_animal"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Veterinarian Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/client/veterinarians/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "client", "veterinarians", "1"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{access_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000"
+		}
+	]
+}

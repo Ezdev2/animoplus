@@ -1,0 +1,830 @@
+{
+	"info": {
+		"_postman_id": "external-appointments-collection-uuid",
+		"name": "External Appointments Collection",
+		"description": "Collection for testing External Appointments API endpoints - managing appointments for external clients",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "List External Appointments",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has success property\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Response has data array\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"    pm.expect(jsonData.data).to.be.an('array');",
+							"});",
+							"",
+							"pm.test(\"Response has pagination info\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('pagination');",
+							"    pm.expect(jsonData.pagination).to.have.property('current_page');",
+							"    pm.expect(jsonData.pagination).to.have.property('total');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/external-appointments?per_page=10&sort_by=date&sort_order=asc",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"external-appointments"
+					],
+					"query": [
+						{
+							"key": "per_page",
+							"value": "10"
+						},
+						{
+							"key": "sort_by",
+							"value": "date"
+						},
+						{
+							"key": "sort_order",
+							"value": "asc"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create External Appointment",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Response has success property\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Response has created appointment data\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"    pm.expect(jsonData.data).to.have.property('id');",
+							"    pm.expect(jsonData.data).to.have.property('client_name');",
+							"    pm.expect(jsonData.data).to.have.property('animal_name');",
+							"    ",
+							"    // Store appointment ID for other tests",
+							"    pm.environment.set('external_appointment_id', jsonData.data.id);",
+							"});",
+							"",
+							"pm.test(\"Appointment has correct client name\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data.client_name).to.eql('Test Client Postman');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"user_id\": \"{{veterinarian_id}}\",\n    \"client_name\": \"Test Client Postman\",\n    \"client_phone\": \"06 12 34 56 78\",\n    \"client_email\": \"test.client@postman.com\",\n    \"animal_name\": \"Buddy\",\n    \"animal_espece\": \"Chien\",\n    \"animal_race\": \"Labrador\",\n    \"animal_age\": 3,\n    \"animal_gender\": \"male\",\n    \"date\": \"2025-09-15\",\n    \"start_time\": \"10:00\",\n    \"end_time\": \"10:30\",\n    \"reason\": \"Consultation de routine\",\n    \"notes\": \"Chien très calme et obéissant\",\n    \"price\": 55.00,\n    \"is_emergency\": false\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/external-appointments",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"external-appointments"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get External Appointment",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has appointment data\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"    pm.expect(jsonData.data).to.have.property('id');",
+							"});",
+							"",
+							"pm.test(\"Appointment has user and service relations\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data).to.have.property('user');",
+							"    pm.expect(jsonData.data.user).to.have.property('first_name');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/external-appointments/{{external_appointment_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"external-appointments",
+						"{{external_appointment_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update External Appointment",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has success property\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Appointment was updated\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data.notes).to.include('Updated via Postman');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"user_id\": \"{{veterinarian_id}}\",\n    \"client_name\": \"Test Client Postman Updated\",\n    \"client_phone\": \"06 12 34 56 78\",\n    \"client_email\": \"test.client.updated@postman.com\",\n    \"animal_name\": \"Buddy\",\n    \"animal_espece\": \"Chien\",\n    \"animal_race\": \"Labrador\",\n    \"animal_age\": 3,\n    \"animal_gender\": \"male\",\n    \"date\": \"2025-09-15\",\n    \"start_time\": \"10:00\",\n    \"end_time\": \"10:30\",\n    \"reason\": \"Consultation de routine - Updated\",\n    \"notes\": \"Chien très calme et obéissant - Updated via Postman\",\n    \"price\": 60.00,\n    \"is_emergency\": false\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/external-appointments/{{external_appointment_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"external-appointments",
+						"{{external_appointment_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Confirm External Appointment",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Appointment status is confirmed\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data.status).to.eql('confirmed');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/external-appointments/{{external_appointment_id}}/confirm",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"external-appointments",
+						"{{external_appointment_id}}",
+						"confirm"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Complete External Appointment",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Appointment status is completed\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data.status).to.eql('completed');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/external-appointments/{{external_appointment_id}}/complete",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"external-appointments",
+						"{{external_appointment_id}}",
+						"complete"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Upcoming External Appointments",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has upcoming appointments\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"    pm.expect(jsonData.data).to.be.an('array');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/external-appointments/upcoming/list",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"external-appointments",
+						"upcoming",
+						"list"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Filter by Status",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"All appointments have scheduled status\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    if (jsonData.data.length > 0) {",
+							"        jsonData.data.forEach(function(appointment) {",
+							"            pm.expect(appointment.status).to.eql('scheduled');",
+							"        });",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/external-appointments?status=scheduled",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"external-appointments"
+					],
+					"query": [
+						{
+							"key": "status",
+							"value": "scheduled"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Filter by Animal Species",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"All appointments are for dogs\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    if (jsonData.data.length > 0) {",
+							"        jsonData.data.forEach(function(appointment) {",
+							"            pm.expect(appointment.animal_espece.toLowerCase()).to.include('chien');",
+							"        });",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/external-appointments?animal_espece=Chien",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"external-appointments"
+					],
+					"query": [
+						{
+							"key": "animal_espece",
+							"value": "Chien"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Cancel External Appointment",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Appointment status is cancelled\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data.status).to.eql('cancelled');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/external-appointments/{{external_appointment_id}}/cancel",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"external-appointments",
+						"{{external_appointment_id}}",
+						"cancel"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete External Appointment",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Appointment deleted successfully\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"    pm.expect(jsonData.message).to.include('supprimé');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/external-appointments/{{external_appointment_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"external-appointments",
+						"{{external_appointment_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Restore External Appointment",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Appointment restored successfully\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"    pm.expect(jsonData.message).to.include('restauré');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/external-appointments/{{external_appointment_id}}/restore",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"external-appointments",
+						"{{external_appointment_id}}",
+						"restore"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Validation Error - Missing Required Fields",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 422\", function () {",
+							"    pm.response.to.have.status(422);",
+							"});",
+							"",
+							"pm.test(\"Response has validation errors\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('errors');",
+							"    pm.expect(jsonData.errors).to.be.an('object');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"client_name\": \"\",\n    \"animal_name\": \"\",\n    \"date\": \"invalid-date\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/external-appointments",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"external-appointments"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Unauthorized Access Test",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 401\", function () {",
+							"    pm.response.to.have.status(401);",
+							"});",
+							"",
+							"pm.test(\"Response indicates unauthorized\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.false;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/external-appointments",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"external-appointments"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Set default environment variables if not set",
+					"if (!pm.environment.get('base_url')) {",
+					"    pm.environment.set('base_url', 'http://localhost:8000');",
+					"}",
+					"",
+					"// Check if JWT token is available",
+					"if (!pm.environment.get('jwt_token')) {",
+					"    console.log('Warning: JWT token not set. Please authenticate first.');",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test to check response time",
+					"pm.test(\"Response time is less than 2000ms\", function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+					"});",
+					"",
+					"// Global test to check content type",
+					"pm.test(\"Content-Type is application/json\", function () {",
+					"    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+					"});"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		}
+	]
+}

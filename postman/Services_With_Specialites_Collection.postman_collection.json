@@ -1,0 +1,511 @@
+{
+	"info": {
+		"_postman_id": "services-specialites-api-collection",
+		"name": "Services with Specialites API Collection",
+		"description": "Collection for testing Services with Specialites integration in AnimoPlus API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{jwt_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"item": [
+		{
+			"name": "Get My Services",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('Response has success true', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test('Response has services array and pagination', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.services).to.be.an('array');",
+							"    pm.expect(jsonData.pagination).to.be.an('object');",
+							"    pm.expect(jsonData.pagination).to.have.property('current_page');",
+							"    pm.expect(jsonData.pagination).to.have.property('total');",
+							"    pm.expect(jsonData.pagination).to.have.property('per_page');",
+							"});",
+							"",
+							"pm.test('All services belong to authenticated user', function () {",
+							"    const jsonData = pm.response.json();",
+							"    const userId = pm.environment.get('user_id');",
+							"    if (jsonData.services && jsonData.services.length > 0 && userId) {",
+							"        jsonData.services.forEach(service => {",
+							"            pm.expect(service.user_id).to.equal(userId);",
+							"        });",
+							"    }",
+							"});",
+							"",
+							"pm.test('Services have expected structure', function () {",
+							"    const jsonData = pm.response.json();",
+							"    if (jsonData.services && jsonData.services.length > 0) {",
+							"        const service = jsonData.services[0];",
+							"        pm.expect(service).to.have.property('id');",
+							"        pm.expect(service).to.have.property('name');",
+							"        pm.expect(service).to.have.property('price');",
+							"        pm.expect(service).to.have.property('duration');",
+							"        pm.expect(service).to.have.property('service_type');",
+							"        pm.expect(service).to.have.property('specialite');",
+							"        pm.expect(service).to.have.property('user');",
+							"    }",
+							"});",
+							"",
+							"// Store first service for other tests",
+							"const jsonData = pm.response.json();",
+							"if (jsonData.services && jsonData.services.length > 0) {",
+							"    pm.environment.set('my_service_id', jsonData.services[0].id);",
+							"    if (jsonData.services[0].specialite) {",
+							"        pm.environment.set('service_specialite_id', jsonData.services[0].specialite.id);",
+							"    }",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/services/my-services?per_page=15",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"services",
+						"my-services"
+					],
+					"query": [
+						{
+							"key": "per_page",
+							"value": "15"
+						}
+					]
+				}
+			}
+		},
+		{
+			"name": "Get My Services with Filters",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('Response has success true', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test('Filtered results match criteria', function () {",
+							"    const jsonData = pm.response.json();",
+							"    if (jsonData.services && jsonData.services.length > 0) {",
+							"        jsonData.services.forEach(service => {",
+							"            // Check enabled filter",
+							"            pm.expect(service.is_enabled).to.be.true;",
+							"        });",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/services/my-services?is_enabled=true&per_page=10",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"services",
+						"my-services"
+					],
+					"query": [
+						{
+							"key": "is_enabled",
+							"value": "true"
+						},
+						{
+							"key": "per_page",
+							"value": "10"
+						}
+					]
+				}
+			}
+		},
+		{
+			"name": "Get My Services by Specialty",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('Response has success true', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test('Services filtered by specialty', function () {",
+							"    const jsonData = pm.response.json();",
+							"    const specialiteId = pm.environment.get('service_specialite_id');",
+							"    if (jsonData.services && jsonData.services.length > 0 && specialiteId) {",
+							"        jsonData.services.forEach(service => {",
+							"            if (service.specialite) {",
+							"                pm.expect(service.specialite.id).to.equal(specialiteId);",
+							"            }",
+							"        });",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/services/my-services?specialite_id={{service_specialite_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"services",
+						"my-services"
+					],
+					"query": [
+						{
+							"key": "specialite_id",
+							"value": "{{service_specialite_id}}"
+						}
+					]
+				}
+			}
+		},
+		{
+			"name": "Search My Services",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('Response has success true', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test('Search results contain search term', function () {",
+							"    const jsonData = pm.response.json();",
+							"    const searchTerm = 'consultation';",
+							"    if (jsonData.services && jsonData.services.length > 0) {",
+							"        jsonData.services.forEach(service => {",
+							"            const hasSearchTerm = ",
+							"                (service.name && service.name.toLowerCase().includes(searchTerm)) ||",
+							"                (service.description && service.description.toLowerCase().includes(searchTerm));",
+							"            pm.expect(hasSearchTerm).to.be.true;",
+							"        });",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/services/my-services?search=consultation",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"services",
+						"my-services"
+					],
+					"query": [
+						{
+							"key": "search",
+							"value": "consultation"
+						}
+					]
+				}
+			}
+		},
+		{
+			"name": "Get Specialites with Service Types",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('Response has success true', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test('Response has specialites with service types', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data).to.be.an('array');",
+							"    if (jsonData.data.length > 0) {",
+							"        const specialite = jsonData.data[0];",
+							"        pm.expect(specialite).to.have.property('id');",
+							"        pm.expect(specialite).to.have.property('name');",
+							"        pm.expect(specialite).to.have.property('service_types');",
+							"        pm.expect(specialite.service_types).to.be.an('array');",
+							"    }",
+							"});",
+							"",
+							"pm.test('All specialites are active', function () {",
+							"    const jsonData = pm.response.json();",
+							"    if (jsonData.data && jsonData.data.length > 0) {",
+							"        jsonData.data.forEach(specialite => {",
+							"            pm.expect(specialite.is_active).to.be.true;",
+							"        });",
+							"    }",
+							"});",
+							"",
+							"pm.test('Service types are active', function () {",
+							"    const jsonData = pm.response.json();",
+							"    if (jsonData.data && jsonData.data.length > 0) {",
+							"        jsonData.data.forEach(specialite => {",
+							"            if (specialite.service_types && specialite.service_types.length > 0) {",
+							"                specialite.service_types.forEach(serviceType => {",
+							"                    pm.expect(serviceType.is_active).to.be.true;",
+							"                });",
+							"            }",
+							"        });",
+							"    }",
+							"});",
+							"",
+							"// Store first specialite and service type for other tests",
+							"const jsonData = pm.response.json();",
+							"if (jsonData.data && jsonData.data.length > 0) {",
+							"    pm.environment.set('first_specialite_id', jsonData.data[0].id);",
+							"    if (jsonData.data[0].service_types && jsonData.data[0].service_types.length > 0) {",
+							"        pm.environment.set('first_service_type_id', jsonData.data[0].service_types[0].id);",
+							"    }",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/specialites/with-service-types?active_only=true",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"specialites",
+						"with-service-types"
+					],
+					"query": [
+						{
+							"key": "active_only",
+							"value": "true"
+						}
+					]
+				}
+			}
+		},
+		{
+			"name": "Create Service with Specialty",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 201', function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test('Response has success true', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test('Service created with specialty', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data).to.be.an('object');",
+							"    pm.expect(jsonData.data).to.have.property('id');",
+							"    pm.expect(jsonData.data).to.have.property('name');",
+							"    pm.expect(jsonData.data).to.have.property('specialite_id');",
+							"    pm.expect(jsonData.data.specialite_id).to.equal(pm.environment.get('first_specialite_id'));",
+							"});",
+							"",
+							"// Store created service for cleanup",
+							"const jsonData = pm.response.json();",
+							"if (jsonData.data && jsonData.data.id) {",
+							"    pm.environment.set('created_service_with_specialty_id', jsonData.data.id);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Consultation Cardiologique Spécialisée\",\n    \"description\": \"Consultation approfondie en cardiologie vétérinaire avec échographie\",\n    \"price\": 85.00,\n    \"duration\": 45,\n    \"animals_supported\": [\"chien\", \"chat\"],\n    \"gap_between_services\": 15,\n    \"services_types_id\": \"{{first_service_type_id}}\",\n    \"specialite_id\": \"{{first_specialite_id}}\",\n    \"is_enabled\": true\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/services",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"services"
+					]
+				}
+			}
+		},
+		{
+			"name": "Update Service Specialty",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('Response has success true', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test('Service specialty updated', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data).to.be.an('object');",
+							"    pm.expect(jsonData.data).to.have.property('specialite_id');",
+							"    // Can be null if we're removing the specialty",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"specialite_id\": null\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/services/{{created_service_with_specialty_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"services",
+						"{{created_service_with_specialty_id}}"
+					]
+				}
+			}
+		},
+		{
+			"name": "Get My Services - Unauthorized",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 401', function () {",
+							"    pm.response.to.have.status(401);",
+							"});",
+							"",
+							"pm.test('Response indicates unauthorized', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.false;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/services/my-services",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"services",
+						"my-services"
+					]
+				}
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		}
+	]
+}

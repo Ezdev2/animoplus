@@ -1,0 +1,532 @@
+{
+	"info": {
+		"_postman_id": "reviews-api-collection",
+		"name": "Reviews Collection",
+		"description": "Complete API collection for Review management in AnimoPlus veterinary services",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication Tests",
+			"item": [
+				{
+					"name": "Get Reviews - No Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"pm.test(\"Response has error message\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('message');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Accept", "value": "application/json"}
+						],
+						"url": "{{base_url}}/api/reviews"
+					}
+				},
+				{
+					"name": "Get Reviews - Invalid Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"pm.test(\"Response has error message\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('message');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer invalid_token"},
+							{"key": "Accept", "value": "application/json"}
+						],
+						"url": "{{base_url}}/api/reviews"
+					}
+				}
+			]
+		},
+		{
+			"name": "CRUD Operations",
+			"item": [
+				{
+					"name": "Get All Reviews",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Response has success property\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"});",
+									"pm.test(\"Response has data array\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data).to.be.an('array');",
+									"});",
+									"pm.test(\"Response has pagination info\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('pagination');",
+									"    pm.expect(responseJson.pagination).to.have.property('current_page');",
+									"    pm.expect(responseJson.pagination).to.have.property('total');",
+									"});",
+									"if (pm.response.json().data && pm.response.json().data.length > 0) {",
+									"    pm.environment.set('review_id', pm.response.json().data[0].id);",
+									"    pm.test(\"Review has required fields\", function () {",
+									"        const review = pm.response.json().data[0];",
+									"        pm.expect(review).to.have.property('id');",
+									"        pm.expect(review).to.have.property('rating');",
+									"        pm.expect(review).to.have.property('comment');",
+									"        pm.expect(review).to.have.property('status');",
+									"    });",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{jwt_token}}"},
+							{"key": "Accept", "value": "application/json"}
+						],
+						"url": "{{base_url}}/api/reviews?per_page=10"
+					}
+				},
+				{
+					"name": "Get Reviews with Filters",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Response has success property\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"});",
+									"pm.test(\"Filtered results match criteria\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    if (responseJson.data && responseJson.data.length > 0) {",
+									"        responseJson.data.forEach(review => {",
+									"            pm.expect(review.rating).to.be.at.least(4);",
+									"            pm.expect(review.status).to.equal('approved');",
+									"        });",
+									"    }",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{jwt_token}}"},
+							{"key": "Accept", "value": "application/json"}
+						],
+						"url": "{{base_url}}/api/reviews?status=approved&min_rating=4&with_specialist=true"
+					}
+				},
+				{
+					"name": "Create Review",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"pm.test(\"Response has success property\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"});",
+									"pm.test(\"Review created with correct data\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data).to.have.property('id');",
+									"    pm.expect(responseJson.data.rating).to.equal(5);",
+									"    pm.expect(responseJson.data.comment).to.equal('Excellent service!');",
+									"    pm.expect(responseJson.data.status).to.equal('pending');",
+									"});",
+									"if (pm.response.json().data && pm.response.json().data.id) {",
+									"    pm.environment.set('created_review_id', pm.response.json().data.id);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{jwt_token}}"},
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"appointment_id\": \"{{appointment_id}}\",\n    \"specialist_id\": \"{{specialist_id}}\",\n    \"rating\": 5,\n    \"comment\": \"Excellent service!\"\n}"
+						},
+						"url": "{{base_url}}/api/reviews"
+					}
+				},
+				{
+					"name": "Get Specific Review",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Response has success property\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"});",
+									"pm.test(\"Review has all required fields\", function () {",
+									"    const review = pm.response.json().data;",
+									"    pm.expect(review).to.have.property('id');",
+									"    pm.expect(review).to.have.property('rating');",
+									"    pm.expect(review).to.have.property('comment');",
+									"    pm.expect(review).to.have.property('status');",
+									"    pm.expect(review).to.have.property('appointment');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{jwt_token}}"},
+							{"key": "Accept", "value": "application/json"}
+						],
+						"url": "{{base_url}}/api/reviews/{{review_id}}?with_appointment=true"
+					}
+				},
+				{
+					"name": "Update Review",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Response has success property\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"});",
+									"pm.test(\"Review updated correctly\", function () {",
+									"    const review = pm.response.json().data;",
+									"    pm.expect(review.rating).to.equal(4);",
+									"    pm.expect(review.comment).to.equal('Très bon service, mise à jour.');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{jwt_token}}"},
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"rating\": 4,\n    \"comment\": \"Très bon service, mise à jour.\"\n}"
+						},
+						"url": "{{base_url}}/api/reviews/{{review_id}}"
+					}
+				},
+				{
+					"name": "Delete Review",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Response has success property\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"});",
+									"pm.test(\"Response has deletion message\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.message).to.include('supprimé');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{jwt_token}}"},
+							{"key": "Accept", "value": "application/json"}
+						],
+						"url": "{{base_url}}/api/reviews/{{review_id}}"
+					}
+				},
+				{
+					"name": "Restore Review",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Response has success property\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"});",
+									"pm.test(\"Response has restore message\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.message).to.include('restauré');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{jwt_token}}"},
+							{"key": "Accept", "value": "application/json"}
+						],
+						"url": "{{base_url}}/api/reviews/{{review_id}}/restore"
+					}
+				}
+			]
+		},
+		{
+			"name": "Moderation Operations",
+			"item": [
+				{
+					"name": "Approve Review",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Response has success property\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"});",
+									"pm.test(\"Review status is approved\", function () {",
+									"    const review = pm.response.json().data;",
+									"    pm.expect(review.status).to.equal('approved');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{jwt_token}}"},
+							{"key": "Accept", "value": "application/json"}
+						],
+						"url": "{{base_url}}/api/reviews/{{review_id}}/approve"
+					}
+				},
+				{
+					"name": "Reject Review",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Response has success property\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"});",
+									"pm.test(\"Review status is rejected\", function () {",
+									"    const review = pm.response.json().data;",
+									"    pm.expect(review.status).to.equal('rejected');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{jwt_token}}"},
+							{"key": "Accept", "value": "application/json"}
+						],
+						"url": "{{base_url}}/api/reviews/{{review_id}}/reject"
+					}
+				}
+			]
+		},
+		{
+			"name": "Validation Tests",
+			"item": [
+				{
+					"name": "Create Review - Missing Required Fields",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 422\", function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"pm.test(\"Response has validation errors\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('errors');",
+									"    pm.expect(responseJson.errors).to.have.property('appointment_id');",
+									"    pm.expect(responseJson.errors).to.have.property('rating');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{jwt_token}}"},
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"comment\": \"Missing required fields\"\n}"
+						},
+						"url": "{{base_url}}/api/reviews"
+					}
+				},
+				{
+					"name": "Create Review - Invalid Rating",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 422\", function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"pm.test(\"Response has rating validation error\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('errors');",
+									"    pm.expect(responseJson.errors).to.have.property('rating');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{jwt_token}}"},
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"appointment_id\": \"{{appointment_id}}\",\n    \"specialist_id\": \"{{specialist_id}}\",\n    \"rating\": 6,\n    \"comment\": \"Invalid rating above 5\"\n}"
+						},
+						"url": "{{base_url}}/api/reviews"
+					}
+				},
+				{
+					"name": "Create Review - Invalid UUID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 422\", function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"pm.test(\"Response has UUID validation error\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('errors');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{jwt_token}}"},
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"appointment_id\": \"invalid-uuid\",\n    \"specialist_id\": \"{{specialist_id}}\",\n    \"rating\": 5,\n    \"comment\": \"Invalid appointment UUID\"\n}"
+						},
+						"url": "{{base_url}}/api/reviews"
+					}
+				},
+				{
+					"name": "Update Non-Existent Review",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"pm.test(\"Response has error message\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('message');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{jwt_token}}"},
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"rating\": 3,\n    \"comment\": \"Updated comment\"\n}"
+						},
+						"url": "{{base_url}}/api/reviews/99999999-9999-9999-9999-999999999999"
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{"key": "base_url", "value": "http://localhost:8000"}
+	]
+}

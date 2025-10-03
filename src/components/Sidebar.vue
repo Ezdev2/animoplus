@@ -209,6 +209,12 @@ const menuItems = [
         link: "/pro-reports",
         isPro: true
     },
+    {
+        label: "Administration",
+        icon: userIcon,
+        user: "admin",
+        link: "/admin"
+    },
 ];
 
 const filteredMenuItems = computed(() => {

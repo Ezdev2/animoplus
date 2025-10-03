@@ -10,6 +10,7 @@ import Footer from './components/Footer.vue';
 
 import ChatPopup from './components/ChatPopup.vue';
 import ToastContainer from './components/common/ToastContainer.vue';
+import AdminTestHelper from './components/dev/AdminTestHelper.vue';
 import botIcon from '@/assets/icons/bot.svg';
 
 const isOpenBot = ref(false)
@@ -91,15 +92,18 @@ onMounted(async () => {
     </div>
   </div>
 
-  <!-- Fallback pour rôles non reconnus -->
-  <div v-else-if="isAuthenticated" class="layout">
-    <div class="p-8 bg-red-50 border border-red-200 rounded-lg m-4">
-      <h2 class="text-red-800 font-bold mb-2">⚠️ Rôle utilisateur non reconnu</h2>
-      <p class="text-red-600 mb-4">Rôle détecté: <code class="bg-red-100 px-2 py-1 rounded">{{ role }}</code></p>
-      <p class="text-red-600 mb-4">Utilisateur: <code class="bg-red-100 px-2 py-1 rounded">{{ currentUser?.name }}</code></p>
-      <button @click="auth.logout()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
-        Se déconnecter
-      </button>
+  <!-- Connecté - Admin -->
+  <div v-else-if="role === 'admin'" class="layout">
+    <!-- Pour les admins, on utilise directement le RouterView car AdminLayout gère son propre sidebar -->
+    <RouterView />
+  </div>
+
+  <!-- Rôle non reconnu ou en attente -->
+  <div v-else class="flex items-center justify-center min-h-screen bg-gray-100">
+    <div class="text-center">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+      <p class="text-gray-600">Chargement...</p>
+      <p class="text-sm text-gray-500 mt-2">Rôle: {{ role || 'En cours de détection' }}</p>
     </div>
   </div>
 
@@ -107,6 +111,9 @@ onMounted(async () => {
   
   <!-- Container global pour les toasts -->
   <ToastContainer />
+  
+  <!-- Helper de test admin (dev uniquement) -->
+  <AdminTestHelper />
 </template>
 
 <style scoped>

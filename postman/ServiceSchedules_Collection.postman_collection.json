@@ -1,0 +1,846 @@
+{
+	"info": {
+		"_postman_id": "service-schedules-collection-uuid",
+		"name": "Service Schedules API",
+		"description": "Collection for testing Service Schedules API endpoints - Service scheduling and time slot management",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "List Service Schedules",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has success property\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Response has data array\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"    pm.expect(jsonData.data).to.be.an('array');",
+							"});",
+							"",
+							"pm.test(\"Response has pagination info\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('pagination');",
+							"    pm.expect(jsonData.pagination).to.have.property('current_page');",
+							"    pm.expect(jsonData.pagination).to.have.property('total');",
+							"});",
+							"",
+							"// Store first schedule ID for other tests",
+							"if (pm.response.json().data.length > 0) {",
+							"    pm.environment.set('schedule_id', pm.response.json().data[0].id);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/service-schedules?per_page=10",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"service-schedules"
+					],
+					"query": [
+						{
+							"key": "per_page",
+							"value": "10"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Service Schedule",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Generate a test service ID if not set",
+							"if (!pm.environment.get('test_service_id')) {",
+							"    pm.environment.set('test_service_id', '550e8400-e29b-41d4-a716-446655440001');",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Response has success property\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Response has created schedule data\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"    pm.expect(jsonData.data).to.have.property('id');",
+							"    pm.expect(jsonData.data).to.have.property('service_id');",
+							"    pm.expect(jsonData.data).to.have.property('day_of_week');",
+							"    pm.expect(jsonData.data).to.have.property('start_time');",
+							"    pm.expect(jsonData.data).to.have.property('end_time');",
+							"});",
+							"",
+							"pm.test(\"Schedule has correct day of week\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data.day_of_week).to.eql('monday');",
+							"});",
+							"",
+							"// Store created schedule ID",
+							"pm.environment.set('created_schedule_id', pm.response.json().data.id);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"service_id\": \"{{test_service_id}}\",\n    \"day_of_week\": \"monday\",\n    \"start_time\": \"08:00\",\n    \"end_time\": \"12:00\",\n    \"max_appointments\": 1,\n    \"slot_duration\": 30,\n    \"is_active\": true,\n    \"notes\": \"Consultations générales du lundi matin\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/service-schedules",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"service-schedules"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Service Schedule",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has success property\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Response has schedule data\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"    pm.expect(jsonData.data).to.have.property('id');",
+							"    pm.expect(jsonData.data).to.have.property('service');",
+							"});",
+							"",
+							"pm.test(\"Schedule has service relationship\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data.service).to.have.property('id');",
+							"    pm.expect(jsonData.data.service).to.have.property('name');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/service-schedules/{{created_schedule_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"service-schedules",
+						"{{created_schedule_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Service Schedule",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has success property\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Schedule was updated\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data.end_time).to.include('17:00');",
+							"    pm.expect(jsonData.data.notes).to.include('Consultations étendues');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"end_time\": \"17:00\",\n    \"slot_duration\": 45,\n    \"notes\": \"Consultations étendues du lundi\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/service-schedules/{{created_schedule_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"service-schedules",
+						"{{created_schedule_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Time Slots",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has success property\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Response has time slots data\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data).to.have.property('time_slots');",
+							"    pm.expect(jsonData.data).to.have.property('total_slots');",
+							"    pm.expect(jsonData.data.time_slots).to.be.an('array');",
+							"});",
+							"",
+							"pm.test(\"Time slots have correct format\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    if (jsonData.data.time_slots.length > 0) {",
+							"        var slot = jsonData.data.time_slots[0];",
+							"        pm.expect(slot).to.have.property('start');",
+							"        pm.expect(slot).to.have.property('end');",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/service-schedules/{{created_schedule_id}}/time-slots",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"service-schedules",
+						"{{created_schedule_id}}",
+						"time-slots"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Filter by Service",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has success property\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"All schedules belong to the filtered service\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var serviceId = pm.environment.get('test_service_id');",
+							"    ",
+							"    jsonData.data.forEach(function(schedule) {",
+							"        pm.expect(schedule.service_id).to.eql(serviceId);",
+							"    });",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/service-schedules?service_id={{test_service_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"service-schedules"
+					],
+					"query": [
+						{
+							"key": "service_id",
+							"value": "{{test_service_id}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Filter by Day of Week",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"All schedules are for Monday\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    ",
+							"    jsonData.data.forEach(function(schedule) {",
+							"        pm.expect(schedule.day_of_week).to.eql('monday');",
+							"    });",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/service-schedules?day_of_week=monday",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"service-schedules"
+					],
+					"query": [
+						{
+							"key": "day_of_week",
+							"value": "monday"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Filter Active Schedules",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"All schedules are active\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    ",
+							"    jsonData.data.forEach(function(schedule) {",
+							"        pm.expect(schedule.is_active).to.be.true;",
+							"    });",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/service-schedules?is_active=true",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"service-schedules"
+					],
+					"query": [
+						{
+							"key": "is_active",
+							"value": "true"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Today's Schedules",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has success property\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Response has data array\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"    pm.expect(jsonData.data).to.be.an('array');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/service-schedules?today=true",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"service-schedules"
+					],
+					"query": [
+						{
+							"key": "today",
+							"value": "true"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Overlapping Schedule (Error Test)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 422\", function () {",
+							"    pm.response.to.have.status(422);",
+							"});",
+							"",
+							"pm.test(\"Response indicates overlap error\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.false;",
+							"    pm.expect(jsonData.message).to.include('chevauche');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"service_id\": \"{{test_service_id}}\",\n    \"day_of_week\": \"monday\",\n    \"start_time\": \"10:00\",\n    \"end_time\": \"14:00\",\n    \"max_appointments\": 1,\n    \"slot_duration\": 30,\n    \"is_active\": true,\n    \"notes\": \"Tentative de chevauchement\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/service-schedules",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"service-schedules"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Validation Error Test",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 422\", function () {",
+							"    pm.response.to.have.status(422);",
+							"});",
+							"",
+							"pm.test(\"Response has validation errors\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.false;",
+							"    pm.expect(jsonData).to.have.property('errors');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"service_id\": \"invalid-uuid\",\n    \"day_of_week\": \"invalid-day\",\n    \"start_time\": \"25:00\",\n    \"end_time\": \"07:00\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/service-schedules",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"service-schedules"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Unauthorized Access Test",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 401\", function () {",
+							"    pm.response.to.have.status(401);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/service-schedules",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"service-schedules"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Service Schedule",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has success property\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Success message is correct\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.message).to.include('supprimé avec succès');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/service-schedules/{{created_schedule_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"service-schedules",
+						"{{created_schedule_id}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Set default environment variables if not already set",
+					"if (!pm.environment.get('base_url')) {",
+					"    pm.environment.set('base_url', 'http://localhost:8000');",
+					"}",
+					"",
+					"// Ensure JWT token is available",
+					"if (!pm.environment.get('jwt_token')) {",
+					"    console.log('Warning: jwt_token not set in environment variables');",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test to check response time",
+					"pm.test(\"Response time is less than 2000ms\", function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+					"});",
+					"",
+					"// Global test to check content type",
+					"pm.test(\"Content-Type is application/json\", function () {",
+					"    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+					"});"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		}
+	]
+}

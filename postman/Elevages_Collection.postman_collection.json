@@ -1,0 +1,991 @@
+{
+	"info": {
+		"_postman_id": "elevages-api-collection",
+		"name": "Elevages API Collection",
+		"description": "Complete API collection for Elevages (Breeding Operations) management in AnimoPlus platform",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "animoplus-elevages"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"{{user_email}}\",\n    \"password\": \"{{user_password}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    if (response.success && response.data.access_token) {",
+									"        pm.environment.set('access_token', response.data.access_token);",
+									"        console.log('Token saved successfully');",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Elevages CRUD",
+			"item": [
+				{
+					"name": "List Elevages",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/elevages?per_page=15&page=1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"elevages"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "15"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "search",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "espece_id",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "race_id",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "eleveur_id",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "localisation",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "min_prix",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "max_prix",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "in_stock",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "is_active",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "sort_by",
+									"value": "created_at",
+									"disabled": true
+								},
+								{
+									"key": "sort_order",
+									"value": "desc",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success property', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', true);",
+									"});",
+									"",
+									"pm.test('Response has data property', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('data');",
+									"});",
+									"",
+									"if (pm.response.json().data.data && pm.response.json().data.data.length > 0) {",
+									"    const firstElevage = pm.response.json().data.data[0];",
+									"    pm.environment.set('elevage_id', firstElevage.id);",
+									"    console.log('Saved elevage ID:', firstElevage.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Create Elevage",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"espece_id\": \"{{espece_id}}\",\n    \"race_id\": \"{{race_id}}\",\n    \"age\": \"2-5 ans\",\n    \"taille\": \"Grande (55-62 cm)\",\n    \"stock\": 8,\n    \"eleveur_id\": \"{{user_id}}\",\n    \"description\": \"Labradors de pure race, excellents pour les familles. Lignée championne avec pedigree LOF.\",\n    \"prix\": 1200.00,\n    \"localisation\": \"Normandie, France\",\n    \"is_active\": true,\n    \"notes\": \"Disponibles à partir de 8 semaines. Parents testés pour dysplasie.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/elevages",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"elevages"
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('Response has success property', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', true);",
+									"});",
+									"",
+									"pm.test('Elevage created successfully', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('data');",
+									"    pm.expect(response.data).to.have.property('id');",
+									"    pm.environment.set('created_elevage_id', response.data.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Get Elevage by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/elevages/{{elevage_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"elevages",
+								"{{elevage_id}}"
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has elevage data', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', true);",
+									"    pm.expect(response).to.have.property('data');",
+									"    pm.expect(response.data).to.have.property('id');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Update Elevage",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"espece_id\": \"{{espece_id}}\",\n    \"race_id\": \"{{race_id}}\",\n    \"age\": \"3-6 ans\",\n    \"taille\": \"Grande (55-65 cm)\",\n    \"stock\": 10,\n    \"eleveur_id\": \"{{user_id}}\",\n    \"description\": \"Labradors de pure race, excellents pour les familles. Lignée championne avec pedigree LOF. Mise à jour.\",\n    \"prix\": 1300.00,\n    \"localisation\": \"Normandie, France\",\n    \"is_active\": true,\n    \"notes\": \"Disponibles à partir de 8 semaines. Parents testés pour dysplasie. Stock mis à jour.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/elevages/{{elevage_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"elevages",
+								"{{elevage_id}}"
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Elevage updated successfully', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', true);",
+									"    pm.expect(response).to.have.property('data');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Delete Elevage",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/elevages/{{elevage_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"elevages",
+								"{{elevage_id}}"
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Elevage deleted successfully', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Advanced Operations",
+			"item": [
+				{
+					"name": "Restore Deleted Elevage",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/elevages/{{elevage_id}}/restore",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"elevages",
+								"{{elevage_id}}",
+								"restore"
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Elevage restored successfully', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Update Stock - Increase",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"action\": \"increase\",\n    \"amount\": 5\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/elevages/{{elevage_id}}/stock",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"elevages",
+								"{{elevage_id}}",
+								"stock"
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Stock updated successfully', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', true);",
+									"    pm.expect(response).to.have.property('data');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Update Stock - Decrease",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"action\": \"decrease\",\n    \"amount\": 2\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/elevages/{{elevage_id}}/stock",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"elevages",
+								"{{elevage_id}}",
+								"stock"
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Stock decreased successfully', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Toggle Status",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/elevages/{{elevage_id}}/toggle-status",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"elevages",
+								"{{elevage_id}}",
+								"toggle-status"
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Status toggled successfully', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Filtering & Search",
+			"item": [
+				{
+					"name": "Search Elevages",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/elevages?search=Labrador&per_page=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"elevages"
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "Labrador"
+								},
+								{
+									"key": "per_page",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Filter by Species",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/elevages?espece_id={{espece_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"elevages"
+							],
+							"query": [
+								{
+									"key": "espece_id",
+									"value": "{{espece_id}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Filter by Price Range",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/elevages?min_prix=500&max_prix=1500",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"elevages"
+							],
+							"query": [
+								{
+									"key": "min_prix",
+									"value": "500"
+								},
+								{
+									"key": "max_prix",
+									"value": "1500"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Filter In Stock Only",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/elevages?in_stock=true&is_active=true",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"elevages"
+							],
+							"query": [
+								{
+									"key": "in_stock",
+									"value": "true"
+								},
+								{
+									"key": "is_active",
+									"value": "true"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Sort by Price",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/elevages?sort_by=prix&sort_order=asc",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"elevages"
+							],
+							"query": [
+								{
+									"key": "sort_by",
+									"value": "prix"
+								},
+								{
+									"key": "sort_order",
+									"value": "asc"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Error Scenarios",
+			"item": [
+				{
+					"name": "Create Elevage - Validation Error",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"age\": \"2-5 ans\",\n    \"taille\": \"Grande\",\n    \"stock\": -5,\n    \"description\": \"Test validation\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/elevages",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"elevages"
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 422', function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test('Response has validation errors', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', false);",
+									"    pm.expect(response).to.have.property('errors');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Get Non-existent Elevage",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/elevages/00000000-0000-0000-0000-000000000000",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"elevages",
+								"00000000-0000-0000-0000-000000000000"
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 404', function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"pm.test('Response indicates not found', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', false);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Unauthorized Request",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/elevages",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"elevages"
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 401', function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test('Response indicates unauthorized', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', false);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "user_email",
+			"value": "veterinarian@example.com",
+			"type": "string"
+		},
+		{
+			"key": "user_password",
+			"value": "password123",
+			"type": "string"
+		},
+		{
+			"key": "access_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "elevage_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "created_elevage_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "espece_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "race_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_id",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

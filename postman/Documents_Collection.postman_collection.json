@@ -1,0 +1,867 @@
+{
+	"info": {
+		"_postman_id": "documents-api-collection",
+		"name": "Documents Collection",
+		"description": "Complete API collection for Document management in AnimoPlus - Document upload, management, and download functionality",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "animoplus-documents"
+	},
+	"item": [
+		{
+			"name": "Get All Documents",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has success property\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson).to.have.property('success');",
+							"    pm.expect(responseJson.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Response has data array\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson).to.have.property('data');",
+							"    pm.expect(responseJson.data).to.be.an('array');",
+							"});",
+							"",
+							"pm.test(\"Response has pagination info\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson).to.have.property('pagination');",
+							"    pm.expect(responseJson.pagination).to.have.property('current_page');",
+							"    pm.expect(responseJson.pagination).to.have.property('total');",
+							"});",
+							"",
+							"pm.test(\"Response has summary info\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson).to.have.property('summary');",
+							"    pm.expect(responseJson.summary).to.have.property('total_documents');",
+							"});",
+							"",
+							"// Save first document ID for other tests",
+							"if (pm.response.json().data && pm.response.json().data.length > 0) {",
+							"    pm.environment.set('document_id', pm.response.json().data[0].id);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/documents?per_page=10",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"documents"
+					],
+					"query": [
+						{
+							"key": "per_page",
+							"value": "10"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Documents with Filters",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response is successful\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Filtered results returned\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.data).to.be.an('array');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/documents?public_only=true&with_user=true&type=pdf",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"documents"
+					],
+					"query": [
+						{
+							"key": "public_only",
+							"value": "true"
+						},
+						{
+							"key": "with_user",
+							"value": "true"
+						},
+						{
+							"key": "type",
+							"value": "pdf"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Search Documents",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Search results returned\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.success).to.be.true;",
+							"    pm.expect(responseJson.data).to.be.an('array');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/documents?search=rapport",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"documents"
+					],
+					"query": [
+						{
+							"key": "search",
+							"value": "rapport"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Upload Document",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Document uploaded successfully\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.success).to.be.true;",
+							"    pm.expect(responseJson.message).to.include('succès');",
+							"});",
+							"",
+							"pm.test(\"Response contains document data\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson).to.have.property('data');",
+							"    pm.expect(responseJson.data).to.have.property('id');",
+							"    pm.expect(responseJson.data).to.have.property('file_name');",
+							"    pm.expect(responseJson.data).to.have.property('file_size');",
+							"});",
+							"",
+							"// Save uploaded document ID",
+							"if (pm.response.json().data && pm.response.json().data.id) {",
+							"    pm.environment.set('uploaded_document_id', pm.response.json().data.id);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": []
+						},
+						{
+							"key": "description",
+							"value": "Document de test téléchargé via Postman",
+							"type": "text"
+						},
+						{
+							"key": "is_public",
+							"value": "false",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{base_url}}/api/documents",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"documents"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Specific Document",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Document retrieved successfully\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Response contains document data\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson).to.have.property('data');",
+							"    pm.expect(responseJson.data).to.have.property('id');",
+							"    pm.expect(responseJson.data).to.have.property('file_name');",
+							"    pm.expect(responseJson.data).to.have.property('user_id');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/documents/{{document_id}}?with_user=true",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"documents",
+						"{{document_id}}"
+					],
+					"query": [
+						{
+							"key": "with_user",
+							"value": "true"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Document",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Document updated successfully\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.success).to.be.true;",
+							"    pm.expect(responseJson.message).to.include('mis à jour');",
+							"});",
+							"",
+							"pm.test(\"Updated data returned\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson).to.have.property('data');",
+							"    pm.expect(responseJson.data).to.have.property('description');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"description\": \"Description mise à jour du document\",\n    \"is_public\": true\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/documents/{{document_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"documents",
+						"{{document_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Download Document",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 or 404\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+							"});",
+							"",
+							"if (pm.response.code === 200) {",
+							"    pm.test(\"File download initiated\", function () {",
+							"        pm.expect(pm.response.headers.get('Content-Disposition')).to.exist;",
+							"    });",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/documents/{{document_id}}/download",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"documents",
+						"{{document_id}}",
+						"download"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Document",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Document deleted successfully\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.success).to.be.true;",
+							"    pm.expect(responseJson.message).to.include('supprimé');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/documents/{{document_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"documents",
+						"{{document_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Restore Document",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Document restored successfully\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.success).to.be.true;",
+							"    pm.expect(responseJson.message).to.include('restauré');",
+							"});",
+							"",
+							"pm.test(\"Restored document data returned\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson).to.have.property('data');",
+							"    pm.expect(responseJson.data).to.have.property('id');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/documents/{{document_id}}/restore",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"documents",
+						"{{document_id}}",
+						"restore"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Upload Document - Missing File",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 422\", function () {",
+							"    pm.response.to.have.status(422);",
+							"});",
+							"",
+							"pm.test(\"Validation error returned\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.success).to.be.false;",
+							"    pm.expect(responseJson.message).to.include('invalides');",
+							"    pm.expect(responseJson).to.have.property('errors');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "description",
+							"value": "Document sans fichier",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{base_url}}/api/documents",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"documents"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Document - Invalid UUID",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 422\", function () {",
+							"    pm.response.to.have.status(422);",
+							"});",
+							"",
+							"pm.test(\"Invalid UUID error returned\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.success).to.be.false;",
+							"    pm.expect(responseJson.message).to.include('invalide');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/documents/invalid-uuid",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"documents",
+						"invalid-uuid"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Document - Not Found",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 404\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"",
+							"pm.test(\"Not found error returned\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.success).to.be.false;",
+							"    pm.expect(responseJson.message).to.include('non trouvé');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/documents/550e8400-e29b-41d4-a716-446655440999",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"documents",
+						"550e8400-e29b-41d4-a716-446655440999"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Document - Invalid Data",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 422\", function () {",
+							"    pm.response.to.have.status(422);",
+							"});",
+							"",
+							"pm.test(\"Validation error for long description\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.success).to.be.false;",
+							"    pm.expect(responseJson).to.have.property('errors');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"description\": \"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur?\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/documents/{{document_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"documents",
+						"{{document_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Unauthorized Access",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 401\", function () {",
+							"    pm.response.to.have.status(401);",
+							"});",
+							"",
+							"pm.test(\"Unauthorized error returned\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.success).to.be.false;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/documents",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"documents"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Ensure we have required environment variables",
+					"if (!pm.environment.get('base_url')) {",
+					"    pm.environment.set('base_url', 'http://localhost:8000');",
+					"}",
+					"",
+					"if (!pm.environment.get('jwt_token')) {",
+					"    console.log('Warning: jwt_token not set. Please authenticate first.');",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test to check response time",
+					"pm.test(\"Response time is less than 5000ms\", function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+					"});",
+					"",
+					"// Global test for content type on JSON responses",
+					"if (pm.response.headers.get('Content-Type') && pm.response.headers.get('Content-Type').includes('application/json')) {",
+					"    pm.test(\"Content-Type is application/json\", function () {",
+					"        pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+					"    });",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		}
+	]
+}
