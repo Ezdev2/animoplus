@@ -1,0 +1,870 @@
+{
+	"info": {
+		"_postman_id": "compta-collection-id",
+		"name": "AnimoPlus - Comptabilité (Statistiques Financières)",
+		"description": "Collection complète pour tester le module de comptabilité avec statistiques, tendances, comparaisons et rapports financiers.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{jwt_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "{{base_url}}"
+		}
+	],
+	"item": [
+		{
+			"name": "📊 Statistiques de Base",
+			"item": [
+				{
+					"name": "Statistiques du mois courant",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Monthly stats structure is correct', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.data).to.have.property('period');",
+									"    pm.expect(jsonData.data).to.have.property('revenues');",
+									"    pm.expect(jsonData.data).to.have.property('expenses');",
+									"    pm.expect(jsonData.data).to.have.property('profit');",
+									"    pm.expect(jsonData.data).to.have.property('ratios');",
+									"    console.log('✅ Revenus du mois:', jsonData.data.revenues.total_brut);",
+									"    console.log('✅ Dépenses du mois:', jsonData.data.expenses.total_brut);",
+									"    console.log('✅ Bénéfice net:', jsonData.data.profit.benefice_net);",
+									"    console.log('✅ Marge nette:', jsonData.data.profit.marge_nette_percentage + '%');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/compta/stats?period=month",
+							"host": ["{{base_url}}"],
+							"path": ["api", "compta", "stats"],
+							"query": [
+								{
+									"key": "period",
+									"value": "month",
+									"description": "Période: week, month, quarter, year, last_7_days, last_30_days, last_90_days, last_6_months, custom"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Statistiques de l'année courante",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Yearly stats retrieved', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.period).to.equal('year');",
+									"    pm.expect(jsonData.data.period_label).to.equal('Cette année');",
+									"    console.log('✅ Revenus annuels:', jsonData.data.revenues.total_brut);",
+									"    console.log('✅ Rentabilité:', jsonData.data.profit.is_profitable ? 'PROFITABLE' : 'NON PROFITABLE');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/compta/stats?period=year",
+							"host": ["{{base_url}}"],
+							"path": ["api", "compta", "stats"],
+							"query": [
+								{
+									"key": "period",
+									"value": "year"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Statistiques des 30 derniers jours",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Last 30 days stats retrieved', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.period).to.equal('last_30_days');",
+									"    pm.expect(jsonData.data.period_label).to.equal('30 derniers jours');",
+									"    console.log('✅ Revenus 30j:', jsonData.data.revenues.total_brut);",
+									"    console.log('✅ Nombre de transactions revenus:', jsonData.data.revenues.count);",
+									"    console.log('✅ Nombre de transactions dépenses:', jsonData.data.expenses.count);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/compta/stats?period=last_30_days",
+							"host": ["{{base_url}}"],
+							"path": ["api", "compta", "stats"],
+							"query": [
+								{
+									"key": "period",
+									"value": "last_30_days"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Statistiques période personnalisée",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Custom period stats retrieved', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.period).to.equal('custom');",
+									"    pm.expect(jsonData.data.start_date).to.equal('2025-10-01');",
+									"    pm.expect(jsonData.data.end_date).to.equal('2025-10-15');",
+									"    console.log('✅ Période personnalisée du', jsonData.data.start_date, 'au', jsonData.data.end_date);",
+									"    console.log('✅ Revenus période:', jsonData.data.revenues.total_brut);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/compta/stats?period=custom&start_date=2025-10-01&end_date=2025-10-15",
+							"host": ["{{base_url}}"],
+							"path": ["api", "compta", "stats"],
+							"query": [
+								{
+									"key": "period",
+									"value": "custom"
+								},
+								{
+									"key": "start_date",
+									"value": "2025-10-01"
+								},
+								{
+									"key": "end_date",
+									"value": "2025-10-15"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "📈 Tendances et Évolutions",
+			"item": [
+				{
+					"name": "Tendances mensuelles (12 mois)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Monthly trends retrieved', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('period_type');",
+									"    pm.expect(jsonData.data.period_type).to.equal('month');",
+									"    pm.expect(jsonData.data).to.have.property('trends');",
+									"    pm.expect(jsonData.data.trends).to.be.an('array');",
+									"    pm.expect(jsonData.data.trends.length).to.equal(12);",
+									"    pm.expect(jsonData.data).to.have.property('summary');",
+									"    console.log('✅ Tendances sur', jsonData.data.periods_count, 'mois');",
+									"    console.log('✅ Total revenus 12 mois:', jsonData.data.summary.total_revenues);",
+									"    console.log('✅ Meilleur mois:', jsonData.data.summary.best_month.period_label);",
+									"    console.log('✅ Marge moyenne:', jsonData.data.summary.average_margin + '%');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/compta/trends?period=month&count=12",
+							"host": ["{{base_url}}"],
+							"path": ["api", "compta", "trends"],
+							"query": [
+								{
+									"key": "period",
+									"value": "month",
+									"description": "Type de période: week, month, quarter, year"
+								},
+								{
+									"key": "count",
+									"value": "12",
+									"description": "Nombre de périodes (3-24)"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Tendances trimestrielles (8 trimestres)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Quarterly trends retrieved', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.period_type).to.equal('quarter');",
+									"    pm.expect(jsonData.data.trends.length).to.equal(8);",
+									"    console.log('✅ Tendances trimestrielles sur', jsonData.data.periods_count, 'trimestres');",
+									"    console.log('✅ Profit total:', jsonData.data.summary.total_profit);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/compta/trends?period=quarter&count=8",
+							"host": ["{{base_url}}"],
+							"path": ["api", "compta", "trends"],
+							"query": [
+								{
+									"key": "period",
+									"value": "quarter"
+								},
+								{
+									"key": "count",
+									"value": "8"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "🔄 Comparaisons",
+			"item": [
+				{
+					"name": "Comparaison mois actuel vs précédent",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Monthly comparison retrieved', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('current_period');",
+									"    pm.expect(jsonData.data).to.have.property('previous_period');",
+									"    pm.expect(jsonData.data).to.have.property('variations');",
+									"    pm.expect(jsonData.data).to.have.property('insights');",
+									"    ",
+									"    const variations = jsonData.data.variations;",
+									"    console.log('✅ Variation revenus:', variations.revenues.percentage + '% (' + variations.revenues.trend + ')');",
+									"    console.log('✅ Variation dépenses:', variations.expenses.percentage + '% (' + variations.expenses.trend + ')');",
+									"    console.log('✅ Variation profit:', variations.profit.percentage + '% (' + variations.profit.trend + ')');",
+									"    console.log('✅ Insights:', jsonData.data.insights.length, 'recommandations');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/compta/comparison?period=month",
+							"host": ["{{base_url}}"],
+							"path": ["api", "compta", "comparison"],
+							"query": [
+								{
+									"key": "period",
+									"value": "month",
+									"description": "Période: week, month, quarter, year"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Comparaison année actuelle vs précédente",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Yearly comparison retrieved', function () {",
+									"    const jsonData = pm.response.json();",
+									"    const current = jsonData.data.current_period;",
+									"    const previous = jsonData.data.previous_period;",
+									"    ",
+									"    console.log('✅ Année actuelle - Revenus:', current.revenues.total_brut);",
+									"    console.log('✅ Année précédente - Revenus:', previous.revenues.total_brut);",
+									"    console.log('✅ Évolution annuelle:', jsonData.data.variations.revenues.percentage + '%');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/compta/comparison?period=year",
+							"host": ["{{base_url}}"],
+							"path": ["api", "compta", "comparison"],
+							"query": [
+								{
+									"key": "period",
+									"value": "year"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "📊 Tableaux de Bord",
+			"item": [
+				{
+					"name": "Statistiques multiples personnalisées",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Multi stats structure is correct', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.data).to.have.property('current_year');",
+									"    pm.expect(jsonData.data).to.have.property('current_month');",
+									"    pm.expect(jsonData.data).to.have.property('current_week');",
+									"    pm.expect(jsonData.data).to.have.property('last_month');",
+									"    pm.expect(jsonData.data).to.have.property('last_week');",
+									"    pm.expect(jsonData.data).to.have.property('last_30_days');",
+									"    pm.expect(jsonData.data).to.have.property('last_7_days');",
+									"    pm.expect(jsonData.data).to.have.property('last_90_days');",
+									"    pm.expect(jsonData.data).to.have.property('summary');",
+									"    ",
+									"    const summary = jsonData.data.summary;",
+									"    pm.expect(summary.total_periods).to.equal(8);",
+									"    pm.expect(summary).to.have.property('generated_at');",
+									"    pm.expect(summary).to.have.property('periods_included');",
+									"    ",
+									"    console.log('✅ Statistiques multiples récupérées');",
+									"    console.log('✅ Année courante - Revenus:', jsonData.data.current_year.revenues.total_brut);",
+									"    console.log('✅ Mois courant - Revenus:', jsonData.data.current_month.revenues.total_brut);",
+									"    console.log('✅ Mois précédent - Revenus:', jsonData.data.last_month.revenues.total_brut);",
+									"    console.log('✅ Semaine courante - Revenus:', jsonData.data.current_week.revenues.total_brut);",
+									"    console.log('✅ Semaine précédente - Revenus:', jsonData.data.last_week.revenues.total_brut);",
+									"    console.log('✅ 30 derniers jours - Revenus:', jsonData.data.last_30_days.revenues.total_brut);",
+									"    console.log('✅ 7 derniers jours - Revenus:', jsonData.data.last_7_days.revenues.total_brut);",
+									"    console.log('✅ 90 derniers jours - Revenus:', jsonData.data.last_90_days.revenues.total_brut);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/compta/multi-stats",
+							"host": ["{{base_url}}"],
+							"path": ["api", "compta", "multi-stats"]
+						}
+					}
+				},
+				{
+					"name": "Dashboard comptable complet",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Complete dashboard retrieved', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('current_month');",
+									"    pm.expect(jsonData.data).to.have.property('current_quarter');",
+									"    pm.expect(jsonData.data).to.have.property('current_year');",
+									"    pm.expect(jsonData.data).to.have.property('last_7_days');",
+									"    pm.expect(jsonData.data).to.have.property('last_30_days');",
+									"    pm.expect(jsonData.data).to.have.property('last_90_days');",
+									"    pm.expect(jsonData.data).to.have.property('comparison');",
+									"    pm.expect(jsonData.data).to.have.property('yearly_trend');",
+									"    pm.expect(jsonData.data).to.have.property('top_revenue_categories');",
+									"    pm.expect(jsonData.data).to.have.property('top_expense_categories');",
+									"    ",
+									"    console.log('✅ Dashboard complet récupéré');",
+									"    console.log('✅ Revenus du mois:', jsonData.data.current_month.revenues.total_brut);",
+									"    console.log('✅ Revenus de l\\'année:', jsonData.data.current_year.revenues.total_brut);",
+									"    console.log('✅ Top catégories revenus:', jsonData.data.top_revenue_categories.length);",
+									"    console.log('✅ Top catégories dépenses:', jsonData.data.top_expense_categories.length);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/compta/dashboard",
+							"host": ["{{base_url}}"],
+							"path": ["api", "compta", "dashboard"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "📋 Rapports Financiers",
+			"item": [
+				{
+					"name": "Rapport Profit & Loss (Mois)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('P&L report structure is correct', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('report_info');",
+									"    pm.expect(jsonData.data).to.have.property('revenues');",
+									"    pm.expect(jsonData.data).to.have.property('expenses');",
+									"    pm.expect(jsonData.data).to.have.property('results');",
+									"    pm.expect(jsonData.data).to.have.property('tax_summary');",
+									"    pm.expect(jsonData.data).to.have.property('ratios');",
+									"    ",
+									"    const report = jsonData.data;",
+									"    console.log('✅ Rapport P&L généré pour:', report.report_info.period);",
+									"    console.log('✅ Statut:', report.results.status);",
+									"    console.log('✅ Bénéfice net:', report.results.benefice_net);",
+									"    console.log('✅ Marge nette:', report.results.marge_nette_percentage + '%');",
+									"    console.log('✅ Position fiscale nette:', report.tax_summary.net_tax_position);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/compta/profit-loss?period=month",
+							"host": ["{{base_url}}"],
+							"path": ["api", "compta", "profit-loss"],
+							"query": [
+								{
+									"key": "period",
+									"value": "month",
+									"description": "Période: month, quarter, year, custom"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Rapport Profit & Loss (Année)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Yearly P&L report retrieved', function () {",
+									"    const jsonData = pm.response.json();",
+									"    const report = jsonData.data;",
+									"    pm.expect(report.report_info.title).to.include('Profit & Loss');",
+									"    console.log('✅ Rapport annuel P&L:', report.report_info.period);",
+									"    console.log('✅ Revenus annuels:', report.revenues.total_brut);",
+									"    console.log('✅ Dépenses annuelles:', report.expenses.total_brut);",
+									"    console.log('✅ Résultat annuel:', report.results.benefice_net);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/compta/profit-loss?period=year",
+							"host": ["{{base_url}}"],
+							"path": ["api", "compta", "profit-loss"],
+							"query": [
+								{
+									"key": "period",
+									"value": "year"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Analyse Cash Flow (Flux de trésorerie)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Cash flow analysis retrieved', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('period_info');",
+									"    pm.expect(jsonData.data).to.have.property('cash_in');",
+									"    pm.expect(jsonData.data).to.have.property('cash_out');",
+									"    pm.expect(jsonData.data).to.have.property('net_cash_flow');",
+									"    pm.expect(jsonData.data).to.have.property('pending_cash');",
+									"    ",
+									"    const cashFlow = jsonData.data;",
+									"    console.log('✅ Entrées de trésorerie:', cashFlow.cash_in.total);",
+									"    console.log('✅ Sorties de trésorerie:', cashFlow.cash_out.total);",
+									"    console.log('✅ Flux net:', cashFlow.net_cash_flow.amount, '(' + cashFlow.net_cash_flow.status + ')');",
+									"    console.log('✅ Revenus en attente:', cashFlow.pending_cash.revenues_pending);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/compta/cash-flow?period=month",
+							"host": ["{{base_url}}"],
+							"path": ["api", "compta", "cash-flow"],
+							"query": [
+								{
+									"key": "period",
+									"value": "month",
+									"description": "Période: month, quarter, year"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "❌ Tests de Validation",
+			"item": [
+				{
+					"name": "Période invalide (422)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 422', function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test('Validation error returned', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.false;",
+									"    pm.expect(jsonData).to.have.property('errors');",
+									"    pm.expect(jsonData.errors).to.have.property('period');",
+									"    console.log('✅ Erreur de validation correctement détectée');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/compta/stats?period=invalid_period",
+							"host": ["{{base_url}}"],
+							"path": ["api", "compta", "stats"],
+							"query": [
+								{
+									"key": "period",
+									"value": "invalid_period"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Période custom sans dates (422)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 422', function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test('Custom period validation error', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.false;",
+									"    pm.expect(jsonData.errors).to.have.property('start_date');",
+									"    console.log('✅ Validation période custom sans dates OK');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/compta/stats?period=custom",
+							"host": ["{{base_url}}"],
+							"path": ["api", "compta", "stats"],
+							"query": [
+								{
+									"key": "period",
+									"value": "custom"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Nombre de périodes invalide pour trends (422)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 422', function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test('Count validation error', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.false;",
+									"    pm.expect(jsonData.errors).to.have.property('count');",
+									"    console.log('✅ Validation nombre de périodes OK');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/compta/trends?count=50",
+							"host": ["{{base_url}}"],
+							"path": ["api", "compta", "trends"],
+							"query": [
+								{
+									"key": "count",
+									"value": "50",
+									"description": "Trop élevé (max 24)"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "🔒 Tests de Sécurité",
+			"item": [
+				{
+					"name": "Sans authentification (401)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 401', function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test('Unauthorized access blocked', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.false;",
+									"    console.log('✅ Accès non autorisé correctement bloqué');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/compta/dashboard",
+							"host": ["{{base_url}}"],
+							"path": ["api", "compta", "dashboard"]
+						}
+					}
+				}
+			]
+		}
+	]
+}
