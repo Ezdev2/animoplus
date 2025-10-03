@@ -56,6 +56,48 @@
           </svg>
           Voir mes services
         </button>
+        
+        <!-- Boutons conditionnels selon le statut Pro -->
+        <div v-if="isVeterinarianPro" class="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-3 rounded-[14px] shadow-md">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-xl">⭐</span>
+            <span class="font-semibold">Compte Pro Actif</span>
+          </div>
+          <div class="flex gap-2">
+            <button @click="router.push('/pro-analytics')" 
+              class="flex-1 bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-3 py-2 rounded-lg text-sm transition-all">
+              📊 Analytics
+            </button>
+            <button @click="router.push('/pro-reports')" 
+              class="flex-1 bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-3 py-2 rounded-lg text-sm transition-all">
+              📋 Rapports
+            </button>
+          </div>
+        </div>
+        
+        <!-- Boutons pour vétérinaires normaux -->
+        <template v-else-if="isVeterinarian">
+          <!-- Bouton Passer Pro -->
+          <button @click="openUpgradeToProModal"
+            class="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-3 rounded-[14px] shadow-md flex items-center gap-2 hover:from-purple-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M2 17l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            </svg>
+            <span class="font-semibold">⭐ Passer Pro (API)</span>
+          </button>
+          
+          <!-- Bouton Test Simulation -->
+          <!-- <button @click="testSimulationUpgrade"
+            class="bg-gradient-to-r from-green-600 to-teal-600 text-white px-4 py-3 rounded-[14px] shadow-md flex items-center gap-2 hover:from-green-700 hover:to-teal-700 transition-all duration-300">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9c1.66 0 3.22.45 4.56 1.24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="font-semibold">🎭 Test Simulation</span>
+          </button> -->
+        </template>
       </div>
     </div>
 
@@ -246,6 +288,14 @@
     @confirm-delete="handleDeleteSpeciality"
   />
 
+  <!-- Modal Upgrade vers Pro -->
+  <UpgradeToProModal 
+    :is-open="showUpgradeToProModal"
+    :use-simulation="false"
+    @close="showUpgradeToProModal = false"
+    @upgrade-success="handleUpgradeSuccess"
+  />
+
   <!-- Debug API Tester - TEMPORAIRE -->
   <ApiTester v-if="showApiTester" @close="showApiTester = false" />
   
@@ -279,9 +329,13 @@ import EditServiceModal from '@/components/services/EditServiceModal.vue'
 import ApiTester from '@/components/debug/ApiTester.vue'
 import AddUserSpecialityModal from '@/components/userSpecialities/AddUserSpecialityModal.vue'
 import DeleteSpecialityModal from '@/components/userSpecialities/DeleteSpecialityModal.vue'
+import UpgradeToProModal from '@/components/subscription/UpgradeToProModal.vue'
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useSimpleAuth } from '@/composables/useSimpleAuth.js'
 import { useUserSpecialities } from '@/composables/useUserSpecialities.js'
+import { useSubscription } from '@/composables/useSubscription.js'
+import { useUserRole } from '@/composables/useUserRole.js'
 
 const props = defineProps({
   isClient: {
@@ -292,6 +346,10 @@ const props = defineProps({
 
 // Utiliser le système d'auth ultra-simple
 const auth = useSimpleAuth()
+const router = useRouter()
+
+// Composables pour les rôles
+const { isClient, isVeterinarian, isVeterinarianPro, isAnyVeterinarian } = useUserRole()
 
 // Composable pour les spécialités utilisateur
 const { 
@@ -332,7 +390,8 @@ const userAvatar = computed(() => {
 
 // Déterminer le type d'utilisateur
 const isUserClient = computed(() => {
-  return userData.value?.user_type === 'client' || userData.value?.role === 'client'
+  const userType = userData.value?.user_type || userData.value?.role
+  return userType === 'client'
 })
 
 const animals = ref([
@@ -351,6 +410,7 @@ const showServicesModal = ref(false)
 const showAddServiceModal = ref(false)
 const showEditServiceModal = ref(false)
 const selectedService = ref(null)
+const showUpgradeToProModal = ref(false)
 
 // Utilisateur actuel pour le modal des services
 const currentUser = computed(() => userData.value)
@@ -369,6 +429,54 @@ function addService() {
 function viewMyServices() {
   console.log('👁️ Voir mes services')
   showServicesModal.value = true
+}
+
+function openUpgradeToProModal() {
+  console.log('⭐ Ouvrir modal upgrade Pro (API réelle)')
+  showUpgradeToProModal.value = true
+}
+
+function testSimulationUpgrade() {
+  console.log('🎭 Test simulation upgrade Pro')
+  // Utiliser directement le composable pour tester
+  const { upgradeToPro } = useSubscription()
+  upgradeToPro(true) // true = simulation
+}
+
+function handleUpgradeSuccess(upgradeData) {
+  console.log('✅ Upgrade vers Pro réussi:', upgradeData)
+  showUpgradeToProModal.value = false
+  
+  // Les données utilisateur ont déjà été mises à jour par le composable useSubscription
+  // Mais on peut faire des actions supplémentaires ici
+  
+  if (upgradeData.user) {
+    console.log('👤 Nouvelles données utilisateur:', upgradeData.user)
+    
+    // Vérifier si l'utilisateur est maintenant Pro
+    const isPro = upgradeData.user.user_type === 'veterinarian_pro' || 
+                  upgradeData.user.subscription_type === 'pro'
+    
+    if (isPro) {
+      console.log('🎉 Utilisateur est maintenant Pro!')
+      
+      // Optionnel: Rediriger vers une page spécifique Pro
+      // router.push('/pro-dashboard')
+      
+      // Optionnel: Recharger la page pour mettre à jour l'interface
+      // window.location.reload()
+    }
+  }
+  
+  // Message personnalisé selon le mode
+  const message = upgradeData.isSimulation 
+    ? '🎭 Simulation réussie ! Votre compte est maintenant Pro (mode test).\n\nVous avez maintenant accès à toutes les fonctionnalités avancées.'
+    : '🎉 Félicitations ! Votre compte est maintenant Pro !\n\nVous avez maintenant accès à toutes les fonctionnalités avancées.'
+  
+  // Afficher le message après un court délai pour laisser le toast s'afficher
+  setTimeout(() => {
+    alert(message)
+  }, 2000)
 }
 
 // Gestionnaires d'événements du modal des services
