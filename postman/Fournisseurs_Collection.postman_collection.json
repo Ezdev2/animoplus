@@ -1,0 +1,527 @@
+{
+	"info": {
+		"_postman_id": "fournisseurs-collection-uuid",
+		"name": "Fournisseurs Collection",
+		"description": "Collection for testing Fournisseurs (Suppliers) API endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "List Suppliers",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has success property\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Response has data array\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"    pm.expect(jsonData.data).to.be.an('array');",
+							"});",
+							"",
+							"pm.test(\"Response has pagination info\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('pagination');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/fournisseurs?per_page=10&sort_by=name",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"fournisseurs"
+					],
+					"query": [
+						{
+							"key": "per_page",
+							"value": "10"
+						},
+						{
+							"key": "sort_by",
+							"value": "name"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Supplier",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Response has created supplier data\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"    pm.expect(jsonData.data).to.have.property('id');",
+							"    pm.expect(jsonData.data).to.have.property('name');",
+							"    ",
+							"    // Store supplier ID for other tests",
+							"    pm.environment.set('supplier_id', jsonData.data.id);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"user_id\": \"{{veterinarian_id}}\",\n    \"name\": \"Test Supplier Postman\",\n    \"company_name\": \"Test Company SAS\",\n    \"contact_person\": \"John Doe\",\n    \"email\": \"test@supplier.com\",\n    \"phone\": \"01 23 45 67 89\",\n    \"mobile\": \"06 12 34 56 78\",\n    \"address\": \"123 Test Street\",\n    \"city\": \"Paris\",\n    \"postal_code\": \"75001\",\n    \"country\": \"France\",\n    \"specialties\": [\"Médicaments\", \"Matériel médical\"],\n    \"notes\": \"Test supplier created via Postman\",\n    \"credit_limit\": 1000.00,\n    \"payment_terms\": 30,\n    \"is_active\": true,\n    \"is_preferred\": false\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/fournisseurs",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"fournisseurs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Supplier",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has supplier data\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"    pm.expect(jsonData.data).to.have.property('id');",
+							"    pm.expect(jsonData.data).to.have.property('user');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/fournisseurs/{{supplier_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"fournisseurs",
+						"{{supplier_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Supplier",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Supplier was updated\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data.notes).to.include('Updated');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"user_id\": \"{{veterinarian_id}}\",\n    \"name\": \"Test Supplier Updated\",\n    \"company_name\": \"Test Company Updated SAS\",\n    \"contact_person\": \"John Doe Updated\",\n    \"email\": \"test.updated@supplier.com\",\n    \"phone\": \"01 23 45 67 89\",\n    \"mobile\": \"06 12 34 56 78\",\n    \"address\": \"123 Test Street Updated\",\n    \"city\": \"Paris\",\n    \"postal_code\": \"75001\",\n    \"country\": \"France\",\n    \"specialties\": [\"Médicaments\", \"Matériel médical\", \"Consommables\"],\n    \"notes\": \"Test supplier updated via Postman\",\n    \"credit_limit\": 1500.00,\n    \"payment_terms\": 45,\n    \"is_active\": true,\n    \"is_preferred\": true\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/fournisseurs/{{supplier_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"fournisseurs",
+						"{{supplier_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Toggle Preferred Status",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Preferred status toggled\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/fournisseurs/{{supplier_id}}/toggle-preferred",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"fournisseurs",
+						"{{supplier_id}}",
+						"toggle-preferred"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Specialty Options",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has specialty options\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data).to.be.an('array');",
+							"    pm.expect(jsonData.data.length).to.be.greaterThan(0);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/fournisseurs/specialties/options",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"fournisseurs",
+						"specialties",
+						"options"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Filter by Specialty",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Filtered results returned\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data).to.be.an('array');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/fournisseurs?specialty=Médicaments",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"fournisseurs"
+					],
+					"query": [
+						{
+							"key": "specialty",
+							"value": "Médicaments"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Supplier",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Supplier deleted successfully\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/fournisseurs/{{supplier_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"fournisseurs",
+						"{{supplier_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Validation Error Test",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 422\", function () {",
+							"    pm.response.to.have.status(422);",
+							"});",
+							"",
+							"pm.test(\"Response has validation errors\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('errors');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"\",\n    \"email\": \"invalid-email\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/fournisseurs",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"fournisseurs"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"if (!pm.environment.get('base_url')) {",
+					"    pm.environment.set('base_url', 'http://localhost:8000');",
+					"}",
+					"",
+					"if (!pm.environment.get('jwt_token')) {",
+					"    console.log('Warning: JWT token not set. Please authenticate first.');",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		}
+	]
+}

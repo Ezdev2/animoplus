@@ -1,0 +1,790 @@
+{
+	"info": {
+		"_postman_id": "admin-messages-collection-uuid",
+		"name": "AdminMessages API Collection",
+		"description": "Complete API collection for AdminMessage CRUD operations in AnimoPlus",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication Tests",
+			"item": [
+				{
+					"name": "Missing Token Test",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin-messages",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin-messages"]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 401', function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test('Response has error message', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.false;",
+									"    pm.expect(responseJson.message).to.include('Token');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Invalid Token Test",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer invalid_token_here",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin-messages",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin-messages"]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 401', function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test('Response has error message', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.false;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "CRUD Operations",
+			"item": [
+				{
+					"name": "List Admin Messages",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin-messages?per_page=10",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin-messages"],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response structure is correct', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"    pm.expect(responseJson.data).to.be.an('array');",
+									"    pm.expect(responseJson.pagination).to.be.an('object');",
+									"});",
+									"",
+									"pm.test('Pagination structure is correct', function () {",
+									"    const responseJson = pm.response.json();",
+									"    const pagination = responseJson.pagination;",
+									"    pm.expect(pagination).to.have.property('current_page');",
+									"    pm.expect(pagination).to.have.property('total');",
+									"    pm.expect(pagination).to.have.property('per_page');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Create Admin Message",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Test Admin Message\",\n    \"content\": \"This is a test administrative message created via Postman.\",\n    \"type\": \"info\",\n    \"priority\": \"medium\",\n    \"is_active\": true,\n    \"is_global\": true,\n    \"published_at\": \"now\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin-messages",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin-messages"]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('Response structure is correct', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"    pm.expect(responseJson.message).to.include('succès');",
+									"    pm.expect(responseJson.data).to.be.an('object');",
+									"});",
+									"",
+									"pm.test('Created message has correct properties', function () {",
+									"    const responseJson = pm.response.json();",
+									"    const message = responseJson.data;",
+									"    pm.expect(message).to.have.property('id');",
+									"    pm.expect(message).to.have.property('title');",
+									"    pm.expect(message).to.have.property('content');",
+									"    pm.expect(message).to.have.property('type');",
+									"    pm.expect(message).to.have.property('priority');",
+									"    pm.expect(message.title).to.eql('Test Admin Message');",
+									"    pm.expect(message.type).to.eql('info');",
+									"    pm.expect(message.priority).to.eql('medium');",
+									"});",
+									"",
+									"// Store the created message ID for other tests",
+									"if (pm.response.code === 201) {",
+									"    const responseJson = pm.response.json();",
+									"    pm.environment.set('admin_message_id', responseJson.data.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Get Admin Message by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin-messages/{{admin_message_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin-messages", "{{admin_message_id}}"]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response structure is correct', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"    pm.expect(responseJson.data).to.be.an('object');",
+									"});",
+									"",
+									"pm.test('Message has admin relationship', function () {",
+									"    const responseJson = pm.response.json();",
+									"    const message = responseJson.data;",
+									"    pm.expect(message).to.have.property('admin');",
+									"    pm.expect(message.admin).to.have.property('nom');",
+									"    pm.expect(message.admin).to.have.property('prenom');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Update Admin Message",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Updated Test Admin Message\",\n    \"content\": \"This message has been updated via Postman.\",\n    \"priority\": \"high\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin-messages/{{admin_message_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin-messages", "{{admin_message_id}}"]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Message was updated', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"    pm.expect(responseJson.message).to.include('mis à jour');",
+									"    pm.expect(responseJson.data.title).to.eql('Updated Test Admin Message');",
+									"    pm.expect(responseJson.data.priority).to.eql('high');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Delete Admin Message",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin-messages/{{admin_message_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin-messages", "{{admin_message_id}}"]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Message was deleted', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"    pm.expect(responseJson.message).to.include('supprimé');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Restore Admin Message",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin-messages/{{admin_message_id}}/restore",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin-messages", "{{admin_message_id}}", "restore"]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Message was restored', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"    pm.expect(responseJson.message).to.include('restauré');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Custom Actions",
+			"item": [
+				{
+					"name": "Publish Message",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin-messages/{{admin_message_id}}/publish",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin-messages", "{{admin_message_id}}", "publish"]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Message was published', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"    pm.expect(responseJson.message).to.include('publié');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Deactivate Message",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin-messages/{{admin_message_id}}/deactivate",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin-messages", "{{admin_message_id}}", "deactivate"]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Message was deactivated', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"    pm.expect(responseJson.message).to.include('désactivé');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Get Active Messages for Current User",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin-messages/active/current",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin-messages", "active", "current"]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response structure is correct', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"    pm.expect(responseJson.data).to.be.an('array');",
+									"});",
+									"",
+									"pm.test('All messages are valid for user', function () {",
+									"    const responseJson = pm.response.json();",
+									"    responseJson.data.forEach(message => {",
+									"        pm.expect(message).to.have.property('is_active');",
+									"        pm.expect(message.is_active).to.be.true;",
+									"    });",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Filtering and Search",
+			"item": [
+				{
+					"name": "Filter by Type",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin-messages?type=info",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin-messages"],
+							"query": [
+								{
+									"key": "type",
+									"value": "info"
+								}
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('All messages have correct type', function () {",
+									"    const responseJson = pm.response.json();",
+									"    responseJson.data.forEach(message => {",
+									"        pm.expect(message.type).to.eql('info');",
+									"    });",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Filter by Priority",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin-messages?priority=urgent",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin-messages"],
+							"query": [
+								{
+									"key": "priority",
+									"value": "urgent"
+								}
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('All messages have urgent priority', function () {",
+									"    const responseJson = pm.response.json();",
+									"    responseJson.data.forEach(message => {",
+									"        pm.expect(message.priority).to.eql('urgent');",
+									"    });",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Search Messages",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin-messages?search=maintenance",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin-messages"],
+							"query": [
+								{
+									"key": "search",
+									"value": "maintenance"
+								}
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Search results contain search term', function () {",
+									"    const responseJson = pm.response.json();",
+									"    responseJson.data.forEach(message => {",
+									"        const titleMatch = message.title.toLowerCase().includes('maintenance');",
+									"        const contentMatch = message.content.toLowerCase().includes('maintenance');",
+									"        pm.expect(titleMatch || contentMatch).to.be.true;",
+									"    });",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Validation Tests",
+			"item": [
+				{
+					"name": "Create Message - Missing Required Fields",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Test Message\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin-messages",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin-messages"]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 422', function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test('Validation errors are returned', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.false;",
+									"    pm.expect(responseJson).to.have.property('errors');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Create Message - Invalid Type",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Test Message\",\n    \"content\": \"Test content\",\n    \"type\": \"invalid_type\",\n    \"priority\": \"medium\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin-messages",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin-messages"]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 422', function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test('Type validation error is returned', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.false;",
+									"    pm.expect(responseJson.errors).to.have.property('type');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Permission Tests",
+			"item": [
+				{
+					"name": "Non-Admin Create Message",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{client_jwt_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Unauthorized Test\",\n    \"content\": \"This should fail\",\n    \"type\": \"info\",\n    \"priority\": \"low\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin-messages",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin-messages"]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 403', function () {",
+									"    pm.response.to.have.status(403);",
+									"});",
+									"",
+									"pm.test('Access denied message is returned', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.false;",
+									"    pm.expect(responseJson.message).to.include('Accès refusé');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		}
+	]
+}

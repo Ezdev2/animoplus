@@ -1,0 +1,738 @@
+{
+	"info": {
+		"_postman_id": "550e8400-e29b-41d4-a716-446655440001",
+		"name": "SpecialiteServiceTypes Collection",
+		"description": "Collection for testing SpecialiteServiceType API endpoints - Specialty-Service Type associations management",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{jwt_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000/api",
+			"type": "string"
+		},
+		{
+			"key": "jwt_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "association_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "specialite_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "service_type_id",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    if (response.success && response.data.access_token) {",
+									"        pm.collectionVariables.set('jwt_token', response.data.access_token);",
+									"        pm.test('JWT token saved', function () {",
+									"            pm.expect(response.data.access_token).to.be.a('string');",
+									"        });",
+									"    }",
+									"}",
+									"",
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success property', function () {",
+									"    pm.expect(pm.response.json()).to.have.property('success');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"veterinarian@example.com\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "SpecialiteServiceType Management",
+			"item": [
+				{
+					"name": "List All Associations",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success property', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', true);",
+									"});",
+									"",
+									"pm.test('Response has data property', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('data');",
+									"});",
+									"",
+									"if (pm.response.json().data.data && pm.response.json().data.data.length > 0) {",
+									"    const firstAssociation = pm.response.json().data.data[0];",
+									"    pm.collectionVariables.set('association_id', firstAssociation.id);",
+									"    pm.collectionVariables.set('specialite_id', firstAssociation.specialite_id);",
+									"    pm.collectionVariables.set('service_type_id', firstAssociation.service_type_id);",
+									"    ",
+									"    pm.test('First association has required properties', function () {",
+									"        pm.expect(firstAssociation).to.have.property('id');",
+									"        pm.expect(firstAssociation).to.have.property('specialite_id');",
+									"        pm.expect(firstAssociation).to.have.property('service_type_id');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/specialite-service-types?per_page=15&page=1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"specialite-service-types"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "15"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Associations with Filters",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success property', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/specialite-service-types?specialite_id={{specialite_id}}&sort_by=created_at&sort_order=desc",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"specialite-service-types"
+							],
+							"query": [
+								{
+									"key": "specialite_id",
+									"value": "{{specialite_id}}"
+								},
+								{
+									"key": "sort_by",
+									"value": "created_at"
+								},
+								{
+									"key": "sort_order",
+									"value": "desc"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create New Association",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('Response has success property', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', true);",
+									"});",
+									"",
+									"pm.test('Response has data property', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('data');",
+									"});",
+									"",
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    if (response.data && response.data.id) {",
+									"        pm.collectionVariables.set('association_id', response.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"specialite_id\": \"{{specialite_id}}\",\n    \"service_type_id\": \"{{service_type_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/specialite-service-types",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"specialite-service-types"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Specific Association",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success property', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', true);",
+									"});",
+									"",
+									"pm.test('Response has data property', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('data');",
+									"});",
+									"",
+									"pm.test('Data has required properties', function () {",
+									"    const data = pm.response.json().data;",
+									"    pm.expect(data).to.have.property('id');",
+									"    pm.expect(data).to.have.property('specialite_id');",
+									"    pm.expect(data).to.have.property('service_type_id');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/specialite-service-types/{{association_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"specialite-service-types",
+								"{{association_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Service Types by Specialite",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success property', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', true);",
+									"});",
+									"",
+									"pm.test('Response has data array', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.data).to.be.an('array');",
+									"});",
+									"",
+									"if (pm.response.json().data.length > 0) {",
+									"    pm.test('Service types have required properties', function () {",
+									"        const serviceType = pm.response.json().data[0];",
+									"        pm.expect(serviceType).to.have.property('id');",
+									"        pm.expect(serviceType).to.have.property('name');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/specialite-service-types/by-specialite/{{specialite_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"specialite-service-types",
+								"by-specialite",
+								"{{specialite_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Specialites by Service Type",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success property', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', true);",
+									"});",
+									"",
+									"pm.test('Response has data array', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.data).to.be.an('array');",
+									"});",
+									"",
+									"if (pm.response.json().data.length > 0) {",
+									"    pm.test('Specialites have required properties', function () {",
+									"        const specialite = pm.response.json().data[0];",
+									"        pm.expect(specialite).to.have.property('id');",
+									"        pm.expect(specialite).to.have.property('name');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/specialite-service-types/by-service-type/{{service_type_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"specialite-service-types",
+								"by-service-type",
+								"{{service_type_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Association",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success property', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/specialite-service-types/{{association_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"specialite-service-types",
+								"{{association_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Error Scenarios",
+			"item": [
+				{
+					"name": "Create Association - Validation Error",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 422', function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test('Response has success property false', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', false);",
+									"});",
+									"",
+									"pm.test('Response has errors property', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('errors');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"specialite_id\": \"invalid-uuid\",\n    \"service_type_id\": \"\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/specialite-service-types",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"specialite-service-types"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Duplicate Association",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 409', function () {",
+									"    pm.response.to.have.status(409);",
+									"});",
+									"",
+									"pm.test('Response has success property false', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', false);",
+									"});",
+									"",
+									"pm.test('Response indicates duplicate', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.include('existe déjà');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"specialite_id\": \"{{specialite_id}}\",\n    \"service_type_id\": \"{{service_type_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/specialite-service-types",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"specialite-service-types"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Non-existent Association",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 404', function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"pm.test('Response has success property false', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', false);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/specialite-service-types/550e8400-e29b-41d4-a716-446655440999",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"specialite-service-types",
+								"550e8400-e29b-41d4-a716-446655440999"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Service Types for Non-existent Specialite",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 404', function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"pm.test('Response has success property false', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', false);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/specialite-service-types/by-specialite/550e8400-e29b-41d4-a716-446655440999",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"specialite-service-types",
+								"by-specialite",
+								"550e8400-e29b-41d4-a716-446655440999"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Unauthorized Access",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 401', function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test('Response has success property false', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', false);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/specialite-service-types",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"specialite-service-types"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

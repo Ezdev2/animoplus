@@ -1,0 +1,885 @@
+{
+	"info": {
+		"_postman_id": "clinic-schedules-api-collection",
+		"name": "Clinic Schedules API",
+		"description": "Collection complète pour tester l'API des horaires de cliniques vétérinaires",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    if (response.success && response.data && response.data.token) {",
+									"        pm.collectionVariables.set('jwt_token', response.data.token);",
+									"        console.log('Token JWT sauvegardé:', response.data.token);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"veterinaire@example.com\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Clinic Schedules CRUD",
+			"item": [
+				{
+					"name": "Get All Schedules",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success property', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});",
+									"",
+									"pm.test('Response has data with pagination', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('current_page');",
+									"    pm.expect(jsonData.data).to.have.property('per_page');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/clinic-schedules?per_page=10&sort_by=day_of_week",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"clinic-schedules"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "10"
+								},
+								{
+									"key": "sort_by",
+									"value": "day_of_week"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Schedule",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('Schedule created successfully', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('id');",
+									"    ",
+									"    // Save schedule ID for other requests",
+									"    pm.collectionVariables.set('schedule_id', jsonData.data.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"clinic_id\": \"{{clinic_id}}\",\n    \"user_id\": \"{{user_id}}\",\n    \"day_of_week\": \"monday\",\n    \"start_time\": \"08:00\",\n    \"end_time\": \"17:00\",\n    \"break_start\": \"12:00\",\n    \"break_end\": \"13:00\",\n    \"is_active\": true,\n    \"notes\": \"Horaire standard du lundi\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/clinic-schedules",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"clinic-schedules"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Schedule by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Schedule retrieved successfully', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('id');",
+									"    pm.expect(jsonData.data).to.have.property('clinic');",
+									"    pm.expect(jsonData.data).to.have.property('user');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/clinic-schedules/{{schedule_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"clinic-schedules",
+								"{{schedule_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Schedule",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Schedule updated successfully', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data.notes).to.include('modifié');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"clinic_id\": \"{{clinic_id}}\",\n    \"user_id\": \"{{user_id}}\",\n    \"day_of_week\": \"monday\",\n    \"start_time\": \"08:30\",\n    \"end_time\": \"17:30\",\n    \"break_start\": \"12:30\",\n    \"break_end\": \"13:30\",\n    \"is_active\": true,\n    \"notes\": \"Horaire modifié du lundi\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/clinic-schedules/{{schedule_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"clinic-schedules",
+								"{{schedule_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Schedule",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Schedule deleted successfully', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/clinic-schedules/{{schedule_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"clinic-schedules",
+								"{{schedule_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Filtering & Search",
+			"item": [
+				{
+					"name": "Filter by Clinic",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Results filtered by clinic', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    if (jsonData.data.data.length > 0) {",
+									"        jsonData.data.data.forEach(schedule => {",
+									"            pm.expect(schedule.clinic_id).to.eql(pm.collectionVariables.get('clinic_id'));",
+									"        });",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/clinic-schedules?clinic_id={{clinic_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"clinic-schedules"
+							],
+							"query": [
+								{
+									"key": "clinic_id",
+									"value": "{{clinic_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Filter by Day of Week",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/clinic-schedules?day_of_week=monday",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"clinic-schedules"
+							],
+							"query": [
+								{
+									"key": "day_of_week",
+									"value": "monday"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Filter Active Schedules",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/clinic-schedules?active=true",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"clinic-schedules"
+							],
+							"query": [
+								{
+									"key": "active",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Advanced Features",
+			"item": [
+				{
+					"name": "Get Weekly Schedule",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Weekly schedule structure', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/clinic-schedules/weekly?clinic_id={{clinic_id}}&user_id={{user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"clinic-schedules",
+								"weekly"
+							],
+							"query": [
+								{
+									"key": "clinic_id",
+									"value": "{{clinic_id}}"
+								},
+								{
+									"key": "user_id",
+									"value": "{{user_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Available Slots",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Available slots structure', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/clinic-schedules/available-slots?clinic_id={{clinic_id}}&date=2024-01-15&duration=30",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"clinic-schedules",
+								"available-slots"
+							],
+							"query": [
+								{
+									"key": "clinic_id",
+									"value": "{{clinic_id}}"
+								},
+								{
+									"key": "date",
+									"value": "2024-01-15"
+								},
+								{
+									"key": "duration",
+									"value": "30"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Restore Deleted Schedule",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Schedule restored successfully', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/clinic-schedules/{{schedule_id}}/restore",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"clinic-schedules",
+								"{{schedule_id}}",
+								"restore"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Validation Tests",
+			"item": [
+				{
+					"name": "Invalid Time Format",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 422', function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test('Validation error for time format', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.false;",
+									"    pm.expect(jsonData).to.have.property('errors');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"clinic_id\": \"{{clinic_id}}\",\n    \"user_id\": \"{{user_id}}\",\n    \"day_of_week\": \"tuesday\",\n    \"start_time\": \"invalid-time\",\n    \"end_time\": \"17:00\",\n    \"is_active\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/clinic-schedules",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"clinic-schedules"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "End Time Before Start Time",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 422', function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test('Validation error for time logic', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.false;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"clinic_id\": \"{{clinic_id}}\",\n    \"user_id\": \"{{user_id}}\",\n    \"day_of_week\": \"wednesday\",\n    \"start_time\": \"17:00\",\n    \"end_time\": \"08:00\",\n    \"is_active\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/clinic-schedules",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"clinic-schedules"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Missing Required Fields",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 422', function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test('Validation errors for required fields', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.false;",
+									"    pm.expect(jsonData).to.have.property('errors');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"day_of_week\": \"thursday\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/clinic-schedules",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"clinic-schedules"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Error Handling",
+			"item": [
+				{
+					"name": "Unauthorized Access",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 401', function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test('Unauthorized error message', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.false;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/clinic-schedules",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"clinic-schedules"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Schedule Not Found",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 404', function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"pm.test('Not found error message', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.false;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/clinic-schedules/00000000-0000-0000-0000-000000000000",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"clinic-schedules",
+								"00000000-0000-0000-0000-000000000000"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Set default variables if not already set",
+					"if (!pm.collectionVariables.get('base_url')) {",
+					"    pm.collectionVariables.set('base_url', 'http://localhost:8000/api');",
+					"}",
+					"",
+					"// Log current request for debugging",
+					"console.log('Request URL:', pm.request.url.toString());"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test to check response time",
+					"pm.test('Response time is less than 2000ms', function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+					"});",
+					"",
+					"// Log response for debugging",
+					"if (pm.response.code >= 400) {",
+					"    console.log('Error Response:', pm.response.text());",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000/api",
+			"type": "string"
+		},
+		{
+			"key": "jwt_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "schedule_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "clinic_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_id",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

@@ -1,0 +1,561 @@
+{
+	"info": {
+		"_postman_id": "animals-api-collection",
+		"name": "Animals API Collection",
+		"description": "Complete CRUD operations for Animals with authentication, validation, and relationship testing",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{jwt_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"exec": [
+					"// Auto-set Authorization header if jwt_token exists",
+					"if (pm.environment.get('jwt_token')) {",
+					"    pm.request.headers.add({",
+					"        key: 'Authorization',",
+					"        value: 'Bearer ' + pm.environment.get('jwt_token')",
+					"    });",
+					"}"
+				],
+				"type": "text/javascript"
+			}
+		}
+	],
+	"item": [
+		{
+			"name": "Animals",
+			"item": [
+				{
+					"name": "Get All Animals",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success true', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});",
+									"",
+									"pm.test('Response contains data array', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});",
+									"",
+									"pm.test('Response contains pagination', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.pagination).to.be.an('object');",
+									"    pm.expect(jsonData.pagination).to.have.property('current_page');",
+									"    pm.expect(jsonData.pagination).to.have.property('total');",
+									"});",
+									"",
+									"// Save first animal ID for other tests",
+									"if (pm.response.json().data.length > 0) {",
+									"    pm.environment.set('animal_id', pm.response.json().data[0].id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/animaux?per_page=10&with_espece=true&with_race=true&with_proprietaire=true",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"animaux"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "10"
+								},
+								{
+									"key": "with_espece",
+									"value": "true"
+								},
+								{
+									"key": "with_race",
+									"value": "true"
+								},
+								{
+									"key": "with_proprietaire",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search Animals",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/animaux?search=Bella&with_espece=true&with_race=true",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"animaux"
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "Bella"
+								},
+								{
+									"key": "with_espece",
+									"value": "true"
+								},
+								{
+									"key": "with_race",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Filter Animals by Species",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/animaux?espece_id={{espece_id}}&with_espece=true",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"animaux"
+							],
+							"query": [
+								{
+									"key": "espece_id",
+									"value": "{{espece_id}}"
+								},
+								{
+									"key": "with_espece",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Animal",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('Response has success true', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});",
+									"",
+									"pm.test('Animal created with correct data', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('id');",
+									"    pm.expect(jsonData.data.nom).to.eql('Test Animal');",
+									"    pm.expect(jsonData.data.sexe).to.eql('M');",
+									"});",
+									"",
+									"// Save created animal ID",
+									"pm.environment.set('created_animal_id', pm.response.json().data.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nom\": \"Test Animal\",\n    \"espece_id\": \"{{espece_id}}\",\n    \"race_id\": \"{{race_id}}\",\n    \"date_naissance\": \"2020-05-15\",\n    \"sexe\": \"M\",\n    \"couleur\": \"Brun\",\n    \"poids\": 25.5,\n    \"taille\": 45.0,\n    \"sterilise\": false,\n    \"numero_puce\": \"250268500999999\",\n    \"notes\": \"Animal de test créé via Postman\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/animaux",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"animaux"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Animal by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success true', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});",
+									"",
+									"pm.test('Animal data includes relationships', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('espece');",
+									"    pm.expect(jsonData.data).to.have.property('race');",
+									"    pm.expect(jsonData.data).to.have.property('proprietaire');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/animaux/{{animal_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"animaux",
+								"{{animal_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Animal",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success true', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});",
+									"",
+									"pm.test('Animal updated correctly', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.poids).to.eql(26.0);",
+									"    pm.expect(jsonData.data.sterilise).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"poids\": 26.0,\n    \"sterilise\": true,\n    \"notes\": \"Animal mis à jour - stérilisé et poids ajusté\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/animaux/{{created_animal_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"animaux",
+								"{{created_animal_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Animal",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success true', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});",
+									"",
+									"pm.test('Delete message is correct', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.message).to.include('deleted successfully');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/animaux/{{created_animal_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"animaux",
+								"{{created_animal_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Restore Animal",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success true', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});",
+									"",
+									"pm.test('Restore message is correct', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.message).to.include('restored successfully');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/animaux/{{created_animal_id}}/restore",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"animaux",
+								"{{created_animal_id}}",
+								"restore"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Validation Tests",
+			"item": [
+				{
+					"name": "Create Animal - Missing Required Fields",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 422', function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test('Response has validation errors', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.false;",
+									"    pm.expect(jsonData.errors).to.be.an('object');",
+									"    pm.expect(jsonData.errors).to.have.property('nom');",
+									"    pm.expect(jsonData.errors).to.have.property('espece_id');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"couleur\": \"Rouge\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/animaux",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"animaux"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Animal - Invalid Data Types",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 422', function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test('Response has validation errors', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.false;",
+									"    pm.expect(jsonData.errors).to.be.an('object');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nom\": \"Test\",\n    \"espece_id\": \"invalid-uuid\",\n    \"poids\": \"not-a-number\",\n    \"sexe\": \"Invalid\",\n    \"date_naissance\": \"2030-01-01\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/animaux",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"animaux"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Animal - Duplicate Chip Number",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 422', function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test('Response has unique validation error', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.false;",
+									"    pm.expect(jsonData.errors).to.have.property('numero_puce');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nom\": \"Duplicate Chip Test\",\n    \"espece_id\": \"{{espece_id}}\",\n    \"numero_puce\": \"250268500123456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/animaux",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"animaux"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		}
+	]
+}

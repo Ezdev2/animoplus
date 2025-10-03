@@ -1,0 +1,649 @@
+{
+	"info": {
+		"_postman_id": "user-lost-animals-collection",
+		"name": "AnimoPlus - Mes Annonces Lost Animals",
+		"description": "Collection pour tester la route sécurisée permettant à un utilisateur de récupérer toutes ses propres annonces d'animaux perdus/trouvés, peu importe le statut.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{jwt_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "{{base_url}}"
+		}
+	],
+	"item": [
+		{
+			"name": "📋 Mes Annonces - CRUD",
+			"item": [
+				{
+					"name": "Toutes mes annonces",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response structure is correct', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData).to.have.property('filters');",
+									"});",
+									"",
+									"pm.test('Pagination structure is correct', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('current_page');",
+									"    pm.expect(jsonData.data).to.have.property('per_page');",
+									"    pm.expect(jsonData.data).to.have.property('total');",
+									"    console.log('✅ Total de mes annonces:', jsonData.data.total);",
+									"});",
+									"",
+									"pm.test('All posts belong to authenticated user', function () {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.data.data.length > 0) {",
+									"        const userId = jsonData.data.data[0].user_id;",
+									"        jsonData.data.data.forEach(post => {",
+									"            pm.expect(post.user_id).to.eql(userId);",
+									"        });",
+									"        console.log('✅ Toutes les annonces appartiennent à l\\'utilisateur:', userId);",
+									"    }",
+									"});",
+									"",
+									"pm.test('User info is complete', function () {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.data.data.length > 0) {",
+									"        const user = jsonData.data.data[0].user;",
+									"        pm.expect(user).to.have.property('name');",
+									"        pm.expect(user).to.have.property('email');",
+									"        pm.expect(user).to.have.property('phone');",
+									"        pm.expect(user).to.have.property('address');",
+									"        console.log('✅ Infos utilisateur complètes');",
+									"    }",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/user/lost-animals?per_page=20",
+							"host": ["{{base_url}}"],
+							"path": ["api", "user", "lost-animals"],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "20"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Mes annonces - Filtre par statut PENDING",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('All posts have pending status', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    ",
+									"    if (jsonData.data.data.length > 0) {",
+									"        jsonData.data.data.forEach(post => {",
+									"            pm.expect(post.status).to.eql('pending');",
+									"        });",
+									"        console.log('✅ Mes annonces pending:', jsonData.data.total);",
+									"    } else {",
+									"        console.log('ℹ️ Aucune annonce pending trouvée');",
+									"    }",
+									"});",
+									"",
+									"pm.test('Filter is applied correctly', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.filters.status).to.eql('pending');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/user/lost-animals?status=pending&per_page=10",
+							"host": ["{{base_url}}"],
+							"path": ["api", "user", "lost-animals"],
+							"query": [
+								{
+									"key": "status",
+									"value": "pending"
+								},
+								{
+									"key": "per_page",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Mes annonces - Filtre par statut APPROVED",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('All posts have approved status', function () {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.data.data.length > 0) {",
+									"        jsonData.data.data.forEach(post => {",
+									"            pm.expect(post.status).to.eql('approved');",
+									"        });",
+									"        console.log('✅ Mes annonces approved:', jsonData.data.total);",
+									"    }",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/user/lost-animals?status=approved&per_page=10",
+							"host": ["{{base_url}}"],
+							"path": ["api", "user", "lost-animals"],
+							"query": [
+								{
+									"key": "status",
+									"value": "approved"
+								},
+								{
+									"key": "per_page",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Mes annonces - Filtre par type LOST",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('All posts are lost type', function () {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.data.data.length > 0) {",
+									"        jsonData.data.data.forEach(post => {",
+									"            pm.expect(post.type).to.eql('lost');",
+									"        });",
+									"        console.log('✅ Mes annonces \"lost\":', jsonData.data.total);",
+									"    }",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/user/lost-animals?type=lost&per_page=10",
+							"host": ["{{base_url}}"],
+							"path": ["api", "user", "lost-animals"],
+							"query": [
+								{
+									"key": "type",
+									"value": "lost"
+								},
+								{
+									"key": "per_page",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Mes annonces - Filtre par animal CHIEN",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('All posts are about dogs', function () {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.data.data.length > 0) {",
+									"        jsonData.data.data.forEach(post => {",
+									"            pm.expect(post.animal_type).to.eql('chien');",
+									"        });",
+									"        console.log('✅ Mes annonces de chiens:', jsonData.data.total);",
+									"    }",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/user/lost-animals?animal_type=chien&per_page=10",
+							"host": ["{{base_url}}"],
+							"path": ["api", "user", "lost-animals"],
+							"query": [
+								{
+									"key": "animal_type",
+									"value": "chien"
+								},
+								{
+									"key": "per_page",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Mes annonces - Filtres combinés",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Combined filters work correctly', function () {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.data.data.length > 0) {",
+									"        jsonData.data.data.forEach(post => {",
+									"            pm.expect(post.status).to.eql('approved');",
+									"            pm.expect(post.type).to.eql('lost');",
+									"            pm.expect(post.animal_type).to.eql('chien');",
+									"        });",
+									"        console.log('✅ Filtres combinés appliqués:', jsonData.data.total, 'résultats');",
+									"    }",
+									"});",
+									"",
+									"pm.test('Filters are reflected in response', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.filters.status).to.eql('approved');",
+									"    pm.expect(jsonData.filters.type).to.eql('lost');",
+									"    pm.expect(jsonData.filters.animal_type).to.eql('chien');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/user/lost-animals?status=approved&type=lost&animal_type=chien&per_page=5",
+							"host": ["{{base_url}}"],
+							"path": ["api", "user", "lost-animals"],
+							"query": [
+								{
+									"key": "status",
+									"value": "approved"
+								},
+								{
+									"key": "type",
+									"value": "lost"
+								},
+								{
+									"key": "animal_type",
+									"value": "chien"
+								},
+								{
+									"key": "per_page",
+									"value": "5"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "🔒 Tests de Sécurité",
+			"item": [
+				{
+					"name": "Sans authentification (401)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 401', function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test('Unauthorized access blocked', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.false;",
+									"    console.log('✅ Accès non autorisé correctement bloqué');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/user/lost-animals",
+							"host": ["{{base_url}}"],
+							"path": ["api", "user", "lost-animals"]
+						}
+					}
+				},
+				{
+					"name": "Token invalide (401)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 401', function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test('Invalid token rejected', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.false;",
+									"    console.log('✅ Token invalide correctement rejeté');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "invalid_token_here",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/user/lost-animals",
+							"host": ["{{base_url}}"],
+							"path": ["api", "user", "lost-animals"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "❌ Tests de Validation",
+			"item": [
+				{
+					"name": "Statut invalide (422)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 422', function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test('Validation error for invalid status', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.false;",
+									"    pm.expect(jsonData).to.have.property('errors');",
+									"    pm.expect(jsonData.errors).to.have.property('status');",
+									"    console.log('✅ Validation du statut invalide fonctionne');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/user/lost-animals?status=invalid_status",
+							"host": ["{{base_url}}"],
+							"path": ["api", "user", "lost-animals"],
+							"query": [
+								{
+									"key": "status",
+									"value": "invalid_status"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Type invalide (422)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 422', function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test('Validation error for invalid type', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.false;",
+									"    pm.expect(jsonData.errors).to.have.property('type');",
+									"    console.log('✅ Validation du type invalide fonctionne');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/user/lost-animals?type=invalid_type",
+							"host": ["{{base_url}}"],
+							"path": ["api", "user", "lost-animals"],
+							"query": [
+								{
+									"key": "type",
+									"value": "invalid_type"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Per_page trop grand (422)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 422', function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test('Validation error for per_page too large', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.false;",
+									"    pm.expect(jsonData.errors).to.have.property('per_page');",
+									"    console.log('✅ Validation per_page trop grand fonctionne');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/user/lost-animals?per_page=150",
+							"host": ["{{base_url}}"],
+							"path": ["api", "user", "lost-animals"],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "150"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "📊 Tests de Performance",
+			"item": [
+				{
+					"name": "Pagination - Page 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Response time is acceptable', function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});",
+									"",
+									"pm.test('Pagination works correctly', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.current_page).to.eql(1);",
+									"    pm.expect(jsonData.data.per_page).to.eql(5);",
+									"    console.log('✅ Page 1 - Items:', jsonData.data.data.length);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/user/lost-animals?per_page=5&page=1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "user", "lost-animals"],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "5"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								}
+							]
+						}
+					}
+				}
+			]
+		}
+	]
+}

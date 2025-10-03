@@ -1,0 +1,826 @@
+{
+	"info": {
+		"_postman_id": "ask-rdv-shift-collection",
+		"name": "Ask RDV Shift API Collection",
+		"description": "Collection for testing Ask RDV Shift (Appointment Transfer Requests) API endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    if (response.success && response.data.access_token) {",
+									"        pm.environment.set('auth_token', response.data.access_token);",
+									"        pm.environment.set('user_id', response.data.user.id);",
+									"        pm.environment.set('user_type', response.data.user.user_type);",
+									"        console.log('Token saved:', response.data.access_token);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"{{test_email}}\",\n    \"password\": \"{{test_password}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Transfer Requests",
+			"item": [
+				{
+					"name": "List Transfer Requests",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success property', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', true);",
+									"});",
+									"",
+									"pm.test('Response has data array', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('data');",
+									"    pm.expect(response.data).to.be.an('array');",
+									"});",
+									"",
+									"pm.test('Response has pagination', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('pagination');",
+									"    pm.expect(response.pagination).to.have.property('current_page');",
+									"    pm.expect(response.pagination).to.have.property('total');",
+									"});",
+									"",
+									"// Save first request ID for other tests",
+									"const response = pm.response.json();",
+									"if (response.data && response.data.length > 0) {",
+									"    pm.environment.set('test_request_id', response.data[0].id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/ask-rdv-shift?per_page=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ask-rdv-shift"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Sent Requests",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/ask-rdv-shift?type=sent&status=pending",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ask-rdv-shift"
+							],
+							"query": [
+								{
+									"key": "type",
+									"value": "sent"
+								},
+								{
+									"key": "status",
+									"value": "pending"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Received Requests",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/ask-rdv-shift?type=received&status=pending",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ask-rdv-shift"
+							],
+							"query": [
+								{
+									"key": "type",
+									"value": "received"
+								},
+								{
+									"key": "status",
+									"value": "pending"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search in Messages",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/ask-rdv-shift?search=rendez-vous",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ask-rdv-shift"
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "rendez-vous"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Transfer Request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('Response has success property', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', true);",
+									"});",
+									"",
+									"pm.test('Response has data with request details', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('data');",
+									"    pm.expect(response.data).to.have.property('id');",
+									"    pm.expect(response.data).to.have.property('status', 'pending');",
+									"    pm.expect(response.data).to.have.property('sender_id');",
+									"    pm.expect(response.data).to.have.property('receiver_id');",
+									"    pm.expect(response.data).to.have.property('appointment_id');",
+									"});",
+									"",
+									"// Save created request ID",
+									"const response = pm.response.json();",
+									"if (response.success && response.data) {",
+									"    pm.environment.set('created_request_id', response.data.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"receiver_id\": \"{{test_receiver_id}}\",\n    \"appointment_id\": \"{{test_appointment_id}}\",\n    \"message\": \"Bonjour, je ne peux plus me rendre à ce rendez-vous. Pourriez-vous le prendre à ma place ? Merci beaucoup !\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/ask-rdv-shift",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ask-rdv-shift"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Transfer Request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has request details', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', true);",
+									"    pm.expect(response).to.have.property('data');",
+									"    pm.expect(response.data).to.have.property('id');",
+									"    pm.expect(response.data).to.have.property('sender');",
+									"    pm.expect(response.data).to.have.property('receiver');",
+									"    pm.expect(response.data).to.have.property('appointment');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/ask-rdv-shift/{{test_request_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ask-rdv-shift",
+								"{{test_request_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Transfer Request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Message was updated', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', true);",
+									"    pm.expect(response.data).to.have.property('message');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"Message mis à jour - Je ne peux vraiment plus me rendre à ce rendez-vous. Merci de votre aide !\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/ask-rdv-shift/{{created_request_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ask-rdv-shift",
+								"{{created_request_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Accept Transfer Request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Request was accepted', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', true);",
+									"    pm.expect(response.data).to.have.property('status', 'accepted');",
+									"    pm.expect(response.data).to.have.property('accepted_at');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"response_message\": \"Pas de problème, je peux prendre votre rendez-vous. À bientôt !\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/ask-rdv-shift/{{test_pending_request_id}}/accept",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ask-rdv-shift",
+								"{{test_pending_request_id}}",
+								"accept"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reject Transfer Request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Request was rejected', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', true);",
+									"    pm.expect(response.data).to.have.property('status', 'rejected');",
+									"    pm.expect(response.data).to.have.property('rejected_at');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"response_message\": \"Désolé, je ne suis pas disponible à cette heure-là. Bonne chance pour trouver quelqu'un d'autre !\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/ask-rdv-shift/{{test_pending_request_id}}/reject",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ask-rdv-shift",
+								"{{test_pending_request_id}}",
+								"reject"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cancel Transfer Request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Request was cancelled', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', true);",
+									"    pm.expect(response.message).to.include('annulée');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/ask-rdv-shift/{{created_request_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ask-rdv-shift",
+								"{{created_request_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Restore Transfer Request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Request was restored', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', true);",
+									"    pm.expect(response.message).to.include('restaurée');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/ask-rdv-shift/{{created_request_id}}/restore",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ask-rdv-shift",
+								"{{created_request_id}}",
+								"restore"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Error Handling",
+			"item": [
+				{
+					"name": "Create Request - Invalid Receiver",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 422', function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test('Response has validation errors', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', false);",
+									"    pm.expect(response).to.have.property('errors');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"receiver_id\": \"invalid-uuid\",\n    \"appointment_id\": \"{{test_appointment_id}}\",\n    \"message\": \"Test message\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/ask-rdv-shift",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ask-rdv-shift"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Request - Missing Required Fields",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 422', function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test('Response has validation errors', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', false);",
+									"    pm.expect(response).to.have.property('errors');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"Test message without required fields\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/ask-rdv-shift",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ask-rdv-shift"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Non-existent Request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 404', function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"pm.test('Response indicates not found', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', false);",
+									"    pm.expect(response.message).to.include('non trouvée');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/ask-rdv-shift/550e8400-e29b-41d4-a716-446655440000",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ask-rdv-shift",
+								"550e8400-e29b-41d4-a716-446655440000"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Unauthorized Access",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 401', function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test('Response indicates unauthorized', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('success', false);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/ask-rdv-shift",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ask-rdv-shift"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Set default environment variables if not set",
+					"if (!pm.environment.get('base_url')) {",
+					"    pm.environment.set('base_url', 'http://localhost:8000');",
+					"}",
+					"",
+					"if (!pm.environment.get('test_email')) {",
+					"    pm.environment.set('test_email', 'client@example.com');",
+					"}",
+					"",
+					"if (!pm.environment.get('test_password')) {",
+					"    pm.environment.set('test_password', 'password123');",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test to check response time",
+					"pm.test('Response time is less than 5000ms', function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+					"});",
+					"",
+					"// Global test to check content type for JSON responses",
+					"if (pm.response.headers.get('Content-Type') && pm.response.headers.get('Content-Type').includes('application/json')) {",
+					"    pm.test('Response is valid JSON', function () {",
+					"        pm.response.to.be.json;",
+					"    });",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "test_email",
+			"value": "client@example.com",
+			"type": "string"
+		},
+		{
+			"key": "test_password",
+			"value": "password123",
+			"type": "string"
+		}
+	]
+}

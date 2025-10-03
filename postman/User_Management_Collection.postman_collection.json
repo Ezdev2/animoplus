@@ -1,0 +1,465 @@
+{
+	"info": {
+		"_postman_id": "user-management-collection-id",
+		"name": "AnimoPlus - User Management",
+		"description": "User profile and session management endpoints for AnimoPlus API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Profile Management",
+			"item": [
+				{
+					"name": "Update Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success property', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});",
+									"",
+									"pm.test('Profile is updated', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('user');",
+									"    pm.expect(jsonData.user).to.have.property('name');",
+									"    console.log('✅ Profile updated for:', jsonData.user.name);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"{{$randomFullName}}\",\n  \"phone\": \"{{$randomPhoneNumber}}\",\n  \"clinic_name\": \"Updated Veterinary Clinic\",\n  \"clinic_address\": \"{{$randomStreetAddress}}\",\n  \"address\": \"{{$randomStreetAddress}}, {{$randomCity}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/user/profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "user", "profile"]
+						}
+					}
+				},
+				{
+					"name": "Update Avatar",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success property', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});",
+									"",
+									"pm.test('Avatar URL is updated', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('user');",
+									"    pm.expect(jsonData.user).to.have.property('avatar');",
+									"    pm.expect(jsonData.user.avatar).to.include('cloudinary.com');",
+									"    console.log('✅ Avatar updated:', jsonData.user.avatar);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"avatar\": \"https://res.cloudinary.com/dxjp55puy/image/upload/v1234567890/avatars/user_{{$randomInt}}.jpg\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/user/avatar",
+							"host": ["{{base_url}}"],
+							"path": ["api", "user", "avatar"]
+						}
+					}
+				},
+				{
+					"name": "Change Password",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"current_password\": \"{{user_password}}\",\n  \"password\": \"newpassword123\",\n  \"password_confirmation\": \"newpassword123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/user/password",
+							"host": ["{{base_url}}"],
+							"path": ["api", "user", "password"]
+						}
+					}
+				},
+				{
+					"name": "Deactivate Account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Account deactivated successfully', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    console.log('⚠️ Account deactivated');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"password\": \"{{user_password}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/user/account",
+							"host": ["{{base_url}}"],
+							"path": ["api", "user", "account"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "User Type Management",
+			"item": [
+				{
+					"name": "Upgrade to Pro",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success property', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});",
+									"",
+									"pm.test('User is upgraded to Pro', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('user');",
+									"    pm.expect(jsonData.user).to.have.property('user_type');",
+									"    pm.expect(jsonData.user.user_type).to.equal('veterinarian_pro');",
+									"    pm.expect(jsonData.user).to.have.property('is_veterinarian_pro');",
+									"    pm.expect(jsonData.user.is_veterinarian_pro).to.be.true;",
+									"    console.log('✅ User upgraded to Pro:', jsonData.user.name);",
+									"});",
+									"",
+									"pm.test('Success message is in French', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.message).to.include('Pro avec succès');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/user/upgrade-to-pro",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"upgrade-to-pro"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Upgrade to Pro - Already Pro (409)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 409', function () {",
+									"    pm.response.to.have.status(409);",
+									"});",
+									"",
+									"pm.test('Response has success false', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.false;",
+									"});",
+									"",
+									"pm.test('Error message indicates already Pro', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.message).to.include('déjà un vétérinaire Pro');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/user/upgrade-to-pro",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"upgrade-to-pro"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Upgrade to Pro - Not Veterinarian (403)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 403', function () {",
+									"    pm.response.to.have.status(403);",
+									"});",
+									"",
+									"pm.test('Response has success false', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.false;",
+									"});",
+									"",
+									"pm.test('Error message indicates only veterinarians', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.message).to.include('Seuls les vétérinaires');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{client_access_token}}",
+								"type": "text",
+								"description": "Use client token to test 403 error"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/user/upgrade-to-pro",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"upgrade-to-pro"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Session Management",
+			"item": [
+				{
+					"name": "List Active Sessions",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/user/sessions",
+							"host": ["{{base_url}}"],
+							"path": ["api", "user", "sessions"]
+						}
+					}
+				},
+				{
+					"name": "Revoke Session",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Session revoked successfully', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    console.log('✅ Session revoked');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/user/sessions/{{session_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "user", "sessions", "{{session_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Revoke All Sessions",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    pm.environment.unset('access_token');",
+									"    pm.environment.unset('refresh_token');",
+									"    console.log('✅ All sessions revoked - Tokens cleared');",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/auth/logout-all",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "logout-all"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{access_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000"
+		}
+	]
+}

@@ -1,0 +1,430 @@
+{
+	"info": {
+		"_postman_id": "auth-collection-id",
+		"name": "AnimoPlus - Authentication",
+		"description": "Authentication endpoints for AnimoPlus API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Public Auth",
+			"item": [
+				{
+					"name": "Register Client",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Registration successful', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('Response contains verification message', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.include('verify your account');",
+									"});",
+									"",
+									"pm.test('User is not verified initially', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.user.is_verified).to.be.false;",
+									"});",
+									"",
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('unverified_user_email', response.user.email);",
+									"    console.log('✅ Client registered - Email verification required');",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"{{$randomFullName}}\",\n  \"email\": \"{{$randomEmail}}\",\n  \"password\": \"{{user_password}}\",\n  \"password_confirmation\": \"{{user_password}}\",\n  \"user_type\": \"client\",\n  \"phone\": \"{{$randomPhoneNumber}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/register",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "register"]
+						}
+					}
+				},
+				{
+					"name": "Register Veterinarian",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Dr. {{$randomLastName}}\",\n  \"email\": \"{{vet_email}}\",\n  \"password\": \"{{vet_password}}\",\n  \"password_confirmation\": \"{{vet_password}}\",\n  \"user_type\": \"veterinarian\",\n  \"license_number\": \"VET{{$randomInt}}\",\n  \"clinic_name\": \"{{$randomCompanyName}} Veterinary Clinic\",\n  \"clinic_address\": \"{{$randomStreetAddress}}\",\n  \"phone\": \"{{$randomPhoneNumber}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/register",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "register"]
+						}
+					}
+				},
+				{
+					"name": "Login Client",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('access_token', response.access_token);",
+									"    pm.environment.set('refresh_token', response.refresh_token);",
+									"    pm.environment.set('user_id', response.user.id);",
+									"    console.log('✅ Login successful - Tokens saved');",
+									"} else {",
+									"    console.log('❌ Login failed');",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{user_email}}\",\n  \"password\": \"{{user_password}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Login Veterinarian",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('access_token', response.access_token);",
+									"    pm.environment.set('refresh_token', response.refresh_token);",
+									"    pm.environment.set('user_id', response.user.id);",
+									"    console.log('✅ Vet login successful - Tokens saved');",
+									"} else {",
+									"    console.log('❌ Vet login failed');",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{vet_email}}\",\n  \"password\": \"{{vet_password}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('access_token', response.access_token);",
+									"    console.log('✅ Token refreshed successfully');",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/refresh",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "refresh"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Password Management",
+			"item": [
+				{
+					"name": "Forgot Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{user_email}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/forgot-password",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "forgot-password"]
+						}
+					}
+				},
+				{
+					"name": "Reset Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"token\": \"PASTE_RESET_TOKEN_HERE\",\n  \"email\": \"{{user_email}}\",\n  \"password\": \"newpassword123\",\n  \"password_confirmation\": \"newpassword123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/reset-password",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "reset-password"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Email Verification",
+			"item": [
+				{
+					"name": "Login Unverified User (Should Fail)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Login should fail for unverified user', function () {",
+									"    pm.response.to.have.status(403);",
+									"});",
+									"",
+									"pm.test('Response contains verification message', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.include('verify your email');",
+									"});",
+									"",
+									"console.log('✅ Unverified user login correctly blocked');"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{unverified_user_email}}\",\n  \"password\": \"{{user_password}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Verify Email",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"token\": \"PASTE_VERIFICATION_TOKEN_HERE\",\n  \"email\": \"{{vet_email}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/verify-email",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "verify-email"]
+						}
+					}
+				},
+				{
+					"name": "Resend Verification",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{vet_email}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/resend-verification",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "resend-verification"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Protected Auth",
+			"item": [
+				{
+					"name": "Get Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/auth/profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "profile"]
+						}
+					}
+				},
+				{
+					"name": "Logout",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    pm.environment.unset('access_token');",
+									"    pm.environment.unset('refresh_token');",
+									"    console.log('✅ Logged out - Tokens cleared');",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/logout",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "logout"]
+						}
+					}
+				},
+				{
+					"name": "Logout All Devices",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    pm.environment.unset('access_token');",
+									"    pm.environment.unset('refresh_token');",
+									"    console.log('✅ Logged out from all devices - Tokens cleared');",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/auth/logout-all",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "logout-all"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000"
+		}
+	]
+}

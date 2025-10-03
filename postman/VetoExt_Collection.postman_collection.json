@@ -1,0 +1,646 @@
+{
+	"info": {
+		"_postman_id": "veto-ext-collection-uuid",
+		"name": "VetoExt API Collection",
+		"description": "Collection complète pour tester les API des vétérinaires externes (VetoExt) dans AnimoPlus",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{jwt_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"exec": [
+					"// Set base URL if not already set",
+					"if (!pm.environment.get('base_url')) {",
+					"    pm.environment.set('base_url', 'http://localhost:8000');",
+					"}"
+				],
+				"type": "text/javascript"
+			}
+		}
+	],
+	"item": [
+		{
+			"name": "Get All External Veterinarians",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('Response has success property', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test('Response has data with pagination', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"    pm.expect(jsonData.data).to.have.property('data');",
+							"    pm.expect(jsonData.data.data).to.be.an('array');",
+							"});",
+							"",
+							"// Store first veto ext ID for other tests",
+							"const jsonData = pm.response.json();",
+							"if (jsonData.data.data.length > 0) {",
+							"    pm.environment.set('veto_ext_id', jsonData.data.data[0].id);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/veto-ext",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"veto-ext"
+					]
+				}
+			}
+		},
+		{
+			"name": "Create External Veterinarian",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 201', function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test('Response has success property', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test('Response has created veto ext data', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"    pm.expect(jsonData.data).to.have.property('id');",
+							"    pm.expect(jsonData.data).to.have.property('name');",
+							"    pm.expect(jsonData.data).to.have.property('email');",
+							"});",
+							"",
+							"// Store created veto ext ID",
+							"const jsonData = pm.response.json();",
+							"pm.environment.set('created_veto_ext_id', jsonData.data.id);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Dr. Test Postman\",\n    \"email\": \"test.postman@vetexterne.fr\",\n    \"phone\": \"01 23 45 67 89\",\n    \"address\": \"123 Rue de Test, 75001 Paris\",\n    \"latitude\": 48.8566,\n    \"longitude\": 2.3522,\n    \"description\": \"Vétérinaire externe créé via Postman pour les tests\",\n    \"years_experience\": 10,\n    \"license_number\": \"VET-TEST-2024-001\",\n    \"is_active\": true\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/veto-ext",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"veto-ext"
+					]
+				}
+			}
+		},
+		{
+			"name": "Get External Veterinarian by ID",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('Response has success property', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test('Response has veto ext data with relations', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"    pm.expect(jsonData.data).to.have.property('id');",
+							"    pm.expect(jsonData.data).to.have.property('cabinets');",
+							"    pm.expect(jsonData.data).to.have.property('specialites');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/veto-ext/{{veto_ext_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"veto-ext",
+						"{{veto_ext_id}}"
+					]
+				}
+			}
+		},
+		{
+			"name": "Update External Veterinarian",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('Response has success property', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test('Veto ext was updated', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"    pm.expect(jsonData.data.description).to.include('Modifié');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Dr. Test Postman Modifié\",\n    \"email\": \"test.postman.modified@vetexterne.fr\",\n    \"phone\": \"01 23 45 67 90\",\n    \"address\": \"456 Avenue de Test Modifié, 75002 Paris\",\n    \"latitude\": 48.8606,\n    \"longitude\": 2.3376,\n    \"description\": \"Vétérinaire externe modifié via Postman pour les tests\",\n    \"years_experience\": 12,\n    \"license_number\": \"VET-TEST-2024-001-MOD\",\n    \"is_active\": true\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/veto-ext/{{created_veto_ext_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"veto-ext",
+						"{{created_veto_ext_id}}"
+					]
+				}
+			}
+		},
+		{
+			"name": "Search with Filters",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('Response has success property', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test('Search results are filtered', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"    pm.expect(jsonData.data.data).to.be.an('array');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/veto-ext?search=chirurgie&min_experience=10&is_active=true",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"veto-ext"
+					],
+					"query": [
+						{
+							"key": "search",
+							"value": "chirurgie"
+						},
+						{
+							"key": "min_experience",
+							"value": "10"
+						},
+						{
+							"key": "is_active",
+							"value": "true"
+						}
+					]
+				}
+			}
+		},
+		{
+			"name": "Find Nearby Veterinarians",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('Response has success property', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test('Response has nearby search data', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"    pm.expect(jsonData.data).to.be.an('array');",
+							"    pm.expect(jsonData).to.have.property('search_params');",
+							"    pm.expect(jsonData.search_params).to.have.property('latitude');",
+							"    pm.expect(jsonData.search_params).to.have.property('longitude');",
+							"});",
+							"",
+							"pm.test('Results include distance', function () {",
+							"    const jsonData = pm.response.json();",
+							"    if (jsonData.data.length > 0) {",
+							"        pm.expect(jsonData.data[0]).to.have.property('distance');",
+							"        pm.expect(jsonData.data[0].distance).to.be.a('number');",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/veto-ext/nearby/search?latitude=48.8566&longitude=2.3522&distance=20",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"veto-ext",
+						"nearby",
+						"search"
+					],
+					"query": [
+						{
+							"key": "latitude",
+							"value": "48.8566"
+						},
+						{
+							"key": "longitude",
+							"value": "2.3522"
+						},
+						{
+							"key": "distance",
+							"value": "20"
+						}
+					]
+				}
+			}
+		},
+		{
+			"name": "Delete External Veterinarian",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('Response has success property', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test('Success message is correct', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.message).to.include('supprimé');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/veto-ext/{{created_veto_ext_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"veto-ext",
+						"{{created_veto_ext_id}}"
+					]
+				}
+			}
+		},
+		{
+			"name": "Restore External Veterinarian",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('Response has success property', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test('Veto ext was restored', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"    pm.expect(jsonData.data).to.have.property('id');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/veto-ext/{{created_veto_ext_id}}/restore",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"veto-ext",
+						"{{created_veto_ext_id}}",
+						"restore"
+					]
+				}
+			}
+		},
+		{
+			"name": "Validation Test - Missing Required Field",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 422', function () {",
+							"    pm.response.to.have.status(422);",
+							"});",
+							"",
+							"pm.test('Response has validation errors', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.false;",
+							"    pm.expect(jsonData).to.have.property('errors');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"invalid.test@vetexterne.fr\",\n    \"phone\": \"01 23 45 67 89\",\n    \"description\": \"Test sans nom requis\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/veto-ext",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"veto-ext"
+					]
+				}
+			}
+		},
+		{
+			"name": "Validation Test - Invalid Coordinates",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 422', function () {",
+							"    pm.response.to.have.status(422);",
+							"});",
+							"",
+							"pm.test('Response has validation errors', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.false;",
+							"    pm.expect(jsonData).to.have.property('errors');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Dr. Invalid Coordinates\",\n    \"latitude\": 200,\n    \"longitude\": -200,\n    \"years_experience\": -5\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/veto-ext",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"veto-ext"
+					]
+				}
+			}
+		},
+		{
+			"name": "Geographic Search Validation Test",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 422', function () {",
+							"    pm.response.to.have.status(422);",
+							"});",
+							"",
+							"pm.test('Response has validation errors', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.false;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/veto-ext/nearby/search?latitude=invalid&longitude=2.3522",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"veto-ext",
+						"nearby",
+						"search"
+					],
+					"query": [
+						{
+							"key": "latitude",
+							"value": "invalid"
+						},
+						{
+							"key": "longitude",
+							"value": "2.3522"
+						}
+					]
+				}
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		}
+	]
+}

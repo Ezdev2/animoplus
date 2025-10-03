@@ -1,0 +1,680 @@
+{
+	"info": {
+		"_postman_id": "dossiers-medicaux-api-collection",
+		"name": "Dossiers Médicaux Collection",
+		"description": "Complete API collection for Medical Records management in AnimoPlus veterinary services",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication Tests",
+			"item": [
+				{
+					"name": "Get Medical Records - No Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"pm.test(\"Response has error message\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('message');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Accept", "value": "application/json"}
+						],
+						"url": "{{base_url}}/api/dossiers-medicaux"
+					}
+				},
+				{
+					"name": "Get Medical Records - Invalid Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"pm.test(\"Response has error message\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('message');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer invalid_token"},
+							{"key": "Accept", "value": "application/json"}
+						],
+						"url": "{{base_url}}/api/dossiers-medicaux"
+					}
+				}
+			]
+		},
+		{
+			"name": "CRUD Operations",
+			"item": [
+				{
+					"name": "Get All Medical Records",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Response has success property\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"});",
+									"pm.test(\"Response has data array\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data).to.be.an('array');",
+									"});",
+									"pm.test(\"Response has pagination info\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('pagination');",
+									"    pm.expect(responseJson.pagination).to.have.property('current_page');",
+									"    pm.expect(responseJson.pagination).to.have.property('total');",
+									"});",
+									"if (pm.response.json().data && pm.response.json().data.length > 0) {",
+									"    pm.environment.set('dossier_medical_id', pm.response.json().data[0].id);",
+									"    pm.test(\"Medical record has required fields\", function () {",
+									"        const dossier = pm.response.json().data[0];",
+									"        pm.expect(dossier).to.have.property('id');",
+									"        pm.expect(dossier).to.have.property('animal_id');",
+									"        pm.expect(dossier).to.have.property('veterinaire_id');",
+									"        pm.expect(dossier).to.have.property('date_examen');",
+									"    });",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{jwt_token}}"},
+							{"key": "Accept", "value": "application/json"}
+						],
+						"url": "{{base_url}}/api/dossiers-medicaux?per_page=10"
+					}
+				},
+				{
+					"name": "Get Medical Records with Filters",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Response has success property\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"});",
+									"pm.test(\"Filtered results match criteria\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    if (responseJson.data && responseJson.data.length > 0) {",
+									"        responseJson.data.forEach(dossier => {",
+									"            pm.expect(dossier.is_active).to.be.true;",
+									"        });",
+									"    }",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{jwt_token}}"},
+							{"key": "Accept", "value": "application/json"}
+						],
+						"url": "{{base_url}}/api/dossiers-medicaux?is_active=true&with_animal=true&with_veterinaire=true"
+					}
+				},
+				{
+					"name": "Get Recent Medical Records",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Response has success property\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"});",
+									"pm.test(\"Records are recent (last 30 days)\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    const thirtyDaysAgo = new Date();",
+									"    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);",
+									"    if (responseJson.data && responseJson.data.length > 0) {",
+									"        responseJson.data.forEach(dossier => {",
+									"            const examenDate = new Date(dossier.date_examen);",
+									"            pm.expect(examenDate).to.be.at.least(thirtyDaysAgo);",
+									"        });",
+									"    }",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{jwt_token}}"},
+							{"key": "Accept", "value": "application/json"}
+						],
+						"url": "{{base_url}}/api/dossiers-medicaux?recent=true"
+					}
+				},
+				{
+					"name": "Create Medical Record",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"pm.test(\"Response has success property\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"});",
+									"pm.test(\"Medical record created with correct data\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data).to.have.property('id');",
+									"    pm.expect(responseJson.data.diagnostic).to.equal('Test diagnostic pour consultation');",
+									"    pm.expect(responseJson.data.poids).to.equal(12.5);",
+									"    pm.expect(responseJson.data.temperature).to.equal(38.5);",
+									"});",
+									"if (pm.response.json().data && pm.response.json().data.id) {",
+									"    pm.environment.set('created_dossier_id', pm.response.json().data.id);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{jwt_token}}"},
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"animal_id\": \"{{animal_id}}\",\n    \"diagnostic\": \"Test diagnostic pour consultation\",\n    \"traitement\": \"Traitement de test avec médicaments appropriés\",\n    \"notes\": \"Notes de consultation de test\",\n    \"allergies\": \"Aucune allergie connue\",\n    \"poids\": 12.5,\n    \"temperature\": 38.5,\n    \"frequence_cardiaque\": 95,\n    \"frequence_respiratoire\": 22,\n    \"date_examen\": \"2024-01-15\",\n    \"prochaine_visite\": \"2024-02-15\",\n    \"is_active\": true\n}"
+						},
+						"url": "{{base_url}}/api/dossiers-medicaux"
+					}
+				},
+				{
+					"name": "Get Specific Medical Record",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Response has success property\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"});",
+									"pm.test(\"Medical record has all required fields\", function () {",
+									"    const dossier = pm.response.json().data;",
+									"    pm.expect(dossier).to.have.property('id');",
+									"    pm.expect(dossier).to.have.property('animal_id');",
+									"    pm.expect(dossier).to.have.property('veterinaire_id');",
+									"    pm.expect(dossier).to.have.property('date_examen');",
+									"    pm.expect(dossier).to.have.property('animal');",
+									"    pm.expect(dossier).to.have.property('veterinaire');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{jwt_token}}"},
+							{"key": "Accept", "value": "application/json"}
+						],
+						"url": "{{base_url}}/api/dossiers-medicaux/{{dossier_medical_id}}?with_animal_details=true"
+					}
+				},
+				{
+					"name": "Update Medical Record",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Response has success property\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"});",
+									"pm.test(\"Medical record updated correctly\", function () {",
+									"    const dossier = pm.response.json().data;",
+									"    pm.expect(dossier.diagnostic).to.equal('Diagnostic mis à jour après suivi');",
+									"    pm.expect(dossier.poids).to.equal(13.2);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{jwt_token}}"},
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"diagnostic\": \"Diagnostic mis à jour après suivi\",\n    \"traitement\": \"Traitement ajusté selon l'évolution\",\n    \"notes\": \"Amélioration notable de l'état général\",\n    \"poids\": 13.2,\n    \"temperature\": 38.3\n}"
+						},
+						"url": "{{base_url}}/api/dossiers-medicaux/{{dossier_medical_id}}"
+					}
+				},
+				{
+					"name": "Delete Medical Record",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Response has success property\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"});",
+									"pm.test(\"Response has deletion message\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.message).to.include('supprimé');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{jwt_token}}"},
+							{"key": "Accept", "value": "application/json"}
+						],
+						"url": "{{base_url}}/api/dossiers-medicaux/{{dossier_medical_id}}"
+					}
+				},
+				{
+					"name": "Restore Medical Record",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Response has success property\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"});",
+									"pm.test(\"Response has restore message\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.message).to.include('restauré');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{jwt_token}}"},
+							{"key": "Accept", "value": "application/json"}
+						],
+						"url": "{{base_url}}/api/dossiers-medicaux/{{dossier_medical_id}}/restore"
+					}
+				}
+			]
+		},
+		{
+			"name": "Search and Filter Tests",
+			"item": [
+				{
+					"name": "Search Medical Records by Diagnostic",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Search results contain search term\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    if (responseJson.data && responseJson.data.length > 0) {",
+									"        let found = false;",
+									"        responseJson.data.forEach(dossier => {",
+									"            if (dossier.diagnostic && dossier.diagnostic.toLowerCase().includes('gastro')) {",
+									"                found = true;",
+									"            }",
+									"        });",
+									"        pm.expect(found).to.be.true;",
+									"    }",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{jwt_token}}"},
+							{"key": "Accept", "value": "application/json"}
+						],
+						"url": "{{base_url}}/api/dossiers-medicaux?search=gastro"
+					}
+				},
+				{
+					"name": "Filter by Date Range",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Records are within date range\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    const startDate = new Date('2024-01-01');",
+									"    const endDate = new Date('2024-12-31');",
+									"    if (responseJson.data && responseJson.data.length > 0) {",
+									"        responseJson.data.forEach(dossier => {",
+									"            const examenDate = new Date(dossier.date_examen);",
+									"            pm.expect(examenDate).to.be.at.least(startDate);",
+									"            pm.expect(examenDate).to.be.at.most(endDate);",
+									"        });",
+									"    }",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{jwt_token}}"},
+							{"key": "Accept", "value": "application/json"}
+						],
+						"url": "{{base_url}}/api/dossiers-medicaux?date_from=2024-01-01&date_to=2024-12-31"
+					}
+				},
+				{
+					"name": "Filter by Animal",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"All records belong to specified animal\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    const animalId = pm.environment.get('animal_id');",
+									"    if (responseJson.data && responseJson.data.length > 0 && animalId) {",
+									"        responseJson.data.forEach(dossier => {",
+									"            pm.expect(dossier.animal_id).to.equal(animalId);",
+									"        });",
+									"    }",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{jwt_token}}"},
+							{"key": "Accept", "value": "application/json"}
+						],
+						"url": "{{base_url}}/api/dossiers-medicaux?animal_id={{animal_id}}"
+					}
+				}
+			]
+		},
+		{
+			"name": "Validation Tests",
+			"item": [
+				{
+					"name": "Create Medical Record - Missing Required Fields",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 422\", function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"pm.test(\"Response has validation errors\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('errors');",
+									"    pm.expect(responseJson.errors).to.have.property('animal_id');",
+									"    pm.expect(responseJson.errors).to.have.property('date_examen');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{jwt_token}}"},
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"diagnostic\": \"Diagnostic sans champs requis\"\n}"
+						},
+						"url": "{{base_url}}/api/dossiers-medicaux"
+					}
+				},
+				{
+					"name": "Create Medical Record - Invalid Weight",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 422\", function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"pm.test(\"Response has weight validation error\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('errors');",
+									"    pm.expect(responseJson.errors).to.have.property('poids');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{jwt_token}}"},
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"animal_id\": \"{{animal_id}}\",\n    \"date_examen\": \"2024-01-15\",\n    \"poids\": -5.0,\n    \"diagnostic\": \"Test avec poids négatif\"\n}"
+						},
+						"url": "{{base_url}}/api/dossiers-medicaux"
+					}
+				},
+				{
+					"name": "Create Medical Record - Invalid Temperature",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 422\", function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"pm.test(\"Response has temperature validation error\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('errors');",
+									"    pm.expect(responseJson.errors).to.have.property('temperature');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{jwt_token}}"},
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"animal_id\": \"{{animal_id}}\",\n    \"date_examen\": \"2024-01-15\",\n    \"temperature\": 50.0,\n    \"diagnostic\": \"Test avec température trop élevée\"\n}"
+						},
+						"url": "{{base_url}}/api/dossiers-medicaux"
+					}
+				},
+				{
+					"name": "Create Medical Record - Future Examination Date",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 422\", function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"pm.test(\"Response has date validation error\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('errors');",
+									"    pm.expect(responseJson.errors).to.have.property('date_examen');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{jwt_token}}"},
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"animal_id\": \"{{animal_id}}\",\n    \"date_examen\": \"2025-12-31\",\n    \"diagnostic\": \"Test avec date future\"\n}"
+						},
+						"url": "{{base_url}}/api/dossiers-medicaux"
+					}
+				},
+				{
+					"name": "Update Non-Existent Medical Record",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"pm.test(\"Response has error message\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('message');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{jwt_token}}"},
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"diagnostic\": \"Tentative de mise à jour\"\n}"
+						},
+						"url": "{{base_url}}/api/dossiers-medicaux/99999999-9999-9999-9999-999999999999"
+					}
+				}
+			]
+		},
+		{
+			"name": "Permission Tests",
+			"item": [
+				{
+					"name": "Create Medical Record - Non-Veterinarian",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 403\", function () {",
+									"    pm.response.to.have.status(403);",
+									"});",
+									"pm.test(\"Response has permission error\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.false;",
+									"    pm.expect(responseJson.message).to.include('vétérinaires');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{client_jwt_token}}"},
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"animal_id\": \"{{animal_id}}\",\n    \"date_examen\": \"2024-01-15\",\n    \"diagnostic\": \"Tentative de création par client\"\n}"
+						},
+						"url": "{{base_url}}/api/dossiers-medicaux"
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{"key": "base_url", "value": "http://localhost:8000"}
+	]
+}

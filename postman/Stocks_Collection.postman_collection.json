@@ -1,0 +1,1180 @@
+{
+	"info": {
+		"_postman_id": "stocks-api-collection",
+		"name": "Stocks API Collection",
+		"description": "Collection for testing Stock inventory management API endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get My Stocks",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has success property\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Response has correct message\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.message).to.eql('Vos stocks récupérés avec succès');",
+							"});",
+							"",
+							"pm.test(\"Response has data object with pagination\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"    pm.expect(jsonData.data).to.have.property('data');",
+							"    pm.expect(jsonData.data).to.have.property('current_page');",
+							"    pm.expect(jsonData.data).to.have.property('total');",
+							"});",
+							"",
+							"if (pm.response.json().data.data.length > 0) {",
+							"    pm.test(\"Stock belongs to authenticated user\", function () {",
+							"        var stock = pm.response.json().data.data[0];",
+							"        pm.expect(stock).to.have.property('user_id');",
+							"        // All stocks should belong to the authenticated user",
+							"    });",
+							"",
+							"    pm.test(\"Stock has required properties\", function () {",
+							"        var stock = pm.response.json().data.data[0];",
+							"        pm.expect(stock).to.have.property('id');",
+							"        pm.expect(stock).to.have.property('user_id');",
+							"        pm.expect(stock).to.have.property('actif_id');",
+							"        pm.expect(stock).to.have.property('quantite');",
+							"        pm.expect(stock).to.have.property('prix_unitaire');",
+							"        pm.expect(stock).to.have.property('lot_numero');",
+							"        pm.expect(stock).to.have.property('is_active');",
+							"        pm.expect(stock).to.have.property('total_value');",
+							"    });",
+							"",
+							"    // Store first stock ID for other tests",
+							"    pm.environment.set('stock_id', pm.response.json().data.data[0].id);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/stocks/my-stocks?per_page=10",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"stocks",
+						"my-stocks"
+					],
+					"query": [
+						{
+							"key": "per_page",
+							"value": "10"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get My Stocks with Filters",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has success property\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Filtered results are active only\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    if (jsonData.data.data.length > 0) {",
+							"        jsonData.data.data.forEach(function(stock) {",
+							"            pm.expect(stock.is_active).to.be.true;",
+							"        });",
+							"    }",
+							"});",
+							"",
+							"pm.test(\"All stocks belong to authenticated user\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    if (jsonData.data.data.length > 0) {",
+							"        jsonData.data.data.forEach(function(stock) {",
+							"            pm.expect(stock).to.have.property('user_id');",
+							"        });",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/stocks/my-stocks?active_only=true&low_stock=false&expiring_soon=false",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"stocks",
+						"my-stocks"
+					],
+					"query": [
+						{
+							"key": "active_only",
+							"value": "true"
+						},
+						{
+							"key": "low_stock",
+							"value": "false"
+						},
+						{
+							"key": "expiring_soon",
+							"value": "false"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get My Low Stock Items",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has success property\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"All returned stocks have low quantity\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    if (jsonData.data.data.length > 0) {",
+							"        jsonData.data.data.forEach(function(stock) {",
+							"            pm.expect(stock.quantite).to.be.at.most(10);",
+							"        });",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/stocks/my-stocks?low_stock=true",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"stocks",
+						"my-stocks"
+					],
+					"query": [
+						{
+							"key": "low_stock",
+							"value": "true"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get My Stocks - Unauthorized",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 401\", function () {",
+							"    pm.response.to.have.status(401);",
+							"});",
+							"",
+							"pm.test(\"Response has error message\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.false;",
+							"    pm.expect(jsonData).to.have.property('message');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/stocks/my-stocks",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"stocks",
+						"my-stocks"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get All Stocks",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has success property\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Response has data array\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"    pm.expect(jsonData.data).to.be.an('array');",
+							"});",
+							"",
+							"pm.test(\"Response has pagination\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('pagination');",
+							"    pm.expect(jsonData.pagination).to.have.property('current_page');",
+							"    pm.expect(jsonData.pagination).to.have.property('total');",
+							"});",
+							"",
+							"if (pm.response.json().data.length > 0) {",
+							"    pm.test(\"Stock has required properties\", function () {",
+							"        var stock = pm.response.json().data[0];",
+							"        pm.expect(stock).to.have.property('id');",
+							"        pm.expect(stock).to.have.property('user_id');",
+							"        pm.expect(stock).to.have.property('actif_id');",
+							"        pm.expect(stock).to.have.property('quantite');",
+							"        pm.expect(stock).to.have.property('prix_unitaire');",
+							"        pm.expect(stock).to.have.property('lot_numero');",
+							"        pm.expect(stock).to.have.property('is_active');",
+							"    });",
+							"",
+							"    // Store first stock ID for other tests",
+							"    pm.environment.set('stock_id', pm.response.json().data[0].id);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/stocks?per_page=10",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"stocks"
+					],
+					"query": [
+						{
+							"key": "per_page",
+							"value": "10"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Stocks with Filters",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has success property\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Filtered results are active only\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    if (jsonData.data.length > 0) {",
+							"        jsonData.data.forEach(function(stock) {",
+							"            pm.expect(stock.is_active).to.be.true;",
+							"        });",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/stocks?active_only=true&low_stock=false&expiring_soon=false",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"stocks"
+					],
+					"query": [
+						{
+							"key": "active_only",
+							"value": "true"
+						},
+						{
+							"key": "low_stock",
+							"value": "false"
+						},
+						{
+							"key": "expiring_soon",
+							"value": "false"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create New Stock",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Response has success property\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Response has message\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('message');",
+							"    pm.expect(jsonData.message).to.include('succès');",
+							"});",
+							"",
+							"pm.test(\"Response has created stock data\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"    pm.expect(jsonData.data).to.have.property('id');",
+							"    pm.expect(jsonData.data).to.have.property('quantite');",
+							"    pm.expect(jsonData.data.quantite).to.eql(25);",
+							"    pm.expect(jsonData.data).to.have.property('lot_numero');",
+							"    pm.expect(jsonData.data.lot_numero).to.eql('TEST001');",
+							"});",
+							"",
+							"// Store created stock ID for other tests",
+							"pm.environment.set('created_stock_id', pm.response.json().data.id);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"actif_id\": \"{{actif_id}}\",\n    \"quantite\": 25,\n    \"prix_unitaire\": 15.99,\n    \"date_expiration\": \"2024-12-31\",\n    \"lot_numero\": \"TEST001\",\n    \"notes\": \"Stock de test créé via Postman\",\n    \"is_active\": true\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/stocks",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"stocks"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Single Stock",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has success property\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Response has stock data\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"    pm.expect(jsonData.data).to.have.property('id');",
+							"    pm.expect(jsonData.data).to.have.property('quantite');",
+							"    pm.expect(jsonData.data).to.have.property('prix_unitaire');",
+							"    pm.expect(jsonData.data).to.have.property('lot_numero');",
+							"});",
+							"",
+							"pm.test(\"Stock has relationships\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data).to.have.property('user');",
+							"    pm.expect(jsonData.data).to.have.property('actif');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/stocks/{{stock_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"stocks",
+						"{{stock_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Stock",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has success property\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Response has message\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('message');",
+							"    pm.expect(jsonData.message).to.include('mis à jour');",
+							"});",
+							"",
+							"pm.test(\"Stock was updated correctly\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data.quantite).to.eql(30);",
+							"    pm.expect(jsonData.data.notes).to.include('mis à jour');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"actif_id\": \"{{actif_id}}\",\n    \"quantite\": 30,\n    \"prix_unitaire\": 18.99,\n    \"date_expiration\": \"2024-12-31\",\n    \"lot_numero\": \"TEST001\",\n    \"notes\": \"Stock mis à jour via Postman\",\n    \"is_active\": true\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/stocks/{{created_stock_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"stocks",
+						"{{created_stock_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Stock Quantity - Add",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has success property\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Quantity was added correctly\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('previous_quantity');",
+							"    pm.expect(jsonData).to.have.property('new_quantity');",
+							"    pm.expect(jsonData.new_quantity).to.be.above(jsonData.previous_quantity);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"operation\": \"add\",\n    \"quantite\": 5,\n    \"notes\": \"Réapprovisionnement via Postman\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/stocks/{{created_stock_id}}/quantity",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"stocks",
+						"{{created_stock_id}}",
+						"quantity"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Stock Quantity - Subtract",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has success property\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Quantity was subtracted correctly\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('previous_quantity');",
+							"    pm.expect(jsonData).to.have.property('new_quantity');",
+							"    pm.expect(jsonData.new_quantity).to.be.below(jsonData.previous_quantity);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"operation\": \"subtract\",\n    \"quantite\": 3,\n    \"notes\": \"Consommation via Postman\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/stocks/{{created_stock_id}}/quantity",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"stocks",
+						"{{created_stock_id}}",
+						"quantity"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Stock",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has success property\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Response has deletion message\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('message');",
+							"    pm.expect(jsonData.message).to.include('supprimé');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/stocks/{{created_stock_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"stocks",
+						"{{created_stock_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Restore Deleted Stock",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has success property\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Response has restoration message\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('message');",
+							"    pm.expect(jsonData.message).to.include('restauré');",
+							"});",
+							"",
+							"pm.test(\"Stock was restored\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"    pm.expect(jsonData.data).to.have.property('id');",
+							"    pm.expect(jsonData.data.deleted_at).to.be.null;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/stocks/{{created_stock_id}}/restore",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"stocks",
+						"{{created_stock_id}}",
+						"restore"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Validation Error - Missing Required Fields",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 422\", function () {",
+							"    pm.response.to.have.status(422);",
+							"});",
+							"",
+							"pm.test(\"Response has success false\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.false;",
+							"});",
+							"",
+							"pm.test(\"Response has validation errors\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('errors');",
+							"    pm.expect(jsonData.errors).to.be.an('object');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"quantite\": 25,\n    \"prix_unitaire\": 15.99\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/stocks",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"stocks"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Unauthorized Access Test",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 401\", function () {",
+							"    pm.response.to.have.status(401);",
+							"});",
+							"",
+							"pm.test(\"Response indicates unauthorized\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.false;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/stocks",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"stocks"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Invalid UUID Test",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 422\", function () {",
+							"    pm.response.to.have.status(422);",
+							"});",
+							"",
+							"pm.test(\"Response has success false\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.false;",
+							"});",
+							"",
+							"pm.test(\"Response indicates invalid ID format\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('message');",
+							"    pm.expect(jsonData.message).to.include('ID');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/stocks/invalid-uuid-format",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"stocks",
+						"invalid-uuid-format"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Insufficient Stock Test",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"",
+							"pm.test(\"Response has success false\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.false;",
+							"});",
+							"",
+							"pm.test(\"Response indicates insufficient stock\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('message');",
+							"    pm.expect(jsonData.message).to.include('insuffisant');",
+							"    pm.expect(jsonData).to.have.property('current_quantity');",
+							"    pm.expect(jsonData).to.have.property('requested_quantity');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"operation\": \"subtract\",\n    \"quantite\": 1000,\n    \"notes\": \"Test de stock insuffisant\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/stocks/{{created_stock_id}}/quantity",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"stocks",
+						"{{created_stock_id}}",
+						"quantity"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "jwt_token",
+			"value": "your_jwt_token_here",
+			"type": "string"
+		},
+		{
+			"key": "actif_id",
+			"value": "your_actif_uuid_here",
+			"type": "string"
+		},
+		{
+			"key": "stock_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "created_stock_id",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

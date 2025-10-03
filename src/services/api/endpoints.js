@@ -47,6 +47,46 @@ export const API_ENDPOINTS = {
     SPECIALTIES: '/veterinarians/specialties'
   },
 
+  // Lost Animals (Coopération)
+  LOST_ANIMALS: {
+    LIST: '/lost-animals',
+    CREATE: '/lost-animals',
+    DETAIL: (id) => `/lost-animals/${id}`,
+    UPDATE: (id) => `/lost-animals/${id}`,
+    DELETE: (id) => `/lost-animals/${id}`,
+    RESOLVE: (id) => `/lost-animals/${id}/resolve`,
+    
+    // Photos
+    ADD_PHOTOS: (id) => `/lost-animals/${id}/photos`,
+    DELETE_PHOTO: (photoId) => `/lost-animals/photos/${photoId}`,
+    
+    // Modération (Admin/Vétérinaires)
+    PENDING: '/lost-animals/pending',
+    APPROVE: (id) => `/lost-animals/${id}/approve`,
+    REJECT: (id) => `/lost-animals/${id}/reject`,
+    
+    // Routes par statut (nouvelles routes de la collection Postman)
+    APPROVED: '/lost-animals/approved',
+    
+    // Routes utilisateur - Mes annonces
+    MY_ANIMALS: '/user/lost-animals',
+    REJECTED: '/lost-animals/rejected',
+    RESOLVED: '/lost-animals/resolved',
+    
+    // Notifications
+    NOTIFY_AREA: (id) => `/lost-animals/${id}/notify-area`,
+    
+    // Recherche avancée
+    SEARCH: '/lost-animals/search',
+    SEARCH_LOCATION: '/lost-animals/search/location',
+    
+    // Statistiques
+    STATS: '/lost-animals/stats',
+    
+    // Endpoints de base (compatibilité)
+    BASE: '/lost-animals'
+  },
+
   // Animals (basé sur la collection Postman)
   ANIMALS: {
     LIST: '/animaux',
@@ -208,11 +248,6 @@ export const API_ENDPOINTS = {
     MODERATE: '/reports/moderate'
   },
 
-  // Lost Animals
-  LOST_ANIMALS: {
-    BASE: '/lost-animals',
-    SEARCH: '/lost-animals/search'
-  },
 
   // Actifs (basé sur la collection Postman Actifs_Collection)
   ACTIFS: {

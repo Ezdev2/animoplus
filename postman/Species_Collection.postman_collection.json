@@ -1,0 +1,288 @@
+{
+	"info": {
+		"_postman_id": "species-collection-id",
+		"name": "AnimoPlus - Species Management",
+		"description": "Species (Espece) management endpoints for AnimoPlus API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Species CRUD",
+			"item": [
+				{
+					"name": "Get All Species",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/especes?page=1&per_page=10&search=&active_only=true&with_races=false",
+							"host": ["{{base_url}}"],
+							"path": ["api", "especes"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number for pagination"
+								},
+								{
+									"key": "per_page",
+									"value": "10",
+									"description": "Items per page (max 50)"
+								},
+								{
+									"key": "search",
+									"value": "",
+									"description": "Search in name or description"
+								},
+								{
+									"key": "active_only",
+									"value": "true",
+									"description": "Filter only active species"
+								},
+								{
+									"key": "with_races",
+									"value": "false",
+									"description": "Include races in response"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Species",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('species_id', response.data.id);",
+									"    console.log('✅ Species created - ID saved: ' + response.data.id);",
+									"} else {",
+									"    console.log('❌ Species creation failed');",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nom\": \"Chien\",\n  \"description\": \"Canis lupus familiaris - Animal domestique fidèle et affectueux\",\n  \"image_url\": \"https://example.com/images/chien.jpg\",\n  \"is_active\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/especes",
+							"host": ["{{base_url}}"],
+							"path": ["api", "especes"]
+						}
+					}
+				},
+				{
+					"name": "Get Species by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/especes/{{species_id}}?with_races=true",
+							"host": ["{{base_url}}"],
+							"path": ["api", "especes", "{{species_id}}"],
+							"query": [
+								{
+									"key": "with_races",
+									"value": "true",
+									"description": "Include races in response"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Species",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nom\": \"Chien Domestique\",\n  \"description\": \"Canis lupus familiaris - Meilleur ami de l'homme, animal domestique fidèle et affectueux\",\n  \"image_url\": \"https://example.com/images/chien-updated.jpg\",\n  \"is_active\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/especes/{{species_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "especes", "{{species_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Delete Species",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/especes/{{species_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "especes", "{{species_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Restore Species",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/especes/{{species_id}}/restore",
+							"host": ["{{base_url}}"],
+							"path": ["api", "especes", "{{species_id}}", "restore"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Species Relations",
+			"item": [
+				{
+					"name": "Get Species Races",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/especes/{{species_id}}/races?page=1&per_page=10&search=&active_only=true",
+							"host": ["{{base_url}}"],
+							"path": ["api", "especes", "{{species_id}}", "races"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number for pagination"
+								},
+								{
+									"key": "per_page",
+									"value": "10",
+									"description": "Items per page (max 50)"
+								},
+								{
+									"key": "search",
+									"value": "",
+									"description": "Search in race name or description"
+								},
+								{
+									"key": "active_only",
+									"value": "true",
+									"description": "Filter only active races"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Test Data Examples",
+			"item": [
+				{
+					"name": "Create Cat Species",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nom\": \"Chat\",\n  \"description\": \"Felis catus - Animal domestique indépendant et gracieux\",\n  \"image_url\": \"https://example.com/images/chat.jpg\",\n  \"is_active\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/especes",
+							"host": ["{{base_url}}"],
+							"path": ["api", "especes"]
+						}
+					}
+				},
+				{
+					"name": "Create Bird Species",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nom\": \"Oiseau\",\n  \"description\": \"Diverses espèces d'oiseaux domestiques colorés et chanteurs\",\n  \"image_url\": \"https://example.com/images/oiseau.jpg\",\n  \"is_active\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/especes",
+							"host": ["{{base_url}}"],
+							"path": ["api", "especes"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000"
+		}
+	]
+}

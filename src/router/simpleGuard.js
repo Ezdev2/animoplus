@@ -16,7 +16,8 @@ const PROTECTED_ROUTES = [
   '/stockManagement',
   '/documents',
   '/speciality',
-  '/lost-animal'
+  '/lost-animal',
+  '/admin'  // Toutes les routes admin
 ]
 
 // Pages publiques (accessibles uniquement si NON connecté)
@@ -91,9 +92,13 @@ export const simpleGuard = (to, from, next) => {
     hasRoleAccess
   })
   
-  // RÈGLE 1: Si utilisateur connecté et va sur page publique → dashboard
+  // RÈGLE 1: Si utilisateur connecté et va sur page publique → dashboard approprié
   if (isAuth && isPublicRoute) {
     console.log('🔄 Guard - Utilisateur connecté sur page publique, redirection vers dashboard')
+    // Rediriger les admins vers leur interface
+    if (userRole === 'admin') {
+      return next('/admin')
+    }
     return next('/dashboard')
   }
   
@@ -103,9 +108,17 @@ export const simpleGuard = (to, from, next) => {
     return next('/login')
   }
   
-  // RÈGLE 3: Si utilisateur connecté mais n'a pas le bon rôle → access denied
+  // RÈGLE 3: Si utilisateur connecté mais n'a pas le bon rôle
   if (isAuth && isProtectedRoute && !hasRoleAccess) {
     console.log('🚫 Guard - Accès refusé pour le rôle:', userRole, 'requis:', requiredRoles)
+    
+    // Cas spécial : Admin qui essaie d'accéder au dashboard normal → rediriger vers admin
+    if (userRole === 'admin' && to.path === '/dashboard') {
+      console.log('🔄 Guard - Admin redirigé vers interface admin')
+      return next('/admin')
+    }
+    
+    // Sinon, accès refusé normal
     return next({
       path: '/access-denied',
       query: { 

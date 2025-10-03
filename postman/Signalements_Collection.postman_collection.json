@@ -1,0 +1,910 @@
+{
+	"info": {
+		"_postman_id": "signalements-api-collection",
+		"name": "Signalements API Collection",
+		"description": "Complete API collection for Signalements (Reports) management with CRUD operations, filtering, and admin processing features",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "signalements-collection"
+	},
+	"item": [
+		{
+			"name": "List Reports (Admin)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has success property\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Response has data array\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"    pm.expect(jsonData.data).to.be.an('array');",
+							"});",
+							"",
+							"pm.test(\"Response has pagination info\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('pagination');",
+							"    pm.expect(jsonData.pagination).to.have.property('current_page');",
+							"    pm.expect(jsonData.pagination).to.have.property('per_page');",
+							"    pm.expect(jsonData.pagination).to.have.property('total');",
+							"});",
+							"",
+							"if (pm.response.json().data.length > 0) {",
+							"    pm.test(\"Report objects have required properties\", function () {",
+							"        const report = pm.response.json().data[0];",
+							"        pm.expect(report).to.have.property('id');",
+							"        pm.expect(report).to.have.property('nom');",
+							"        pm.expect(report).to.have.property('prenom');",
+							"        pm.expect(report).to.have.property('email');",
+							"        pm.expect(report).to.have.property('libelle');",
+							"        pm.expect(report).to.have.property('message');",
+							"        pm.expect(report).to.have.property('traite');",
+							"        pm.expect(report).to.have.property('created_at');",
+							"    });",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{admin_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/signalements",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"signalements"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List Reports with Filters",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has success property\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Filtered results returned\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"    pm.expect(jsonData.data).to.be.an('array');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{admin_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/signalements?search=problème&traite=false&per_page=10&sort_by=created_at&sort_order=desc",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"signalements"
+					],
+					"query": [
+						{
+							"key": "search",
+							"value": "problème"
+						},
+						{
+							"key": "traite",
+							"value": "false"
+						},
+						{
+							"key": "per_page",
+							"value": "10"
+						},
+						{
+							"key": "sort_by",
+							"value": "created_at"
+						},
+						{
+							"key": "sort_order",
+							"value": "desc"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Report (Public)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Response has success property\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Response contains created report data\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"    pm.expect(jsonData.data).to.have.property('id');",
+							"    pm.expect(jsonData.data).to.have.property('nom');",
+							"    pm.expect(jsonData.data).to.have.property('email');",
+							"    pm.expect(jsonData.data.traite).to.be.false;",
+							"});",
+							"",
+							"// Store the created report ID for other tests",
+							"if (pm.response.code === 201) {",
+							"    const responseData = pm.response.json();",
+							"    pm.environment.set('created_report_id', responseData.data.id);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"nom\": \"Dupont\",\n    \"prenom\": \"Jean\",\n    \"email\": \"jean.dupont@email.com\",\n    \"libelle\": \"Problème technique\",\n    \"message\": \"J'ai rencontré un problème lors de la prise de rendez-vous. L'application se bloque quand j'essaie de sélectionner une date.\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/signalements",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"signalements"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Report - Validation Error",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 422\", function () {",
+							"    pm.response.to.have.status(422);",
+							"});",
+							"",
+							"pm.test(\"Response has validation errors\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.false;",
+							"    pm.expect(jsonData).to.have.property('errors');",
+							"});",
+							"",
+							"pm.test(\"Validation errors contain required fields\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.errors).to.have.property('nom');",
+							"    pm.expect(jsonData.errors).to.have.property('email');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"prenom\": \"Jean\",\n    \"libelle\": \"Test\",\n    \"message\": \"Message de test\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/signalements",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"signalements"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Specific Report (Admin)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has success property\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Response contains report data\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"    pm.expect(jsonData.data).to.have.property('id');",
+							"    pm.expect(jsonData.data).to.have.property('nom');",
+							"    pm.expect(jsonData.data).to.have.property('email');",
+							"    pm.expect(jsonData.data).to.have.property('libelle');",
+							"    pm.expect(jsonData.data).to.have.property('message');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{admin_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/signalements/{{created_report_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"signalements",
+						"{{created_report_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Report Admin Notes",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has success property\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Admin notes updated\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data).to.have.property('admin_notes');",
+							"    pm.expect(jsonData.data.admin_notes).to.include('Problème analysé');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{admin_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"admin_notes\": \"Problème analysé et résolu. Utilisateur contacté par email.\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/signalements/{{created_report_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"signalements",
+						"{{created_report_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Mark Report as Processed",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has success property\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Report marked as processed\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data.traite).to.be.true;",
+							"    pm.expect(jsonData.data).to.have.property('traite_at');",
+							"    pm.expect(jsonData.data).to.have.property('traite_by');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{admin_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"admin_notes\": \"Signalement traité avec succès. Solution mise en place.\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/signalements/{{created_report_id}}/process",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"signalements",
+						"{{created_report_id}}",
+						"process"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Mark Report as Unprocessed",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has success property\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Report marked as unprocessed\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data.traite).to.be.false;",
+							"    pm.expect(jsonData.data.traite_at).to.be.null;",
+							"    pm.expect(jsonData.data.traite_by).to.be.null;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{admin_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/signalements/{{created_report_id}}/unprocess",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"signalements",
+						"{{created_report_id}}",
+						"unprocess"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Filter by Email",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Filtered by email\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    if (jsonData.data.length > 0) {",
+							"        jsonData.data.forEach(report => {",
+							"            pm.expect(report.email).to.include('jean.dupont');",
+							"        });",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{admin_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/signalements?email=jean.dupont@email.com",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"signalements"
+					],
+					"query": [
+						{
+							"key": "email",
+							"value": "jean.dupont@email.com"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Filter by Subject",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Filtered by subject\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    if (jsonData.data.length > 0) {",
+							"        jsonData.data.forEach(report => {",
+							"            pm.expect(report.libelle.toLowerCase()).to.include('technique');",
+							"        });",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{admin_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/signalements?libelle=technique",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"signalements"
+					],
+					"query": [
+						{
+							"key": "libelle",
+							"value": "technique"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Recent Reports Filter",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Recent reports returned\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"    pm.expect(jsonData.data).to.be.an('array');",
+							"    ",
+							"    if (jsonData.data.length > 0) {",
+							"        const report = jsonData.data[0];",
+							"        const createdAt = new Date(report.created_at);",
+							"        const now = new Date();",
+							"        const daysDiff = (now - createdAt) / (1000 * 60 * 60 * 24);",
+							"        pm.expect(daysDiff).to.be.at.most(7);",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{admin_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/signalements?recent_days=7",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"signalements"
+					],
+					"query": [
+						{
+							"key": "recent_days",
+							"value": "7"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Unauthorized Access Test",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 401 or 403\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([401, 403]);",
+							"});",
+							"",
+							"pm.test(\"Response indicates unauthorized access\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.false;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/signalements",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"signalements"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Report (Admin)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has success property\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Success message returned\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('message');",
+							"    pm.expect(jsonData.message).to.include('supprimé');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{admin_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/signalements/{{created_report_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"signalements",
+						"{{created_report_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Report Not Found Test",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 404\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"",
+							"pm.test(\"Response indicates not found\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.false;",
+							"    pm.expect(jsonData.message).to.include('non trouvé');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{admin_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/signalements/00000000-0000-0000-0000-000000000000",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"signalements",
+						"00000000-0000-0000-0000-000000000000"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Set default environment variables if not already set",
+					"if (!pm.environment.get('base_url')) {",
+					"    pm.environment.set('base_url', 'http://localhost:8000');",
+					"}",
+					"",
+					"// Add timestamp for unique data",
+					"pm.environment.set('timestamp', Date.now());"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test to check response time",
+					"pm.test(\"Response time is less than 5000ms\", function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+					"});",
+					"",
+					"// Global test to check content type",
+					"pm.test(\"Content-Type is application/json\", function () {",
+					"    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+					"});"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "admin_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "created_report_id",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

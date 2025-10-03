@@ -1,0 +1,1101 @@
+{
+	"info": {
+		"_postman_id": "expenses-api-collection",
+		"name": "Expenses API Collection",
+		"description": "Complete CRUD operations for Expenses with authentication, validation, filtering, statistics, restore functionality, and secure user-specific endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{jwt_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"exec": [
+					"// Auto-set Authorization header if jwt_token exists",
+					"if (pm.environment.get('jwt_token')) {",
+					"    pm.request.headers.add({",
+					"        key: 'Authorization',",
+					"        value: 'Bearer ' + pm.environment.get('jwt_token')",
+					"    });",
+					"}"
+				],
+				"type": "text/javascript"
+			}
+		}
+	],
+	"item": [
+		{
+			"name": "Expenses",
+			"item": [
+				{
+					"name": "Get All Expenses",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success true', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});",
+									"",
+									"pm.test('Response has data array', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});",
+									"",
+									"pm.test('Response has pagination info', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.pagination).to.be.an('object');",
+									"    pm.expect(jsonData.pagination).to.have.property('current_page');",
+									"    pm.expect(jsonData.pagination).to.have.property('total');",
+									"});",
+									"",
+									"// Store first expense ID for other tests",
+									"const jsonData = pm.response.json();",
+									"if (jsonData.data && jsonData.data.length > 0) {",
+									"    pm.environment.set('expense_id', jsonData.data[0].id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/expenses?per_page=10&page=1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"expenses"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "10"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Expenses with Filters",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success true', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/expenses?category=medical&status=approved&tax_deductible=true&start_date=2024-01-01&end_date=2024-12-31",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"expenses"
+							],
+							"query": [
+								{
+									"key": "category",
+									"value": "medical"
+								},
+								{
+									"key": "status",
+									"value": "approved"
+								},
+								{
+									"key": "tax_deductible",
+									"value": "true"
+								},
+								{
+									"key": "start_date",
+									"value": "2024-01-01"
+								},
+								{
+									"key": "end_date",
+									"value": "2024-12-31"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get My Expenses",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success true', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});",
+									"",
+									"pm.test('Response has correct message', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.message).to.equal('Vos dépenses récupérées avec succès');",
+									"});",
+									"",
+									"pm.test('Response has expenses array and pagination', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.expenses).to.be.an('array');",
+									"    pm.expect(jsonData.pagination).to.be.an('object');",
+									"    pm.expect(jsonData.pagination).to.have.property('current_page');",
+									"    pm.expect(jsonData.pagination).to.have.property('total');",
+									"    pm.expect(jsonData.pagination).to.have.property('per_page');",
+									"});",
+									"",
+									"pm.test('All expenses belong to authenticated user', function () {",
+									"    const jsonData = pm.response.json();",
+									"    const userId = pm.environment.get('user_id');",
+									"    if (jsonData.expenses && jsonData.expenses.length > 0 && userId) {",
+									"        jsonData.expenses.forEach(expense => {",
+									"            pm.expect(expense.user_id).to.equal(userId);",
+									"        });",
+									"    }",
+									"});",
+									"",
+									"// Store first expense for other tests",
+									"const jsonData = pm.response.json();",
+									"if (jsonData.expenses && jsonData.expenses.length > 0) {",
+									"    pm.environment.set('my_expense_id', jsonData.expenses[0].id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/expenses/my-expenses?per_page=15",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"expenses",
+								"my-expenses"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "15"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get My Expenses with Filters",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success true', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});",
+									"",
+									"pm.test('Filtered results match criteria', function () {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.expenses && jsonData.expenses.length > 0) {",
+									"        jsonData.expenses.forEach(expense => {",
+									"            // Check category filter",
+									"            pm.expect(expense.category).to.equal('medical');",
+									"            // Check status filter", 
+									"            pm.expect(expense.status).to.equal('approved');",
+									"            // Check is_tax_deductible filter",
+									"            pm.expect(expense.is_tax_deductible).to.be.true;",
+									"        });",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/expenses/my-expenses?category=medical&status=approved&is_tax_deductible=true&date_from=2024-01-01&date_to=2024-12-31",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"expenses",
+								"my-expenses"
+							],
+							"query": [
+								{
+									"key": "category",
+									"value": "medical"
+								},
+								{
+									"key": "status",
+									"value": "approved"
+								},
+								{
+									"key": "is_tax_deductible",
+									"value": "true"
+								},
+								{
+									"key": "date_from",
+									"value": "2024-01-01"
+								},
+								{
+									"key": "date_to",
+									"value": "2024-12-31"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Search My Expenses",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success true', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});",
+									"",
+									"pm.test('Search results contain search term', function () {",
+									"    const jsonData = pm.response.json();",
+									"    const searchTerm = 'pharmacie';",
+									"    if (jsonData.expenses && jsonData.expenses.length > 0) {",
+									"        jsonData.expenses.forEach(expense => {",
+									"            const hasSearchTerm = ",
+									"                (expense.title && expense.title.toLowerCase().includes(searchTerm)) ||",
+									"                (expense.description && expense.description.toLowerCase().includes(searchTerm)) ||",
+									"                (expense.supplier && expense.supplier.toLowerCase().includes(searchTerm)) ||",
+									"                (expense.invoice_number && expense.invoice_number.toLowerCase().includes(searchTerm));",
+									"            pm.expect(hasSearchTerm).to.be.true;",
+									"        });",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/expenses/my-expenses?search=pharmacie",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"expenses",
+								"my-expenses"
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "pharmacie"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get My Expenses - Unauthorized",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Remove authorization header for this test",
+									"pm.request.headers.remove('Authorization');"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 401', function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test('Response has success false', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.false;",
+									"});",
+									"",
+									"pm.test('Response has unauthorized message', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.message).to.include('Token');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/expenses/my-expenses",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"expenses",
+								"my-expenses"
+							]
+						}
+					}
+				},
+				{
+					"name": "Search Expenses",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success true', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/expenses?search=médicament",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"expenses"
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "médicament"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Expense",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('Response has success true', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});",
+									"",
+									"pm.test('Response has expense data', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.be.an('object');",
+									"    pm.expect(jsonData.data).to.have.property('id');",
+									"    pm.expect(jsonData.data).to.have.property('title');",
+									"    pm.expect(jsonData.data).to.have.property('amount');",
+									"});",
+									"",
+									"// Store created expense ID",
+									"const jsonData = pm.response.json();",
+									"if (jsonData.data && jsonData.data.id) {",
+									"    pm.environment.set('created_expense_id', jsonData.data.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Achat médicaments vétérinaires\",\n    \"description\": \"Commande de médicaments pour la clinique\",\n    \"amount\": 245.75,\n    \"category\": \"medical\",\n    \"expense_date\": \"2024-09-07\",\n    \"supplier\": \"Pharmacie Vétérinaire Centrale\",\n    \"invoice_number\": \"INV-2024-0907-001\",\n    \"tax_amount\": 49.15,\n    \"tax_deductible\": true,\n    \"payment_method\": \"card\",\n    \"status\": \"pending\",\n    \"notes\": \"Commande urgente pour renouvellement stock\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/expenses",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"expenses"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Specific Expense",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success true', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});",
+									"",
+									"pm.test('Response has expense data', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.be.an('object');",
+									"    pm.expect(jsonData.data).to.have.property('id');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/expenses/{{created_expense_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"expenses",
+								"{{created_expense_id}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Expense",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success true', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});",
+									"",
+									"pm.test('Expense was updated', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.status).to.eql('approved');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Achat médicaments vétérinaires - Approuvé\",\n    \"description\": \"Commande de médicaments pour la clinique - Approuvée par le responsable\",\n    \"amount\": 245.75,\n    \"category\": \"medical\",\n    \"expense_date\": \"2024-09-07\",\n    \"supplier\": \"Pharmacie Vétérinaire Centrale\",\n    \"invoice_number\": \"INV-2024-0907-001\",\n    \"tax_amount\": 49.15,\n    \"tax_deductible\": true,\n    \"payment_method\": \"card\",\n    \"status\": \"approved\",\n    \"notes\": \"Commande urgente pour renouvellement stock - Approuvée\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/expenses/{{created_expense_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"expenses",
+								"{{created_expense_id}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Partial Update Expense (PATCH)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success true', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});",
+									"",
+									"pm.test('Response has updated expense data', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.be.an('object');",
+									"    pm.expect(jsonData.data).to.have.property('id');",
+									"    pm.expect(jsonData.data).to.have.property('status');",
+									"});",
+									"",
+									"pm.test('Only specified fields are updated', function () {",
+									"    const jsonData = pm.response.json();",
+									"    // Verify that the status was updated to 'approved'",
+									"    pm.expect(jsonData.data.status).to.equal('approved');",
+									"    // Verify that notes were updated",
+									"    pm.expect(jsonData.data.notes).to.include('Approuvé par PATCH');",
+									"});",
+									"",
+									"pm.test('Expense belongs to authenticated user', function () {",
+									"    const jsonData = pm.response.json();",
+									"    const userId = pm.environment.get('user_id');",
+									"    if (userId) {",
+									"        pm.expect(jsonData.data.user_id).to.equal(userId);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"approved\",\n    \"notes\": \"Dépense approuvée par PATCH - Mise à jour partielle\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/expenses/{{created_expense_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"expenses",
+								"{{created_expense_id}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Partial Update - Change Category Only",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success true', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});",
+									"",
+									"pm.test('Category was updated', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.category).to.equal('equipment');",
+									"});",
+									"",
+									"pm.test('Other fields remain unchanged', function () {",
+									"    const jsonData = pm.response.json();",
+									"    // Title should remain the same as before",
+									"    pm.expect(jsonData.data.title).to.be.a('string');",
+									"    pm.expect(jsonData.data.amount).to.be.a('string');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"category\": \"equipment\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/expenses/{{created_expense_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"expenses",
+								"{{created_expense_id}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Partial Update - Change Amount and Tax",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success true', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});",
+									"",
+									"pm.test('Amount and tax were updated', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(parseFloat(jsonData.data.amount)).to.equal(299.99);",
+									"    pm.expect(parseFloat(jsonData.data.tax_amount)).to.equal(60.00);",
+									"});",
+									"",
+									"pm.test('Tax deductible status updated', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.is_tax_deductible).to.be.false;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"amount\": 299.99,\n    \"tax_amount\": 60.00,\n    \"is_tax_deductible\": false\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/expenses/{{created_expense_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"expenses",
+								"{{created_expense_id}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Expense Statistics",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success true', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});",
+									"",
+									"pm.test('Response has statistics data', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.be.an('object');",
+									"    pm.expect(jsonData.data).to.have.property('total_expenses');",
+									"    pm.expect(jsonData.data).to.have.property('by_category');",
+									"    pm.expect(jsonData.data).to.have.property('by_status');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/expenses/statistics?year=2024&month=9",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"expenses",
+								"statistics"
+							],
+							"query": [
+								{
+									"key": "year",
+									"value": "2024"
+								},
+								{
+									"key": "month",
+									"value": "9"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Delete Expense",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success true', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});",
+									"",
+									"pm.test('Success message is correct', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.message).to.include('supprimée');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/expenses/{{created_expense_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"expenses",
+								"{{created_expense_id}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Restore Expense",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success true', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});",
+									"",
+									"pm.test('Success message is correct', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.message).to.include('restaurée');",
+									"});",
+									"",
+									"pm.test('Response has expense data', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.be.an('object');",
+									"    pm.expect(jsonData.data).to.have.property('id');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/expenses/{{created_expense_id}}/restore",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"expenses",
+								"{{created_expense_id}}",
+								"restore"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Validation Tests",
+			"item": [
+				{
+					"name": "Create Expense - Missing Required Fields",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 422', function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test('Response has validation errors', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.false;",
+									"    pm.expect(jsonData.errors).to.be.an('object');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"description\": \"Test without required fields\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/expenses",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"expenses"
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Expense - Invalid Category",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 422', function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test('Response has validation errors', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.false;",
+									"    pm.expect(jsonData.errors).to.be.an('object');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Test Expense\",\n    \"amount\": 100.00,\n    \"category\": \"invalid_category\",\n    \"expense_date\": \"2024-09-07\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/expenses",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"expenses"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Expense - Invalid UUID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 422', function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test('Response has error message', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.false;",
+									"    pm.expect(jsonData.message).to.include('invalide');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/expenses/invalid-uuid",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"expenses",
+								"invalid-uuid"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Expense - Not Found",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 404', function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"pm.test('Response has error message', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.false;",
+									"    pm.expect(jsonData.message).to.include('non trouvée');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/expenses/550e8400-e29b-41d4-a716-446655440000",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"expenses",
+								"550e8400-e29b-41d4-a716-446655440000"
+							]
+						}
+					}
+				}
+			]
+		}
+	]
+}

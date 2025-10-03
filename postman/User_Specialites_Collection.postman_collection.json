@@ -1,0 +1,631 @@
+{
+	"info": {
+		"_postman_id": "user-specialites-api-collection",
+		"name": "User Specialites API Collection",
+		"description": "Collection for testing User Specialties management endpoints in AnimoPlus API - allows veterinarians to manage their specialties",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get My Specialties",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('Response has success true', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test('Response has data array', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"    pm.expect(jsonData.data).to.be.an('array');",
+							"});",
+							"",
+							"pm.test('Each specialty has required fields', function () {",
+							"    const jsonData = pm.response.json();",
+							"    if (jsonData.data.length > 0) {",
+							"        const specialty = jsonData.data[0];",
+							"        pm.expect(specialty).to.have.property('id');",
+							"        pm.expect(specialty).to.have.property('name');",
+							"        pm.expect(specialty).to.have.property('description');",
+							"        pm.expect(specialty).to.have.property('certification_level');",
+							"        pm.expect(specialty).to.have.property('is_primary');",
+							"        ",
+							"        // Store first specialty ID for other tests",
+							"        pm.environment.set('my_specialty_id', specialty.id);",
+							"        console.log('✅ Found specialty:', specialty.name);",
+							"    }",
+							"});",
+							"",
+							"pm.test('Message is in French', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.message).to.include('spécialités');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/user/specialties",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"user",
+						"specialties"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add New Specialty to User",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 201', function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test('Response has success true', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test('Response has specialty data', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"    pm.expect(jsonData.data).to.have.property('specialty');",
+							"    pm.expect(jsonData.data).to.have.property('certification_level');",
+							"    pm.expect(jsonData.data).to.have.property('is_primary');",
+							"});",
+							"",
+							"pm.test('Specialty was added correctly', function () {",
+							"    const jsonData = pm.response.json();",
+							"    const specialty = jsonData.data.specialty;",
+							"    pm.expect(specialty).to.have.property('id');",
+							"    pm.expect(specialty).to.have.property('name');",
+							"    ",
+							"    // Store added specialty ID for update/delete tests",
+							"    pm.environment.set('added_specialty_id', specialty.id);",
+							"    console.log('✅ Added specialty:', specialty.name);",
+							"});",
+							"",
+							"pm.test('Message is in French', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.message).to.include('ajoutée avec succès');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"specialite_id\": \"{{specialite_id}}\",\n    \"certification_level\": \"senior\",\n    \"certified_since\": \"2020-06-15\",\n    \"certification_expires\": \"2030-06-15\",\n    \"notes\": \"Certification obtenue après 5 ans d'expérience en cardiologie vétérinaire\",\n    \"is_primary\": true\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/user/specialties",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"user",
+						"specialties"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add Specialty - Validation Error",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 422', function () {",
+							"    pm.response.to.have.status(422);",
+							"});",
+							"",
+							"pm.test('Response has success false', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.false;",
+							"});",
+							"",
+							"pm.test('Response has validation errors', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('errors');",
+							"    pm.expect(jsonData.errors).to.have.property('specialite_id');",
+							"});",
+							"",
+							"pm.test('Error message is in French', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.message).to.include('Validation échouée');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"certification_level\": \"invalid_level\",\n    \"notes\": \"Test validation error\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/user/specialties",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"user",
+						"specialties"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update My Specialty",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('Response has success true', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test('Update message is correct', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.message).to.include('mise à jour avec succès');",
+							"});",
+							"",
+							"console.log('✅ Specialty updated successfully');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"certification_level\": \"expert\",\n    \"certified_since\": \"2018-01-15\",\n    \"certification_expires\": \"2028-01-15\",\n    \"notes\": \"Certification mise à jour - niveau expert obtenu\",\n    \"is_primary\": true,\n    \"is_active\": true\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/user/specialties/{{added_specialty_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"user",
+						"specialties",
+						"{{added_specialty_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Specialty - Not Found",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 404', function () {",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"",
+							"pm.test('Response has success false', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.false;",
+							"});",
+							"",
+							"pm.test('Error message is correct', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.message).to.include('n\\'avez pas cette spécialité');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"certification_level\": \"expert\",\n    \"notes\": \"Test update non-existent specialty\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/user/specialties/00000000-0000-0000-0000-000000000000",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"user",
+						"specialties",
+						"00000000-0000-0000-0000-000000000000"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Remove My Specialty",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('Response has success true', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test('Delete message is correct', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.message).to.include('supprimée avec succès');",
+							"});",
+							"",
+							"console.log('✅ Specialty removed successfully');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/user/specialties/{{added_specialty_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"user",
+						"specialties",
+						"{{added_specialty_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Remove Specialty - Not Found",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 404', function () {",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"",
+							"pm.test('Response has success false', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.false;",
+							"});",
+							"",
+							"pm.test('Error message is correct', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.message).to.include('n\\'avez pas cette spécialité');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/user/specialties/00000000-0000-0000-0000-000000000000",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"user",
+						"specialties",
+						"00000000-0000-0000-0000-000000000000"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add Duplicate Specialty - Conflict",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 409', function () {",
+							"    pm.response.to.have.status(409);",
+							"});",
+							"",
+							"pm.test('Response has success false', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.false;",
+							"});",
+							"",
+							"pm.test('Conflict message is correct', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.message).to.include('avez déjà cette spécialité');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"specialite_id\": \"{{my_specialty_id}}\",\n    \"certification_level\": \"junior\",\n    \"notes\": \"Tentative d'ajout d'une spécialité déjà existante\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/user/specialties",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"user",
+						"specialties"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Unauthorized Access Test",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 401', function () {",
+							"    pm.response.to.have.status(401);",
+							"});",
+							"",
+							"pm.test('Response indicates unauthorized', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.false;",
+							"    // Check for unauthorized message",
+							"    const message = jsonData.message || jsonData.error || '';",
+							"    pm.expect(message.toLowerCase()).to.satisfy(msg => {",
+							"        return msg.includes('unauthorized') || msg.includes('token') || msg.includes('authentification');",
+							"    });",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/user/specialties",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"user",
+						"specialties"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Set base URL if not already set",
+					"if (!pm.environment.get('base_url')) {",
+					"    pm.environment.set('base_url', 'http://localhost:8000');",
+					"}",
+					"",
+					"// Log current test info",
+					"console.log('🧪 Running:', pm.info.requestName);",
+					"console.log('🔗 URL:', pm.request.url.toString());"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test logging",
+					"const testName = pm.info.requestName;",
+					"const statusCode = pm.response.code;",
+					"const responseTime = pm.response.responseTime;",
+					"",
+					"console.log(`📊 ${testName}: ${statusCode} (${responseTime}ms)`);",
+					"",
+					"// Log response if there's an error",
+					"if (statusCode >= 400) {",
+					"    try {",
+					"        const jsonData = pm.response.json();",
+					"        console.log('❌ Error Response:', JSON.stringify(jsonData, null, 2));",
+					"    } catch (e) {",
+					"        console.log('❌ Raw Error Response:', pm.response.text());",
+					"    }",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		}
+	]
+}

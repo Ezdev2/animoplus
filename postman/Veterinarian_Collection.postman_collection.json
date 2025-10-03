@@ -1,0 +1,292 @@
+{
+	"info": {
+		"_postman_id": "veterinarian-collection-id",
+		"name": "AnimoPlus - Veterinarian",
+		"description": "Veterinarian-specific endpoints for AnimoPlus API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Dashboard",
+			"item": [
+				{
+					"name": "Get Vet Dashboard",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/vet/dashboard",
+							"host": ["{{base_url}}"],
+							"path": ["api", "vet", "dashboard"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Profile Management",
+			"item": [
+				{
+					"name": "Get Vet Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/vet/profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "vet", "profile"]
+						}
+					}
+				},
+				{
+					"name": "Update Vet Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Dr. {{$randomLastName}}\",\n  \"phone\": \"{{$randomPhoneNumber}}\",\n  \"license_number\": \"VET{{$randomInt}}\",\n  \"clinic_name\": \"{{$randomCompanyName}} Veterinary Clinic\",\n  \"clinic_address\": \"{{$randomStreetAddress}}\",\n  \"specialization\": \"Small Animal Medicine\",\n  \"years_experience\": 10\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/vet/profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "vet", "profile"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Appointments",
+			"item": [
+				{
+					"name": "Get Appointments",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/vet/appointments?status=pending&date={{$isoTimestamp}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "vet", "appointments"],
+							"query": [
+								{
+									"key": "status",
+									"value": "pending"
+								},
+								{
+									"key": "date",
+									"value": "{{$isoTimestamp}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Appointment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"client_id\": 1,\n  \"pet_id\": 1,\n  \"appointment_date\": \"2024-12-25T10:00:00Z\",\n  \"duration\": 60,\n  \"type\": \"checkup\",\n  \"notes\": \"Regular health checkup\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/vet/appointments",
+							"host": ["{{base_url}}"],
+							"path": ["api", "vet", "appointments"]
+						}
+					}
+				},
+				{
+					"name": "Update Appointment",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"completed\",\n  \"notes\": \"Appointment completed successfully\",\n  \"diagnosis\": \"Healthy pet\",\n  \"treatment\": \"No treatment required\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/vet/appointments/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "vet", "appointments", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Clients & Pets",
+			"item": [
+				{
+					"name": "Get Clients",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/vet/clients?search={{$randomFirstName}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "vet", "clients"],
+							"query": [
+								{
+									"key": "search",
+									"value": "{{$randomFirstName}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Client Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/vet/clients/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "vet", "clients", "1"]
+						}
+					}
+				},
+				{
+					"name": "Get Pet Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/vet/pets/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "vet", "pets", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Medical Records",
+			"item": [
+				{
+					"name": "Get Medical Records",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/vet/medical-records?pet_id=1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "vet", "medical-records"],
+							"query": [
+								{
+									"key": "pet_id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Medical Record",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"pet_id\": 1,\n  \"visit_date\": \"{{$isoTimestamp}}\",\n  \"diagnosis\": \"Healthy pet\",\n  \"treatment\": \"Vaccination\",\n  \"medications\": \"None\",\n  \"notes\": \"Annual checkup completed\",\n  \"weight\": 15.5,\n  \"temperature\": 38.5\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/vet/medical-records",
+							"host": ["{{base_url}}"],
+							"path": ["api", "vet", "medical-records"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{access_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000"
+		}
+	]
+}
