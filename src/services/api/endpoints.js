@@ -182,7 +182,27 @@ export const API_ENDPOINTS = {
   MESSAGES: {
     BASE: '/messages',
     ADMIN: '/messages/admin',
-    CONVERSATIONS: '/messages/conversations'
+    CONVERSATIONS: '/messages/conversations',
+    BY_CONVERSATION: '/messages' // Pour récupérer les messages d'une conversation avec ?conversation_id=
+  },
+
+  // Messagerie
+  MESSAGING: {
+    CONVERSATIONS: {
+      LIST: '/conversations',
+      CREATE: '/conversations',
+      DETAIL: (id) => `/conversations/${id}`,
+      UPDATE: (id) => `/conversations/${id}`,
+      DELETE: (id) => `/conversations/${id}`,
+      START_OR_FIND: '/conversations/start-or-find',
+      MESSAGES: (id) => `/conversations/${id}/messages`,
+      SEND_MESSAGE: (id) => `/conversations/${id}/messages`,
+      MARK_READ: (id) => `/conversations/${id}/mark-read`,
+      TYPING: (id) => `/conversations/${id}/typing`
+    },
+    USERS: {
+      SEARCH: '/users/search'
+    }
   },
 
   // Documents
