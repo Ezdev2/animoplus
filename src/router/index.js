@@ -1,5 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Homepage from '../pages/Homepage/Homepage.vue'
+import Teleconseil from '../pages/Teleconseil/Teleconseil.vue'
+import Urgence from '../pages/Urgence/Urgence.vue'
+import Doute from '../pages/Doute/Doute.vue'
+import Professionnel from '../pages/Professionnel/Professionnel.vue'
+import Actu from '../pages/Actu/Actu.vue'
 import AskAppointment from '@/pages/Homepage/AskAppointment.vue'
 import Login from '@/pages/Authentication/Login.vue'
 import Dashboard from '@/pages/Dashboard/Dashboard.vue'
@@ -51,6 +56,36 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: Homepage,
+      meta: { requiresGuest: true } // accessible seulement si NON connecté
+    },
+    {
+      path: '/urgence',
+      name: 'urgence',
+      component: Urgence,
+      meta: { requiresGuest: true } // accessible seulement si NON connecté
+    },
+    {
+      path: '/doute',
+      name: 'doute',
+      component: Doute,
+      meta: { requiresGuest: true } // accessible seulement si NON connecté
+    },
+    {
+      path: '/professionnel',
+      name: 'professionnel',
+      component: Professionnel,
+      meta: { requiresGuest: true } // accessible seulement si NON connecté
+    },
+    {
+      path: '/actu',
+      name: 'actu',
+      component: Actu,
+      meta: { requiresGuest: true } // accessible seulement si NON connecté
+    },
+    {
+      path: '/teleconseil',
+      name: 'teleconseil',
+      component: Teleconseil,
       meta: { requiresGuest: true } // accessible seulement si NON connecté
     },
     {
