@@ -692,25 +692,96 @@ export const lostAnimalsService = {
   },
 
   /**
-   * Marquer une annonce comme résolue
+   * Marquer une annonce comme résolue (étape 1: signaler trouvé)
    */
   async resolveLostAnimal(id) {
     try {
-      console.log('🎉 Résolution annonce:', id)
+      console.log('🎉 Signalement animal trouvé:', id)
       const response = await apiClient.post(API_ENDPOINTS.LOST_ANIMALS.RESOLVE(id))
       
-      console.log('✅ Annonce résolue:', response.data)
+      console.log('✅ Animal signalé comme trouvé:', response.data)
       
       return {
         success: true,
         data: response.data.data || response.data,
-        message: response.data.message || 'Annonce marquée comme résolue avec succès'
+        message: response.data.message || 'Animal signalé comme trouvé. En attente de confirmation du propriétaire.',
+        status: response.data.status || 'resolve_confirm_waiting',
+        next_step: response.data.next_step || 'Le propriétaire doit confirmer avoir récupéré son animal'
       }
     } catch (error) {
-      console.error('❌ Erreur résolution annonce:', error)
+      console.error('❌ Erreur signalement animal trouvé:', error)
       return {
         success: false,
-        error: error.response?.data?.message || error.message || 'Erreur lors de la résolution de l\'annonce'
+        error: error.response?.data?.message || error.message || 'Erreur lors du signalement'
+      }
+    }
+  },
+
+  /**
+   * Confirmer la récupération de l'animal (étape 2: propriétaire confirme)
+   */
+  async confirmResolution(id) {
+    try {
+      console.log('✅ Confirmation récupération animal:', id)
+      const response = await apiClient.post(API_ENDPOINTS.LOST_ANIMALS.CONFIRM_RESOLUTION(id))
+      
+      console.log('🎉 Récupération confirmée:', response.data)
+      
+      return {
+        success: true,
+        data: response.data.data || response.data,
+        message: response.data.message || 'Récupération confirmée avec succès. L\'annonce est maintenant fermée.',
+        status: response.data.status || 'resolved'
+      }
+    } catch (error) {
+      console.error('❌ Erreur confirmation récupération:', error)
+      return {
+        success: false,
+        error: error.response?.data?.message || error.message || 'Erreur lors de la confirmation'
+      }
+    }
+  },
+
+  /**
+   * Récupérer les notifications de l'utilisateur
+   */
+  async getNotifications(options = {}) {
+    try {
+      const params = new URLSearchParams()
+      
+      // Filtres disponibles
+      if (options.type) params.append('type', options.type)
+      if (options.read_status) params.append('read_status', options.read_status)
+      if (options.notification_type) params.append('notification_type', options.notification_type)
+      
+      // Pagination
+      if (options.page) params.append('page', options.page)
+      if (options.per_page) params.append('per_page', options.per_page)
+      
+      const queryString = params.toString()
+      const url = queryString ? `${API_ENDPOINTS.LOST_ANIMALS.NOTIFICATIONS}?${queryString}` : API_ENDPOINTS.LOST_ANIMALS.NOTIFICATIONS
+      
+      console.log('🔔 Récupération notifications:', url)
+      const response = await apiClient.get(url)
+      
+      console.log('📦 Réponse notifications:', response.data)
+      
+      return {
+        success: true,
+        data: response.data.data?.data || response.data.data || [],
+        pagination: {
+          current_page: response.data.data?.current_page || 1,
+          last_page: response.data.data?.last_page || 1,
+          per_page: response.data.data?.per_page || 15,
+          total: response.data.data?.total || 0
+        },
+        message: response.data.message || 'Notifications récupérées avec succès'
+      }
+    } catch (error) {
+      console.error('❌ Erreur récupération notifications:', error)
+      return {
+        success: false,
+        error: error.response?.data?.message || error.message || 'Erreur lors de la récupération des notifications'
       }
     }
   }

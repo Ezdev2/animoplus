@@ -11,6 +11,11 @@
                         class="self-stretch opacity-50 justify-start text-gray-600 text-base font-normal font-['League_Spartan']">
                         {{ userEmail }}
                     </div>
+                    <!-- Bio utilisateur -->
+                    <div v-if="userBio" 
+                        class="self-stretch justify-start text-gray-500 text-sm font-normal font-['League_Spartan'] italic line-clamp-2">
+                        {{ userBio }}
+                    </div>
                 </div>
             </div>
             <div class="self-stretch inline-flex justify-between items-start">
@@ -86,6 +91,8 @@ const userBirthDate = computed(() => {
 })
 
 const userAvatar = computed(() => getUserAvatar(userData.value, 80))
+
+const userBio = computed(() => userData.value?.bio || userData.value?.description || '')
 
 // Nombre d'animaux (à implémenter plus tard avec l'API des animaux)
 const animalCount = computed(() => {

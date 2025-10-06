@@ -126,14 +126,20 @@ export const userService = {
   // Mettre à jour le profil de l'utilisateur connecté (selon format Postman)
   async updateProfile(profileData) {
     try {
+      console.log('📝 Données reçues dans updateProfile:', profileData)
+      
       // Format attendu par l'API selon Postman
       const apiData = {
         name: profileData.name,
         phone: profileData.phone,
         clinic_name: profileData.clinic_name || '',
         clinic_address: profileData.clinic_address || '',
-        address: profileData.address
+        address: profileData.address,
+        bio: profileData.bio || '',
+        birth_date: profileData.birth_date || ''
       }
+      
+      console.log('🚀 Données envoyées à l\'API:', apiData)
       
       const response = await apiClient.put(API_ENDPOINTS.USERS.UPDATE_PROFILE, apiData)
       return {

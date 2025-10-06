@@ -85,14 +85,23 @@
             </label>
 
             <label class="flex flex-col gap-1 font-medium">
-                Heure d'ouverture
-                <div class="flex items-center border border-[#E5E7EB] rounded-md bg-white pl-3 h-[43px] w-[85%] focus-within:border-accent-500">
-                    <img :src="clockIcon" alt="heure" class="w-[16px] h-[16px]" />
+                Bio / Description
+                <textarea 
+                    v-model="form.bio"
+                    rows="4"
+                    placeholder="Parlez-nous de vous, votre expérience, vos spécialités..."
+                    class="px-2 py-3 border border-neutral-200 rounded-md text-[14px] text-[#4B5563] font-bold outline-none w-[85%] focus:border-accent-500 resize-vertical min-h-[100px]"></textarea>
+            </label>
+
+            <label class="flex flex-col gap-1 font-medium">
+                Horaires d'ouverture
+                <div class="flex items-center gap-2 px-2 py-3 border border-neutral-200 rounded-md w-[85%] focus-within:border-accent-500">
+                    <img :src="clockIcon" alt="clock" class="w-4 h-4" />
                     <input 
                         type="text" 
                         v-model="form.opening_hours"
                         placeholder="Ex: 8h00 - 18h00"
-                        class="flex-1 border-none outline-none text-[14px] pl-2 text-[#4B5563] font-league bg-transparent h-full" />
+                        class="flex-1 border-none outline-none text-[14px] text-[#4B5563] font-bold bg-transparent" />
                 </div>
             </label>
         </form>
@@ -136,6 +145,7 @@ const form = ref({
   address: '',
   clinic_name: '',
   clinic_address: '',
+  bio: '',
   opening_hours: ''
 })
 
@@ -163,6 +173,7 @@ const initializeForm = () => {
       address: userData.value.address || '',
       clinic_name: userData.value.clinic_name || '',
       clinic_address: userData.value.clinic_address || '',
+      bio: userData.value.bio || userData.value.description || '',
       opening_hours: userData.value.opening_hours || ''
     }
   }

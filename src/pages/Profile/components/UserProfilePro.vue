@@ -18,7 +18,6 @@
                     <!-- Infos personnelles -->
                     <p class="flex items-start gap-2">
                         <img :src="phoneIcon" alt="Téléphone" class="w-[16px]" />
-                        +261 03 400 05
                     </p>
                     <p class="flex items-start gap-2">
                         <img :src="locationIcon" alt="Localisation" class="w-[16px]" />
@@ -28,13 +27,19 @@
                         <img :src="clockIcon" alt="heure" class="w-[16px]" />
                         24 / 24
                     </p>
+                    
+                    <!-- Bio utilisateur -->
+                    <div v-if="userBio" class="mt-3 p-3 bg-gray-50 rounded-lg">
+                        <p class="text-sm text-gray-700 italic">
+                            "{{ userBio }}"
+                        </p>
+                    </div>
                 </div>
             </div>
 
             <!-- Bouton Ajouter un animal -->
             <button @click="addService"
                 class="bg-accent-500 text-white px-4 py-3 rounded-[14px] shadow-md flex items-center gap-2">
-                <img :src="animalIcon" alt="icone patte" class="w-fit" />
                 Ajouter un service
             </button>
         </div>
@@ -52,6 +57,9 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
+import { useSimpleAuth } from '@/composables/useSimpleAuth.js'
+
 import ProfileImg from '@/assets/images/image1.svg'
 import phoneIcon from '@/assets/icons/small-phone.svg'
 import locationIcon from '@/assets/icons/small-marker.svg'
@@ -62,5 +70,12 @@ import editIcon from '@/assets/icons/edit-icon.svg'
 
 import TitleDashboard from '@/components/common/TitleDashboard.vue'
 import Alert from '@/components/common/Alert.vue'
+
+const auth = useSimpleAuth()
+
+// Données utilisateur avec fallbacks
+const userData = computed(() => auth.getCurrentUser.value)
+
+const userBio = computed(() => userData.value?.bio || userData.value?.description || '')
 
 </script>

@@ -219,15 +219,19 @@
             <div class="flex items-center gap-3">
               <div :class="[
                 'px-3 py-1 rounded-full text-sm font-medium',
-                post.type === 'lost' && (post.status === 'resolved' || post.is_active === false)
+                post.type === 'lost' && post.status === 'resolved'
                   ? 'bg-green-100 text-green-800'
+                  : post.type === 'lost' && post.status === 'resolve_confirm_waiting'
+                  ? 'bg-yellow-100 text-yellow-800'
                   : post.type === 'lost'
                   ? 'bg-red-100 text-red-800'
                   : 'bg-blue-100 text-blue-800'
               ]">
                 {{ 
-                  post.type === 'lost' && (post.status === 'resolved' || post.is_active === false)
-                    ? '✅ RETROUVÉ' 
+                  post.type === 'lost' && post.status === 'resolved'
+                    ? '✅ RETROUVÉ'
+                    : post.type === 'lost' && post.status === 'resolve_confirm_waiting'
+                    ? '⏳ EN ATTENTE'
                     : post.type === 'lost' 
                     ? '❌ PERDU' 
                     : '🔍 TROUVÉ' 
@@ -397,8 +401,8 @@
                 <span class="mr-2">📲</span>Partager
               </button>
               
-              <!-- Bouton "J'ai retrouvé" uniquement pour les animaux perdus non résolus -->
-              <button v-if="post.type === 'lost' && post.status !== 'resolved' && post.is_active !== false" @click="markAsFound(post)" :disabled="isMarkingAsFound"
+              <!-- Bouton "J'ai retrouvé" uniquement pour les animaux perdus actifs -->
+              <button v-if="post.type === 'lost' && post.status === 'approved' && post.is_active === true" @click="markAsFound(post)" :disabled="isMarkingAsFound"
                 class="bg-green-50 text-green-600 px-4 py-2 rounded-lg font-medium hover:bg-green-100 transition-colors border border-green-200 disabled:opacity-50 disabled:cursor-not-allowed">
                 <svg v-if="isMarkingAsFound" class="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -408,8 +412,19 @@
                 {{ isMarkingAsFound ? 'Résolution en cours...' : 'J\'ai retrouvé cet animal' }}
               </button>
               
+              <!-- Indicateur pour les annonces en attente de confirmation -->
+              <div v-if="post.type === 'lost' && post.status === 'resolve_confirm_waiting'" class="bg-yellow-100 text-yellow-800 px-4 py-2 rounded-lg font-medium">
+                <span class="mr-2">⏳</span>En attente de confirmation
+                <div v-if="post.resolved_by_user" class="text-xs mt-1">
+                  Signalé par <strong>{{ post.resolved_by_user.name }}</strong>
+                  <div class="mt-1 text-yellow-700">
+                    Le propriétaire doit confirmer avoir récupéré son animal
+                  </div>
+                </div>
+              </div>
+              
               <!-- Indicateur pour les annonces résolues -->
-              <div v-if="post.type === 'lost' && (post.status === 'resolved' || post.is_active === false)" class="bg-green-100 text-green-800 px-4 py-2 rounded-lg font-medium">
+              <div v-if="post.type === 'lost' && post.status === 'resolved'" class="bg-green-100 text-green-800 px-4 py-2 rounded-lg font-medium">
                 <span class="mr-2">✅</span>Animal retrouvé !
                 <div v-if="post.resolved_by_user" class="text-xs mt-1">
                   Trouvé par <strong>{{ post.resolved_by_user.name }}</strong>
@@ -679,6 +694,14 @@
                     class="px-3 py-1 bg-red-100 text-red-800 text-sm font-medium rounded-full">
                     ❌ Refusée
                   </span>
+                  <span v-else-if="announcement.status === 'resolve_confirm_waiting'" 
+                    class="px-3 py-1 bg-yellow-100 text-yellow-800 text-sm font-medium rounded-full">
+                    ⏳ Confirmation requise
+                  </span>
+                  <span v-else-if="announcement.status === 'resolved'" 
+                    class="px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
+                    ✅ Retrouvé
+                  </span>
                   <span v-else 
                     class="px-3 py-1 bg-gray-100 text-gray-800 text-sm font-medium rounded-full">
                     {{ announcement.status }}
@@ -688,6 +711,60 @@
 
               <!-- Description -->
               <p class="text-gray-700 text-sm mb-3 line-clamp-2">{{ announcement.description }}</p>
+
+              <!-- Informations du trouveur et bouton de confirmation -->
+              <div v-if="announcement.status === 'resolve_confirm_waiting' && announcement.resolved_by_user" 
+                class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+                <div class="flex items-start justify-between">
+                  <div class="flex-1">
+                    <h4 class="text-sm font-medium text-yellow-800 mb-2">🎉 Quelqu'un a trouvé {{ announcement.name }} !</h4>
+                    <div class="text-sm text-yellow-700 space-y-1">
+                      <div class="flex items-center gap-2">
+                        <span class="font-medium">👤 Trouvé par:</span>
+                        <span>{{ announcement.resolved_by_user.name }}</span>
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <span class="font-medium">📞 Contact:</span>
+                        <span>{{ announcement.resolved_by_user.phone }}</span>
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <span class="font-medium">📧 Email:</span>
+                        <span>{{ announcement.resolved_by_user.email }}</span>
+                      </div>
+                    </div>
+                    <p class="text-xs text-yellow-600 mt-2">
+                      Contactez cette personne pour organiser la récupération, puis confirmez ci-dessous.
+                    </p>
+                  </div>
+                  <div class="ml-4">
+                    <button @click="confirmRecovery(announcement)" :disabled="isConfirmingRecovery"
+                      class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                      <svg v-if="isConfirmingRecovery" class="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <span v-else class="mr-1">✅</span>
+                      {{ isConfirmingRecovery ? 'Confirmation...' : 'Confirmer récupération' }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Informations de résolution pour les annonces résolues -->
+              <div v-if="announcement.status === 'resolved' && announcement.resolved_by_user" 
+                class="bg-green-50 border border-green-200 rounded-lg p-3 mb-3">
+                <h4 class="text-sm font-medium text-green-800 mb-2">✅ {{ announcement.name }} a été retrouvé !</h4>
+                <div class="text-sm text-green-700 space-y-1">
+                  <div class="flex items-center gap-2">
+                    <span class="font-medium">👤 Trouvé par:</span>
+                    <span>{{ announcement.resolved_by_user.name }}</span>
+                  </div>
+                  <div v-if="announcement.resolved_at" class="flex items-center gap-2">
+                    <span class="font-medium">📅 Récupéré le:</span>
+                    <span>{{ formatDate(announcement.resolved_at) }}</span>
+                  </div>
+                </div>
+              </div>
 
               <!-- Informations supplémentaires -->
               <div class="flex items-center justify-between text-sm text-gray-500">
@@ -796,7 +873,7 @@ import TitleDashboard from '@/components/common/TitleDashboard.vue'
 import { ref, computed, onMounted, watch } from 'vue'
 import { useLostAnimals } from '@/composables/useLostAnimals.js'
 import { useSimpleAuth } from '@/composables/useSimpleAuth.js'
-import { useResolveLostAnimalMutation } from '@/services/lostAnimals/lostAnimalsQueries.js'
+import { useResolveLostAnimalMutation, useConfirmResolutionMutation } from '@/services/lostAnimals/lostAnimalsQueries.js'
 
 // Authentification
 const { getCurrentUser } = useSimpleAuth()
@@ -890,8 +967,12 @@ const isFilteringByDistance = ref(false)
 // État pour le bouton "J'ai retrouvé"
 const isMarkingAsFound = ref(false)
 
-// Mutation pour résoudre une annonce
+// État pour le bouton de confirmation de récupération
+const isConfirmingRecovery = ref(false)
+
+// Mutations pour le workflow en 2 étapes
 const resolveMutation = useResolveLostAnimalMutation()
+const confirmMutation = useConfirmResolutionMutation()
 
 // State reactif
 const posts = ref([])
@@ -1273,43 +1354,81 @@ Chaque partage compte, merci du fond du cœur ❤️
 }
 
 const markAsFound = async (post) => {
-  const isConfirmed = confirm(`Avez-vous vraiment retrouvé ${post.name} ?\n\nL'annonce sera marquée comme résolue et votre identité sera enregistrée comme ayant trouvé l'animal.`)
+  const isConfirmed = confirm(`Avez-vous vraiment retrouvé ${post.name} ?\n\nVotre signalement sera envoyé au propriétaire qui devra confirmer avoir récupéré son animal pour fermer définitivement l'annonce.`)
   
   if (!isConfirmed) return
 
   isMarkingAsFound.value = true
 
   try {
-    console.log('🎉 Marquage comme résolu pour:', post.name, 'ID:', post.id)
+    console.log('🎉 Signalement animal trouvé pour:', post.name, 'ID:', post.id)
     
-    // Utiliser la mutation pour résoudre l'annonce
+    // Utiliser la mutation pour signaler l'animal trouvé
     const result = await resolveMutation.mutateAsync(post.id)
     
-    console.log('✅ Annonce marquée comme résolue:', result.data)
-    console.log('👤 Résolu par:', result.data.resolved_by_user)
-    console.log('📅 Résolu le:', result.data.resolved_at)
+    console.log('✅ Animal signalé comme trouvé:', result.data)
+    console.log('👤 Signalé par:', result.data.resolved_by_user)
+    console.log('📋 Statut:', result.data.status)
+    console.log('🔄 Prochaine étape:', result.next_step)
 
     // Actualiser la liste des annonces
     await refreshAnimals()
 
-    // Message de succès avec les vraies données
-    const resolvedBy = result.data.resolved_by_user
-    const resolvedAt = new Date(result.data.resolved_at).toLocaleDateString('fr-FR')
+    // Message de succès avec le nouveau workflow
+    const signaler = result.data.resolved_by_user
     
-    alert(`✅ Parfait ! L'annonce de ${post.name} a été marquée comme résolue.\n\n` +
-          `📋 Statut: ${result.data.status}\n` +
-          `👤 Trouvé par: ${resolvedBy?.name || 'Vous'}\n` +
-          `📞 Contact: ${resolvedBy?.phone || 'Non renseigné'}\n` +
-          `📅 Date: ${resolvedAt}\n\n` +
-          `Le propriétaire sera notifié !`)
+    alert(`✅ ${result.message}\n\n` +
+          `📋 Statut: ${result.status}\n` +
+          `👤 Signalé par: ${signaler?.name || 'Vous'}\n` +
+          `📞 Contact: ${signaler?.phone || 'Non renseigné'}\n\n` +
+          `🔄 ${result.next_step}\n\n` +
+          `Le propriétaire recevra une notification et pourra vous contacter pour organiser la récupération.`)
 
   } catch (error) {
-    console.error('❌ Erreur résolution annonce:', error)
+    console.error('❌ Erreur signalement:', error)
     // Le toast d'erreur est géré par la mutation
     // Mais on peut ajouter une alerte personnalisée si besoin
-    alert(`❌ Erreur lors de la résolution de l'annonce : ${error.error || error.message}`)
+    alert(`❌ Erreur lors du signalement : ${error.error || error.message}`)
   } finally {
     isMarkingAsFound.value = false
+  }
+}
+
+// Fonction pour confirmer la récupération de l'animal (étape 2)
+const confirmRecovery = async (announcement) => {
+  const finderName = announcement.resolved_by_user?.name || 'cette personne'
+  const isConfirmed = confirm(`Confirmez-vous avoir récupéré ${announcement.name} auprès de ${finderName} ?\n\nCette action fermera définitivement l'annonce.`)
+  
+  if (!isConfirmed) return
+
+  isConfirmingRecovery.value = true
+
+  try {
+    console.log('✅ Confirmation récupération pour:', announcement.name, 'ID:', announcement.id)
+    
+    // Utiliser la mutation pour confirmer la récupération
+    const result = await confirmMutation.mutateAsync(announcement.id)
+    
+    console.log('🎉 Récupération confirmée:', result.data)
+    console.log('📋 Statut final:', result.status)
+
+    // Actualiser la liste des annonces
+    await loadMyAnnouncements()
+
+    // Message de succès
+    alert(`🎉 ${result.message}\n\n` +
+          `📋 Statut: ${result.status}\n` +
+          `👤 Trouvé par: ${finderName}\n` +
+          `📅 Récupéré le: ${new Date().toLocaleDateString('fr-FR')}\n\n` +
+          `L'annonce est maintenant fermée. Merci d'avoir utilisé AnimoPlus !`)
+
+  } catch (error) {
+    console.error('❌ Erreur confirmation récupération:', error)
+    // Le toast d'erreur est géré par la mutation
+    // Mais on peut ajouter une alerte personnalisée si besoin
+    alert(`❌ Erreur lors de la confirmation : ${error.error || error.message}`)
+  } finally {
+    isConfirmingRecovery.value = false
   }
 }
 

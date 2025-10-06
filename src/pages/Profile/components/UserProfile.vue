@@ -28,6 +28,13 @@
             <img :src="calendarIcon" alt="Date de naissance" class="w-[16px]" />
             {{ userBirthDate }}
           </p>
+          
+          <!-- Bio utilisateur -->
+          <div v-if="userBio" class="mt-3 p-3 bg-gray-50 rounded-lg">
+            <p class="text-sm text-gray-700 italic">
+              "{{ userBio }}"
+            </p>
+          </div>
         </div>
       </div>
 
@@ -383,12 +390,11 @@ const userBirthDate = computed(() => {
   }
   return '19/01/2002'
 })
-const userAvatar = computed(() => {
-  // Utiliser l'utilitaire pour obtenir l'avatar approprié
-  return getUserAvatar(userData.value, 130)
-})
 
-// Déterminer le type d'utilisateur
+const userBio = computed(() => userData.value?.bio || userData.value?.description || '')
+
+const userAvatar = computed(() => getUserAvatar(userData.value, 130))
+
 const isUserClient = computed(() => {
   const userType = userData.value?.user_type || userData.value?.role
   return userType === 'client'
