@@ -7,9 +7,9 @@
 
         <div v-if="!isLoginPage" class="flex justify-start items-center gap-10">
             <div class="flex justify-start items-center gap-10">
-                <a href="#" class="text-white text-lg font-medium">Téléconseil</a>
-                <a href="#" class="text-white text-lg font-medium">Vous êtes un pro</a>
-                <a href="/" class="text-white text-lg font-medium">Animo + X</a>
+                <a href="/teleconseil" class="text-white text-lg font-medium">Téléconseil</a>
+                <a href="/professionnel" class="text-white text-lg font-medium">Vous êtes un pro</a>
+                <a href="/actu" class="text-white text-lg font-medium">Animo + X</a>
             </div>
             <div class="flex justify-start items-center gap-6">
                 <router-link to="/register"

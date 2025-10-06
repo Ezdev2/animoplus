@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full flex flex-col items-center justify-center">
+  <div class="w-full flex flex-col items-center justify-center overflow-x-hidden relative">
     <div class="background"></div>
 
     <BubbleGreen class="bubble bubble-1" />
@@ -51,7 +51,7 @@ import BubbleGray from '@/assets/bubbles/1_gray.vue';
 
 .bubble {
   position: absolute;
-  opacity: 0.7;
+  opacity: 1;
 }
 
 .bubble-1 {
@@ -65,19 +65,19 @@ import BubbleGray from '@/assets/bubbles/1_gray.vue';
 }
 
 .bubble-3 {
-  opacity: 0.5;
+  opacity: 1;
   bottom: -200px;
   left: 10px;
 }
 
 .bubble-5 {
-  opacity: 0.5;
+  opacity: 1;
   bottom: -100px;
   right: -200px;
 }
 
 .bubble-6 {
-  opacity: 0.5;
+  opacity: 1;
   bottom: 0;
   transform: translate(-50%, -50%);
 }
