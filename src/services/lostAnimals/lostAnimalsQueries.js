@@ -595,3 +595,41 @@ export const usePrefetchLostAnimal = () => {
     })
   }
 }
+
+/**
+ * Hook pour marquer une annonce comme résolue
+ * @returns {Object} Mutation object
+ */
+export const useResolveLostAnimalMutation = () => {
+  const queryClient = useQueryClient()
+  const { showToast } = useToast()
+
+  return useMutation({
+    mutationFn: (animalId) => lostAnimalsService.resolveLostAnimal(animalId),
+    onSuccess: (data, animalId) => {
+      console.log('✅ Annonce résolue avec succès:', data)
+      
+      // Invalider et refetch les queries liées
+      queryClient.invalidateQueries({ queryKey: LOST_ANIMALS_QUERY_KEYS.all })
+      queryClient.invalidateQueries({ queryKey: LOST_ANIMALS_QUERY_KEYS.detail(animalId) })
+      queryClient.invalidateQueries({ queryKey: LOST_ANIMALS_QUERY_KEYS.myAnimals() })
+      
+      // Afficher un toast de succès
+      showToast({
+        type: 'success',
+        title: 'Annonce résolue !',
+        message: data.message || 'L\'annonce a été marquée comme résolue avec succès'
+      })
+    },
+    onError: (error) => {
+      console.error('❌ Erreur résolution annonce:', error)
+      
+      // Afficher un toast d'erreur
+      showToast({
+        type: 'error',
+        title: 'Erreur',
+        message: error.error || error.message || 'Erreur lors de la résolution de l\'annonce'
+      })
+    }
+  })
+}

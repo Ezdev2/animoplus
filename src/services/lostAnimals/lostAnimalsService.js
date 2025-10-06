@@ -689,6 +689,30 @@ export const lostAnimalsService = {
         error: error.response?.data?.message || error.message || 'Erreur lors de la récupération de vos annonces'
       }
     }
+  },
+
+  /**
+   * Marquer une annonce comme résolue
+   */
+  async resolveLostAnimal(id) {
+    try {
+      console.log('🎉 Résolution annonce:', id)
+      const response = await apiClient.post(API_ENDPOINTS.LOST_ANIMALS.RESOLVE(id))
+      
+      console.log('✅ Annonce résolue:', response.data)
+      
+      return {
+        success: true,
+        data: response.data.data || response.data,
+        message: response.data.message || 'Annonce marquée comme résolue avec succès'
+      }
+    } catch (error) {
+      console.error('❌ Erreur résolution annonce:', error)
+      return {
+        success: false,
+        error: error.response?.data?.message || error.message || 'Erreur lors de la résolution de l\'annonce'
+      }
+    }
   }
 }
 
