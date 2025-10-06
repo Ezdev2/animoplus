@@ -1,124 +1,73 @@
 <template>
-  <div class="urgence-container font-sans text-gray-800 bg-gray-50 min-h-screen">
-    
-    <div class="symptom-section pt-8 pb-12">
-      <h1 class="text-2xl md:text-3xl font-bold text-center mb-10 text-green-800">QUELS SONT LES SYMPTÔMES D'URGENCES ?</h1>
-      
-      <div class="symptom-card-dog bg-green-200 p-6 md:p-8 rounded-2xl shadow-lg mb-8 mx-auto max-w-2xl border-l-8 border-green-500">
-        <div class="flex flex-col md:flex-row items-center md:items-start">
-          <div class="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden mb-4 md:mb-0 md:mr-6">
-            <img src="https://via.placeholder.com/150" alt="Chien" class="w-full h-full object-cover">
-          </div>
-          <div>
-            <h2 class="text-2xl font-bold text-green-800 mb-2">MON CHIEN</h2>
-            <p class="text-sm italic mb-4">
-              Si votre chien a un de ces symptômes listés ci-dessous, cela peut-être considéré comme une urgence :
-            </p>
-            <ul class="list-none space-y-2 text-base">
-              <li v-for="symptom in dogSymptoms" :key="symptom" class="flex items-center">
-                <span class="text-yellow-500 text-lg mr-2">➜</span>
-                <span>{{ symptom }}</span>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
+  <div class="flex flex-col space-y-8 items-center overflow-x-hidden relative">
+    <div class="background">
+      <BubbleGreen class="bubble bubble-1" />
+      <BubbleYellow class="bubble bubble-2" />
+      <BubbleBrown class="bubble bubble-3" />
+      <BubbleGray class="bubble bubble-5" />
+      <BubbleGreenTwo class="bubble bubble-6" />
 
-      <div class="symptom-card-cat bg-green-200 p-6 md:p-8 rounded-2xl shadow-lg mx-auto max-w-2xl border-l-8 border-green-500">
-        <div class="flex flex-col md:flex-row items-center md:items-start">
-          <div class="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden mb-4 md:mb-0 md:mr-6">
-            <img src="https://via.placeholder.com/150" alt="Chat" class="w-full h-full object-cover">
-          </div>
-          <div>
-            <h2 class="text-2xl font-bold text-green-800 mb-2">MON CHAT</h2>
-            <p class="text-sm italic mb-4">
-              Si votre chat a un de ces symptômes listés ci-dessous, cela peut-être considéré comme une urgence :
-            </p>
-            <ul class="list-none space-y-2 text-base">
-              <li v-for="symptom in catSymptoms" :key="symptom" class="flex items-center">
-                <span class="text-yellow-500 text-lg mr-2">➜</span>
-                <span>{{ symptom }}</span>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
+      <HeroSection />
     </div>
-
-    <div class="contact-section bg-green-500 p-8 md:p-12 mt-10 text-white flex flex-col md:flex-row items-center justify-between rounded-t-3xl shadow-lg">
-      <div class="text-center md:text-left mb-6 md:mb-0 md:mr-10">
-        <h2 class="text-3xl md:text-4xl font-bold mb-2">DES QUESTIONS ?</h2>
-        <p class="text-lg italic text-green-100">Contactez-nous via notre assistant virtuel</p>
-      </div>
-      
-      <button class="bg-green-700 hover:bg-green-800 text-white font-bold py-4 px-8 rounded-full text-lg shadow-xl transition-colors">
-        DÉMARRER LA DISCUSSION
-      </button>
-      
-      <div class="w-48 h-48 md:w-64 md:h-64 rounded-full overflow-hidden absolute right-4 md:right-10 top-1/2 -translate-y-1/2 hidden lg:block">
-        <img src="https://via.placeholder.com/200" alt="Assistante virtuelle" class="w-full h-full object-cover">
-      </div>
+    <div class="w-full -mt-28 px-40 flex flex-col gap-[80px] items-center justify-center z-1">
+      <ActionCards />
+      <Symptome />
+      <QuestionsBanner />
     </div>
 
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
-
-const dogSymptoms = ref([
-  "Mon chien est blessé.",
-  "Mon chien a les muqueuses pâles.",
-  "Mon chien a mal à l'œil et/ou à l'œil fermé.",
-  "Mon chien urine du sang.",
-  "Mon chien tousse ou a du mal à respirer.",
-  "Mon chien vomit ou a la diarrhée.",
-  "Mon chien a de la fièvre."
-]);
-
-const catSymptoms = ref([
-  "Mon chat bave.",
-  "Mon chat urine du sang.",
-  "Mon chat tousse ou a du mal à respirer.",
-  "Mon chat vomit ou a la diarrhée.",
-  "Mon chat a de la fièvre."
-]);
+import HeroSection from './components/HeroSection.vue';
+import ActionCards from './components/ActionCards.vue';
+import Symptome from './components/Symptome.vue';
+import QuestionsBanner from '../Homepage/components/QuestionsBanner.vue';
+import BubbleGreen from '@/assets/bubbles/1_green.vue';
+import BubbleYellow from '@/assets/bubbles/1_yellow.vue';
+import BubbleBrown from '@/assets/bubbles/1_brown.vue';
+import BubbleGreenTwo from '@/assets/bubbles/2_green.vue';
+import BubbleGray from '@/assets/bubbles/1_gray.vue';
 </script>
 
 <style scoped>
-/*
-  The Tailwind classes are quite self-descriptive and sufficient for the layout.
-  You can add custom styles here if needed, but for the provided images,
-  Tailwind's utility-first approach handles it well.
-*/
-.urgence-container {
-  /* Using a dark green for the title to match the image */
-  background-color: #f7fafc; /* A light gray to match the background */
+
+.background {
+  width: 100vw;
+  height: 70vh;
+  background-color: #43a047;
 }
 
-.symptom-card-dog, .symptom-card-cat {
-  /* This is to match the rounded-rectangle shape with a rounded border on the left */
-  position: relative;
-}
-
-.symptom-card-dog::before, .symptom-card-cat::before {
-  /* A subtle colored bar on the side, like in the image */
-  content: '';
+.bubble {
   position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  width: 12px;
-  background-color: #10B981; /* A shade of green */
-  border-top-left-radius: 1rem;
-  border-bottom-left-radius: 1rem;
+  opacity: 1;
 }
 
-.contact-section {
-  /* Customizing the contact banner as per the image */
-  background-color: #4CAF50; /* A shade of green */
-  position: relative;
-  overflow: hidden;
-  clip-path: polygon(0 0, 100% 10%, 100% 100%, 0 90%); /* This creates the slanted effect */
+.bubble-1 {
+  top: 12%;
+  left: 10px;
+}
+
+.bubble-3 {
+  top: 12%;
+  right: -50px;
+}
+
+.bubble-2 {
+  opacity: 1;
+  bottom: 1500px;
+  left: 10px;
+}
+
+.bubble-5 {
+  opacity: 1;
+  bottom: 1000px;
+  right: -100px;
+}
+
+.bubble-6 {
+  opacity: 1;
+  bottom: 10px;
+  transform: translate(-50%, -50%);
 }
 </style>

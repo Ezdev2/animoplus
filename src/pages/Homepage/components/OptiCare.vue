@@ -19,10 +19,10 @@
           </li>
         </ul>
 
-        <button
+        <router-link to="/professionnel"
           class="mt-8 bg-primary-300 w-[fit-content] text-white text-lg uppercase px-6 py-3 rounded-full text-base hover:bg-white hover:text-primary-600 transition">
           En savoir plus sur nos solutions
-        </button>
+        </router-link>
       </div>
     </div>
   </section>

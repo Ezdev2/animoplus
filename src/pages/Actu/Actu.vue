@@ -1,7 +1,7 @@
 <template>
-  <div class="actu-page font-sans bg-gray-50 min-h-screen p-4 md:p-8">
+  <div class="bg-gray-50 min-h-screen p-4 md:py-8 md:px-40">
     
-    <div class="search-section w-full max-w-2xl mx-auto mb-10">
+    <div class="search-section w-full mx-auto mb-10">
       <h1 class="text-xl md:text-2xl font-bold text-gray-800 text-center mb-4">Rechercher un article</h1>
       <div class="relative">
         <input 
@@ -16,7 +16,7 @@
       </div>
     </div>
     
-    <div class="articles-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
+    <div class="articles-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mx-auto">
       <div v-for="article in articles" :key="article.id" class="article-card bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
         <img :src="article.image" :alt="article.title" class="w-full h-48 object-cover">
         <div class="p-4">
@@ -26,12 +26,12 @@
       </div>
     </div>
     
-    <div class="contact-section w-full max-w-4xl mx-auto mt-10 bg-orange-600 text-white rounded-lg shadow-lg p-6 text-center">
+    <div class="contact-section w-full mx-auto mt-10 bg-orange-600 text-white rounded-lg shadow-lg p-6 text-center">
       <h2 class="text-2xl font-bold mb-1">ENVIE D'UN ARTICLE ? CLIQUEZ ICI</h2>
       <p class="text-sm">Notre équipe reviendra vers vous rapidement</p>
     </div>
     
-    <div class="articles-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto mt-10">
+    <div class="articles-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mx-auto mt-10">
       <div v-for="article in articles" :key="article.id" class="article-card bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
         <img :src="article.image" :alt="article.title" class="w-full h-48 object-cover">
         <div class="p-4">
@@ -50,19 +50,19 @@ import { ref } from 'vue';
 const articles = ref([
   {
     id: 1,
-    image: 'https://via.placeholder.com/400x200',
+    image: 'https://picsum.photos/200',
     title: 'Diana et les bienfaits des promenades dans la nature',
     description: 'Que ce soit à travers une promenade tranquille dans un parc ou une randonnée en montagne, inclure plus de nature dans nos vie...',
   },
   {
     id: 2,
-    image: 'https://via.placeholder.com/400x200',
+    image: 'https://picsum.photos/200',
     title: 'La routine d\'Elizabeth II pour bien démarrer sa journée',
     description: 'La routine matinale de la Reine Elizabeth II, soigneusement orchestrée, reflétait une combinaison de traditions royales et de...',
   },
   {
     id: 3,
-    image: 'https://via.placeholder.com/400x200',
+    image: 'https://picsum.photos/200',
     title: 'Elizabeth II et les femmes dans l\'armée. Leur rôle clé en 1940-45',
     description: 'En 1945, à l\'aube de ses 19 ans, la princesse Elizabeth de Windsor s\'engage dans l\'armée britannique au sein de l\'Auxiliary Territorial...',
   },
