@@ -24,7 +24,6 @@ import CacheManagementPage from '@/pages/Admin/CacheManagementPage.vue'
 import AdminLayout from '@/pages/Admin/AdminLayout.vue'
 import AdminDashboard from '@/pages/Admin/AdminDashboard.vue'
 import ServiceTypes from '@/pages/Admin/ServiceTypes.vue'
-import CoopAdmin from '@/pages/Admin/CoopAdmin.vue'
 import AdminRedirect from '@/pages/Admin/AdminRedirect.vue'
 import AnnouncementsManagement from '@/pages/Admin/AnnouncementsManagement.vue'
 
@@ -226,12 +225,6 @@ const router = createRouter({
           path: 'test/service-types',
           name: 'admin-service-types',
           component: ServiceTypes,
-          meta: { requiresAuth: true, roles: ['admin'] }
-        },
-        {
-          path: 'coop-admin',
-          name: 'admin-coop',
-          component: CoopAdmin,
           meta: { requiresAuth: true, roles: ['admin'] }
         },
         {

@@ -71,10 +71,16 @@ const unreadCount = computed(() => {
 })
 
 // Fonction pour basculer l'affichage des notifications
-const toggleNotifications = () => {
+const toggleNotifications = async () => {
   showNotificationsDropdown.value = !showNotificationsDropdown.value
+  
   if (showNotificationsDropdown.value) {
-    loadNotifications()
+    try {
+      // loadNotifications utilise le cache si valide, sinon fetch
+      await loadNotifications()
+    } catch (error) {
+      console.warn('Erreur lors de l\'ouverture des notifications:', error)
+    }
   }
 }
 
@@ -86,9 +92,17 @@ const handleClickOutside = (event) => {
   }
 }
 
-// Charger les notifications au montage
-onMounted(() => {
-  loadNotifications()
+// Charger les notifications au montage (utilise le cache si disponible)
+onMounted(async () => {
+  console.log('🚀 AppNavbar monté - Vérification cache notifications...')
+  
+  try {
+    // loadNotifications utilise automatiquement le cache si valide
+    await loadNotifications()
+  } catch (error) {
+    console.warn('⚠️ Erreur chargement notifications dans navbar:', error)
+  }
+  
   // Ajouter l'écouteur pour fermer en cliquant à l'extérieur
   document.addEventListener('click', handleClickOutside)
 })

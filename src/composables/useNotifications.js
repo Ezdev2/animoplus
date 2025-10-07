@@ -8,8 +8,45 @@ import {
   useDeleteNotificationMutation
 } from '@/services/notifications/notificationsQueries.js'
 
+// Cache global des notifications avec TTL
+const notificationsCache = {
+  data: null,
+  timestamp: null,
+  TTL: 5 * 60 * 1000, // 5 minutes en millisecondes
+  
+  isValid() {
+    if (!this.data || !this.timestamp) return false
+    return (Date.now() - this.timestamp) < this.TTL
+  },
+  
+  set(data) {
+    this.data = data
+    this.timestamp = Date.now()
+    console.log('📦 Cache notifications mis à jour:', { 
+      unread: data?.stats?.unread || 0,
+      total: data?.data?.length || 0,
+      timestamp: new Date(this.timestamp).toLocaleTimeString()
+    })
+  },
+  
+  get() {
+    if (this.isValid()) {
+      console.log('⚡ Utilisation du cache notifications (TTL valide)')
+      return this.data
+    }
+    console.log('🔄 Cache notifications expiré, fetch nécessaire')
+    return null
+  },
+  
+  clear() {
+    this.data = null
+    this.timestamp = null
+    console.log('🧹 Cache notifications vidé')
+  }
+}
+
 /**
- * Composable pour la gestion des notifications
+ * Composable pour la gestion des notifications avec cache intelligent
  */
 export const useNotifications = () => {
   // Options de requête réactives
@@ -65,26 +102,65 @@ export const useNotifications = () => {
   })
 
   // Actions
-  const loadNotifications = async (options = {}) => {
+  const loadNotifications = async (options = {}, forceRefresh = false) => {
+    // Vérifier le cache d'abord (sauf si forceRefresh)
+    if (!forceRefresh) {
+      const cachedData = notificationsCache.get()
+      if (cachedData) {
+        // Utiliser les données du cache
+        return cachedData
+      }
+    }
+    
+    console.log('🔄 Chargement des notifications depuis l\'API...')
     queryOptions.value = { ...queryOptions.value, ...options }
-    await notificationsQuery.refetch()
-    await statsQuery.refetch()
+    
+    try {
+      await notificationsQuery.refetch()
+      await statsQuery.refetch()
+      
+      // Mettre à jour le cache avec les nouvelles données
+      const freshData = {
+        data: notificationsQuery.data.value?.data || [],
+        stats: notificationsQuery.data.value?.stats || statsQuery.data.value?.data || {},
+        pagination: notificationsQuery.data.value?.pagination || {}
+      }
+      
+      notificationsCache.set(freshData)
+      return freshData
+      
+    } catch (error) {
+      console.error('❌ Erreur lors du chargement des notifications:', error)
+      throw error
+    }
   }
 
   const markAsRead = async (notificationId) => {
-    return await markAsReadMutation.mutateAsync(notificationId)
+    const result = await markAsReadMutation.mutateAsync(notificationId)
+    // Vider le cache car les stats ont changé
+    notificationsCache.clear()
+    return result
   }
 
   const markAsUnread = async (notificationId) => {
-    return await markAsUnreadMutation.mutateAsync(notificationId)
+    const result = await markAsUnreadMutation.mutateAsync(notificationId)
+    // Vider le cache car les stats ont changé
+    notificationsCache.clear()
+    return result
   }
 
   const markAllAsRead = async () => {
-    return await markAllAsReadMutation.mutateAsync()
+    const result = await markAllAsReadMutation.mutateAsync()
+    // Vider le cache car toutes les stats ont changé
+    notificationsCache.clear()
+    return result
   }
 
   const deleteNotification = async (notificationId) => {
-    return await deleteNotificationMutation.mutateAsync(notificationId)
+    const result = await deleteNotificationMutation.mutateAsync(notificationId)
+    // Vider le cache car une notification a été supprimée
+    notificationsCache.clear()
+    return result
   }
 
   // Fonctions utilitaires
@@ -154,36 +230,51 @@ export const useNotifications = () => {
     }
   }
 
+  // Fonction pour forcer le refresh (ignorer le cache)
+  const forceRefresh = async () => {
+    console.log('🔄 Force refresh des notifications (cache ignoré)')
+    return await loadNotifications({}, true)
+  }
+
+  // Fonction pour vider manuellement le cache
+  const clearCache = () => {
+    notificationsCache.clear()
+  }
+
   return {
     // Data
     notifications,
-    unreadNotifications,
-    notificationsByType,
     stats,
     pagination,
     isLoading,
     error,
+    unreadNotifications,
+    notificationsByType,
+    
+    // Reactive options
     queryOptions,
 
     // Actions
     loadNotifications,
+    forceRefresh,
+    clearCache,
     markAsRead,
     markAsUnread,
     markAllAsRead,
     deleteNotification,
-
-    // Utilities
+    
+    // Utils
     getNotificationIcon,
     getNotificationColor,
     getNotificationTitle,
     getNotificationMessage,
     formatNotificationDate,
-
-    // Mutations states
-    isMarkingAsRead: markAsReadMutation.isLoading,
-    isMarkingAsUnread: markAsUnreadMutation.isLoading,
-    isMarkingAllAsRead: markAllAsReadMutation.isLoading,
-    isDeleting: deleteNotificationMutation.isLoading
+    
+    // Mutations (pour usage avancé)
+    markAsReadMutation,
+    markAsUnreadMutation,
+    markAllAsReadMutation,
+    deleteNotificationMutation
   }
 }
 

@@ -67,11 +67,6 @@
             ⚙️ Service Types
           </RouterLink>
           
-          <RouterLink to="/admin/coop-admin" @click="closeMenu"
-            class="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 rounded flex items-center gap-2">
-            🤝 Coop Admin
-          </RouterLink>
-          
           <RouterLink to="/admin/announcements" @click="closeMenu"
             class="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 rounded flex items-center gap-2">
             📋 Gestion Annonces

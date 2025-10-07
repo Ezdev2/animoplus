@@ -315,8 +315,8 @@
 </template>
 
 <script setup>
-import ProfileImg from '@/assets/images/image1.svg'
-import DefaultAvatar from '@/assets/images/default-avatar.svg'
+import ProfileImg from '@/assets/images/default_avatar.svg'
+import DefaultAvatar from '@/assets/images/default_avatar.svg'
 import { getUserAvatar } from '@/utils/avatarUtils.js'
 import phoneIcon from '@/assets/icons/small-phone.svg'
 import locationIcon from '@/assets/icons/small-marker.svg'
@@ -549,6 +549,14 @@ function handleSpecialityAdded(speciality) {
 // Fonction pour ouvrir le modal de confirmation de suppression
 function confirmDeleteSpeciality(speciality) {
   console.log('🗑️ Demande suppression spécialité:', speciality)
+  console.log('🔍 Structure de l\'objet spécialité:', JSON.stringify(speciality, null, 2))
+  console.log('🆔 ID trouvé:', speciality.id)
+  console.log('🆔 Autres IDs possibles:', {
+    id: speciality.id,
+    user_specialty_id: speciality.user_specialty_id,
+    specialty_id: speciality.specialty_id,
+    pivot_id: speciality.pivot?.id
+  })
   specialityToDelete.value = speciality
   showDeleteSpecialityModal.value = true
 }

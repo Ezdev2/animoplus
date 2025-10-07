@@ -60,7 +60,7 @@
 import { computed } from 'vue'
 import { useSimpleAuth } from '@/composables/useSimpleAuth.js'
 
-import ProfileImg from '@/assets/images/image1.svg'
+import ProfileImg from '@/assets/images/default_avatar.svg'
 import phoneIcon from '@/assets/icons/small-phone.svg'
 import locationIcon from '@/assets/icons/small-marker.svg'
 import clockIcon from '@/assets/icons/clock-black.svg'

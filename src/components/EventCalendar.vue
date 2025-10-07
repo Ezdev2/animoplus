@@ -229,15 +229,24 @@ const formatSelectionDuration = () => {
 const confirmSelection = () => {
   if (selectedSlots.value.length === 0) return
   
-  const selectionData = {
-    slots: selectedSlots.value,
-    startDate: selectedSlots.value[0].date,
-    endDate: selectedSlots.value[selectedSlots.value.length - 1].date,
-    duration: selectedSlots.value.length,
-    startTime: `${selectedSlots.value[0].hour}:00`,
-    endTime: `${selectedSlots.value[selectedSlots.value.length - 1].hour + 1}:00`
+  // Fonction pour formater l'heure avec deux chiffres
+  const formatHour = (hour) => {
+    return hour.toString().padStart(2, '0') + ':00'
   }
   
+  const firstSlot = selectedSlots.value[0]
+  const lastSlot = selectedSlots.value[selectedSlots.value.length - 1]
+  
+  const selectionData = {
+    slots: selectedSlots.value,
+    startDate: firstSlot.date,
+    endDate: lastSlot.date,
+    duration: selectedSlots.value.length,
+    startTime: formatHour(firstSlot.hour),
+    endTime: formatHour(lastSlot.hour + 1)
+  }
+  
+  console.log('Données de sélection envoyées:', selectionData)
   emit('slots-selected', selectionData)
   clearSelection()
 }

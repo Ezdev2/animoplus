@@ -235,6 +235,85 @@ export function useUpdateAppointment(options = {}) {
 }
 
 /**
+ * Hook pour mettre à jour les heures d'un rendez-vous (PATCH)
+ * @param {Object} options - Options de mutation
+ * @returns {Object} Mutation TanStack Query
+ */
+export function useUpdateAppointmentTime(options = {}) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, timeData }) => appointmentService.updateAppointmentTime(id, timeData),
+    
+    // Optimistic Update
+    onMutate: async ({ id, timeData }) => {
+      // Annuler les requêtes en cours pour ce rendez-vous
+      await queryClient.cancelQueries({ queryKey: APPOINTMENT_QUERY_KEYS.detail(id) })
+      
+      // Sauvegarder les données précédentes
+      const previousAppointment = queryClient.getQueryData(APPOINTMENT_QUERY_KEYS.detail(id))
+      
+      // Mettre à jour optimistiquement les heures
+      if (previousAppointment?.data) {
+        queryClient.setQueryData(APPOINTMENT_QUERY_KEYS.detail(id), {
+          ...previousAppointment,
+          data: { 
+            ...previousAppointment.data, 
+            start_time: timeData.start_time || previousAppointment.data.start_time,
+            end_time: timeData.end_time || previousAppointment.data.end_time
+          }
+        })
+      }
+      
+      return { previousAppointment }
+    },
+    
+    onSuccess: (data, { id }) => {
+      console.log('✅ Heures du rendez-vous modifiées avec succès:', data)
+      
+      // Mettre à jour le cache avec les vraies données
+      queryClient.setQueryData(APPOINTMENT_QUERY_KEYS.detail(id), data)
+      
+      // Invalider les listes pour refléter les changements
+      queryClient.invalidateQueries({ 
+        queryKey: APPOINTMENT_QUERY_KEYS.lists(),
+        refetchType: 'active'
+      })
+      
+      // Invalider les créneaux disponibles
+      queryClient.invalidateQueries({ 
+        queryKey: APPOINTMENT_QUERY_KEYS.availableSlots(),
+        refetchType: 'active'
+      })
+      
+      // Appeler le callback de succès si fourni
+      if (options.onSuccess) {
+        options.onSuccess(data, { id })
+      }
+    },
+    
+    onError: (error, { id }, context) => {
+      console.error('❌ Erreur mise à jour heures rendez-vous:', error)
+      
+      // Rollback en cas d'erreur
+      if (context?.previousAppointment) {
+        queryClient.setQueryData(APPOINTMENT_QUERY_KEYS.detail(id), context.previousAppointment)
+      }
+      
+      // Appeler le callback d'erreur si fourni
+      if (options.onError) {
+        options.onError(error, { id }, context)
+      }
+    },
+    
+    // Options par défaut
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    ...options
+  })
+}
+
+/**
  * Hook pour supprimer un rendez-vous
  * @param {Object} options - Options de mutation
  * @returns {Object} Mutation TanStack Query

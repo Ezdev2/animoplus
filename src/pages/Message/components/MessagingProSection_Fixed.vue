@@ -164,7 +164,7 @@ import { computed } from 'vue'
 import { useMessaging } from '@/composables/useMessaging.js'
 import searchIcon from '@/assets/icons/breeder-search-black.svg'
 import refreshIcon from '@/assets/icons/refresh.svg'
-import defaultAvatar from '@/assets/images/image1.svg'
+import defaultAvatar from '@/assets/images/default_avatar.svg'
 
 import image1 from '@/assets/images/image1.svg'
 import ellipse from '@/assets/layers/Ellipse.svg'

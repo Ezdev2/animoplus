@@ -104,8 +104,8 @@
 </template>
 
 <script setup>
-import ProfileImg from '@/assets/images/image1.svg'
-import DefaultAvatar from '@/assets/images/default-avatar.svg'
+import ProfileImg from '@/assets/images/default_avatar.svg'
+import DefaultAvatar from '@/assets/images/default_avatar.svg'
 import { getUserAvatar } from '@/utils/avatarUtils.js'
 import editIcon from '@/assets/icons/edit.svg'
 import calendarIcon from '@/assets/icons/small-calendar.svg'

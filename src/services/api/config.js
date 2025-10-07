@@ -49,7 +49,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://laravel-backe
 // Création de l'instance Axios
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000, // 30 secondes au lieu de 10
+  timeout: 500000, // 500 secondes (8 minutes 20 secondes)
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'

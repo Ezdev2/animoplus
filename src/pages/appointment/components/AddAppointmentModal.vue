@@ -7,6 +7,22 @@
         <button @click="closeModal" class="close-btn">×</button>
       </div>
 
+      <!-- Affichage des erreurs -->
+      <div v-if="showErrors && (Object.keys(formErrors).length > 0 || Object.keys(apiErrors).length > 0)" class="error-section">
+        <div class="error-header">
+          <h4>⚠️ Erreurs détectées</h4>
+          <button @click="clearErrors" class="clear-errors-btn">×</button>
+        </div>
+        <div class="error-list">
+          <div v-for="(errors, field) in { ...formErrors, ...apiErrors }" :key="field" class="error-item">
+            <strong>{{ getFieldLabel(field) }}:</strong>
+            <ul>
+              <li v-for="error in errors" :key="error">{{ error }}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
       <!-- Form -->
       <form @submit.prevent="submitAppointment" class="appointment-form">
         
@@ -328,7 +344,7 @@ const props = defineProps({
 })
 
 // Emits
-const emit = defineEmits(['close', 'add-appointment'])
+const emit = defineEmits(['close', 'add-appointment', 'refresh-data'])
 
 // Services
 const toast = useToast()
@@ -389,15 +405,44 @@ const createAppointmentMutation = useCreateAppointment({
     
     emit('add-appointment', appointmentData)
     console.log('📤 Événement add-appointment émis')
+    
+    // Émettre un événement pour demander le rafraîchissement des données
+    emit('refresh-data')
+    console.log('🔄 Événement refresh-data émis')
+    
     closeModal()
     console.log('🚪 Modal fermé')
   },
   onError: (error) => {
     isCreating.value = false
     console.error('❌ Erreur création rendez-vous:', error)
-    toast.error('Erreur lors de la création du rendez-vous. Veuillez réessayer.')
+    
+    // Gérer les erreurs de validation Laravel
+    if (error.response?.status === 422 && error.response?.data?.errors) {
+      apiErrors.value = error.response.data.errors
+      showErrors.value = true
+      
+      // Afficher le message principal
+      const mainMessage = error.response.data.message || 'Erreurs de validation'
+      toast.error(mainMessage)
+      
+      console.log('🔍 Erreurs de validation détectées:', apiErrors.value)
+    } else {
+      // Autres erreurs (500, réseau, etc.)
+      const errorMessage = error.response?.data?.message || error.message || 'Erreur lors de la création du rendez-vous'
+      toast.error(errorMessage)
+      apiErrors.value = {}
+      showErrors.value = false
+    }
+    
+    // NE PAS fermer le modal en cas d'erreur pour permettre la correction
   }
 })
+
+// État des erreurs
+const formErrors = ref({})
+const apiErrors = ref({})
+const showErrors = ref(false)
 
 // State
 const showMap = ref(false)
@@ -475,6 +520,97 @@ const isFormValid = computed(() => {
 })
 
 // Les services sont directement dans availableServices (plus besoin de filteredServices)
+
+// Validations frontend
+const validateForm = () => {
+  const errors = {}
+  
+  // Validation de la date
+  if (!form.value.date) {
+    errors.date = ['La date est requise']
+  } else {
+    const selectedDate = new Date(form.value.date)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    
+    if (selectedDate < today) {
+      errors.date = ['La date ne peut pas être dans le passé']
+    }
+  }
+  
+  // Validation des heures
+  if (!form.value.startTime) {
+    errors.start_time = ['L\'heure de début est requise']
+  }
+  
+  if (!form.value.endTime) {
+    errors.end_time = ['L\'heure de fin est requise']
+  }
+  
+  if (form.value.startTime && form.value.endTime) {
+    const start = new Date(`2000-01-01T${form.value.startTime}:00`)
+    const end = new Date(`2000-01-01T${form.value.endTime}:00`)
+    
+    if (end <= start) {
+      errors.end_time = ['L\'heure de fin doit être postérieure à l\'heure de début']
+    }
+  }
+  
+  // Validation du service
+  if (!form.value.selectedService) {
+    errors.service_id = ['Un service doit être sélectionné']
+  }
+  
+  // Validation de l'animal
+  if (!form.value.selectedAnimal) {
+    errors.animal_id = ['Un animal doit être sélectionné']
+  }
+  
+  // Validation du type de lieu
+  if (!form.value.locationType) {
+    errors.location_type = ['Le type de consultation est requis']
+  }
+  
+  // Validation de l'adresse pour consultation physique
+  if (form.value.locationType === 'physical' && !form.value.address) {
+    errors.address = ['L\'adresse est requise pour une consultation physique']
+  }
+  
+  // Validation du lien de réunion pour consultation en ligne
+  if (form.value.locationType === 'online' && !form.value.meetLink) {
+    errors.online_meeting_url = ['Le lien de réunion est requis pour une consultation en ligne']
+  }
+  
+  return errors
+}
+
+const clearErrors = () => {
+  formErrors.value = {}
+  apiErrors.value = {}
+  showErrors.value = false
+}
+
+const getFieldError = (fieldName) => {
+  return formErrors.value[fieldName] || apiErrors.value[fieldName] || null
+}
+
+const hasFieldError = (fieldName) => {
+  return !!(formErrors.value[fieldName] || apiErrors.value[fieldName])
+}
+
+const getFieldLabel = (fieldName) => {
+  const labels = {
+    date: 'Date',
+    start_time: 'Heure de début',
+    end_time: 'Heure de fin',
+    service_id: 'Service',
+    animal_id: 'Animal',
+    location_type: 'Type de consultation',
+    address: 'Adresse',
+    online_meeting_url: 'Lien de réunion'
+  }
+  return labels[fieldName] || fieldName
+}
 
 // Méthodes
 
@@ -562,7 +698,29 @@ const closeModal = () => {
 }
 
 const submitAppointment = async () => {
-  if (!isFormValid.value || isCreating.value) return
+  if (isCreating.value) return
+  
+  // Effacer les erreurs précédentes
+  clearErrors()
+  
+  // Validation frontend
+  const frontendErrors = validateForm()
+  if (Object.keys(frontendErrors).length > 0) {
+    formErrors.value = frontendErrors
+    showErrors.value = true
+    toast.error('Veuillez corriger les erreurs dans le formulaire')
+    console.log('❌ Erreurs de validation frontend:', frontendErrors)
+    return
+  }
+  
+  // Debug des valeurs du formulaire
+  console.log('🔍 Valeurs du formulaire AVANT préparation:')
+  console.log('  - date:', form.value.date)
+  console.log('  - startTime:', form.value.startTime)
+  console.log('  - endTime:', form.value.endTime)
+  console.log('  - selectedService:', form.value.selectedService)
+  console.log('  - selectedAnimal:', form.value.selectedAnimal)
+  console.log('  - locationType:', form.value.locationType)
   
   // Préparer les données pour l'API selon le modèle Laravel fillable
   const appointmentData = {
@@ -581,7 +739,10 @@ const submitAppointment = async () => {
     status: 'pending'
   }
   
-  console.log('📝 Création du rendez-vous avec les données:', appointmentData)
+  console.log('📝 Création du rendez-vous avec les données APRÈS préparation:', appointmentData)
+  console.log('🔍 Vérification spécifique start_time et end_time:')
+  console.log('  - appointmentData.start_time:', appointmentData.start_time)
+  console.log('  - appointmentData.end_time:', appointmentData.end_time)
   console.log('🔑 Token actuel:', auth.getCurrentUser.value)
   console.log('🔑 Données localStorage:', localStorage.getItem('data'))
   
@@ -629,14 +790,26 @@ onMounted(() => {
   console.log('🐾 Animaux dans le store:', animalsStore.animals)
   console.log('🐾 Animaux de l\'utilisateur:', userAnimals.value)
   console.log('🐾 État de chargement:', loadingAnimals.value)
+  
+  // Marquer comme initialisé pour éviter que le watcher écrase endTime
+  isInitialized.value = true
 })
 
-// Watcher pour synchroniser les heures
-watch(() => form.value.startTime, (newStartTime) => {
+// Variable pour éviter l'écrasement de endTime lors de l'initialisation
+const isInitialized = ref(false)
+
+// Watcher pour synchroniser les heures (seulement après initialisation)
+watch(() => form.value.startTime, (newStartTime, oldStartTime) => {
+  // Ne pas écraser endTime lors de l'initialisation ou si endTime a été défini par les props
+  if (!isInitialized.value || !oldStartTime) return
+  
   if (newStartTime && props.duration) {
     const start = new Date(`2000-01-01T${newStartTime}:00`)
     start.setHours(start.getHours() + props.duration)
-    form.value.endTime = start.toTimeString().slice(0, 5)
+    const calculatedEndTime = start.toTimeString().slice(0, 5)
+    
+    console.log('🔄 Watcher startTime: Calcul automatique endTime:', calculatedEndTime)
+    form.value.endTime = calculatedEndTime
   }
 })
 
@@ -1253,5 +1426,73 @@ defineExpose({
     flex-direction: column;
     gap: 12px;
   }
+}
+
+/* Styles pour les erreurs */
+.error-section {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.error-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.error-header h4 {
+  color: #dc2626;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.clear-errors-btn {
+  background: none;
+  border: none;
+  color: #dc2626;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.clear-errors-btn:hover {
+  background: #fecaca;
+}
+
+.error-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.error-item {
+  font-size: 14px;
+}
+
+.error-item strong {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.error-item ul {
+  margin: 4px 0 0 0;
+  padding-left: 20px;
+}
+
+.error-item li {
+  color: #991b1b;
+  margin: 2px 0;
 }
 </style>
