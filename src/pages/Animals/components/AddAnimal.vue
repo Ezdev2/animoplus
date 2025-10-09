@@ -4,24 +4,18 @@
     @close="closeModal" 
     :footer="false"
   >
-    <!-- Messages d'état -->
-    <div v-if="error" class="error-message">
-      {{ error }}
-    </div>
-    <div v-if="success" class="success-message">
-      {{ success }}
-    </div>
 
     <!-- Étape 1 -->
-    <form v-if="step === 1" @submit.prevent="nextStep" class="form-content">
+    <form v-if="step === 1" @submit.prevent="nextStep" class="form-content" :class="{ 'validation-attempted': validationAttempted }">
       <label>
         Nom
-        <input type="text" placeholder="Entrer le nom" v-model="formData.name" />
+        <input type="text" placeholder="Entrer le nom" v-model="formData.name" required :class="getFieldClass('name')" />
+        <div v-if="fieldErrors.name" class="field-error-message">{{ fieldErrors.name }}</div>
       </label>
 
       <label>
         Espèce
-        <select v-model="formData.species" :disabled="loadingSpecies">
+        <select v-model="formData.species" :disabled="loadingSpecies" required :class="getFieldClass('species')">
           <option disabled value="">
             {{ loadingSpecies ? 'Chargement...' : 'Sélectionner une espèce' }}
           </option>
@@ -29,11 +23,12 @@
             {{ species.nom }}
           </option>
         </select>
+        <div v-if="fieldErrors.species" class="field-error-message">{{ fieldErrors.species }}</div>
       </label>
 
       <label>
         Race
-        <select v-model="formData.race" :disabled="!formData.species || loadingRaces">
+        <select v-model="formData.race" :disabled="!formData.species || loadingRaces" required :class="getFieldClass('race')">
           <option disabled value="">
             {{ 
               loadingRaces ? 'Chargement...' : 
@@ -46,15 +41,17 @@
             {{ race.nom }}
           </option>
         </select>
+        <div v-if="fieldErrors.race" class="field-error-message">{{ fieldErrors.race }}</div>
       </label>
 
       <label>
         Sexe
-        <select v-model="formData.gender" required>
+        <select v-model="formData.gender" required :class="getFieldClass('gender')">
           <option disabled value="">Sélectionner le sexe</option>
           <option value="M">Mâle</option>
           <option value="F">Femelle</option>
         </select>
+        <div v-if="fieldErrors.gender" class="field-error-message">{{ fieldErrors.gender }}</div>
       </label>
 
       <div class="medical-history">
@@ -66,12 +63,37 @@
 
       <label>
         Poids (kg)
-        <input type="number" placeholder="Poids en kg" v-model="formData.weight" />
+        <input type="number" placeholder="Poids en kg" v-model="formData.weight" :class="getFieldClass('weight')" />
+        <div v-if="fieldErrors.weight" class="field-error-message">{{ fieldErrors.weight }}</div>
       </label>
 
-      <label>
+      <!-- Taille adaptée selon l'espèce -->
+      <label v-if="isDog">
+        Taille du chien
+        <select v-model="formData.height" required :class="getFieldClass('height')">
+          <option disabled value="">Sélectionner la taille</option>
+          <option value="Toy/Miniature">Toy / Miniature (ex : Chihuahua, Yorkshire)</option>
+          <option value="Petit">Petit (ex : Jack Russell, Carlin)</option>
+          <option value="Moyen">Moyen (ex : Beagle, Cocker Spaniel)</option>
+          <option value="Grand">Grand (ex : Berger Allemand, Labrador)</option>
+          <option value="Géant/Molosse">Géant / Molosse (ex : Dogue Allemand, Saint-Bernard)</option>
+        </select>
+        <div v-if="fieldErrors.height" class="field-error-message">{{ fieldErrors.height }}</div>
+      </label>
+      
+      <label v-else-if="isCat">
+        Taille du chat (optionnel)
+        <select v-model="formData.height" :class="getFieldClass('height')">
+          <option value="">Non spécifiée</option>
+          <option value="Petit">Petit (moins de 3kg)</option>
+          <option value="Moyen">Moyen (3-5kg)</option>
+          <option value="Grand">Grand (plus de 5kg)</option>
+        </select>
+      </label>
+      
+      <label v-else-if="formData.species">
         Taille (cm)
-        <input type="number" placeholder="Taille en cm" v-model="formData.height" />
+        <input type="number" placeholder="Taille en cm" v-model="formData.height" :class="getFieldClass('height')" />
       </label>
 
       <label>
@@ -105,7 +127,7 @@
           </div>
           
           <!-- Zone d'upload -->
-          <div v-else class="photo-upload-zone" @click="triggerFileInput" @drop="handleDrop" @dragover.prevent @dragenter.prevent>
+          <div v-else class="photo-upload-zone" @click.stop="triggerFileInput" @drop="handleDrop" @dragover.prevent @dragenter.prevent>
             <div class="upload-content">
               <img :src="uploadIcon" class="upload-icon" alt="Upload" />
               <p class="upload-text">Cliquez ou glissez une photo ici</p>
@@ -245,6 +267,7 @@ import uploadIcon from '@/assets/icons/upload.svg'
 import { useCreateAnimal } from '@/services/animals/animalQueries.js'
 import { useSpeciesCache } from '@/composables/useSpeciesCache.js'
 import { useSimpleAuth } from '@/composables/useSimpleAuth.js'
+import { useToast } from '@/composables/useToast.js'
 
 // Props et émissions
 const emit = defineEmits(['close', 'animal-created'])
@@ -253,11 +276,23 @@ const emit = defineEmits(['close', 'animal-created'])
 const auth = useSimpleAuth()
 const currentUser = computed(() => auth.getCurrentUser.value)
 
+// Toast pour les notifications
+const toast = useToast()
+
 // États du formulaire
 const step = ref(1)
 const isSubmitting = ref(false)
-const error = ref('')
-const success = ref('')
+const validationAttempted = ref(false)
+
+// Erreurs par champ
+const fieldErrors = ref({
+  name: '',
+  species: '',
+  race: '',
+  gender: '',
+  height: '',
+  weight: ''
+})
 
 // Date maximale (aujourd'hui)
 const maxDate = computed(() => {
@@ -322,6 +357,43 @@ const racesList = computed(() => {
 // Loading des races (toujours false car incluses dans les espèces)
 const loadingRaces = computed(() => false)
 
+// Détection de l'espèce pour adapter l'interface
+const isDog = computed(() => {
+  return formData.value.species?.toLowerCase().includes('chien') || 
+         formData.value.species?.toLowerCase().includes('dog')
+})
+
+const isCat = computed(() => {
+  return formData.value.species?.toLowerCase().includes('chat') || 
+         formData.value.species?.toLowerCase().includes('cat')
+})
+
+// Classes CSS pour les champs selon leur état de validation
+const getFieldClass = (fieldName) => {
+  if (!validationAttempted.value) return ''
+  
+  switch (fieldName) {
+    case 'name':
+      return formData.value.name?.trim() ? 'field-valid' : 'field-error'
+    case 'species':
+      return formData.value.species ? 'field-valid' : 'field-error'
+    case 'race':
+      return formData.value.race ? 'field-valid' : 'field-error'
+    case 'gender':
+      return formData.value.gender ? 'field-valid' : 'field-error'
+    case 'height':
+      if (isDog.value) {
+        return formData.value.height ? 'field-valid' : 'field-error'
+      }
+      return '' // Pas de validation pour les autres espèces
+    case 'weight':
+      if (!formData.value.weight) return ''
+      return (formData.value.weight > 0 && formData.value.weight <= 200) ? 'field-valid' : 'field-error'
+    default:
+      return ''
+  }
+}
+
 // Debug pour l'espèce sélectionnée
 watch(() => formData.value.species, (newSpecies) => {
   console.log('Espèce sélectionnée:', newSpecies)
@@ -350,14 +422,26 @@ watch(loadingRaces, (loading) => {
 // Mutation pour créer un animal
 const createAnimalMutation = useCreateAnimal({
   onSuccess: (data) => {
-    success.value = 'Animal créé avec succès !'
+    // Afficher un toast de succès
+    toast.success('Animal créé avec succès !', {
+      title: '🎉 Succès',
+      duration: 4000
+    })
+    
+    // Émettre l'événement et fermer le modal
     emit('animal-created', data.data)
     setTimeout(() => {
       emit('close')
-    }, 1500)
+    }, 1000)
   },
   onError: (err) => {
-    error.value = err.response?.data?.message || 'Erreur lors de la création de l\'animal'
+    // Afficher un toast d'erreur
+    const errorMessage = err.response?.data?.message || 'Erreur lors de la création de l\'animal'
+    toast.error(errorMessage, {
+      title: '❌ Erreur de création',
+      duration: 6000
+    })
+    
     console.error('Erreur création animal:', err)
   }
 })
@@ -431,24 +515,36 @@ function validateForm() {
 async function submitForm() {
   try {
     isSubmitting.value = true
-    error.value = ''
     
     // Validation
     const validationErrors = validateForm()
     if (validationErrors.length > 0) {
-      error.value = validationErrors.join(', ')
+      toast.warning('Veuillez remplir tous les champs obligatoires', {
+        title: '⚠️ Formulaire incomplet',
+        duration: 4000
+      })
       return
     }
     
     // Upload de la photo si une photo est sélectionnée
     if (selectedFile.value) {
       try {
+        // Toast d'information pour l'upload en cours
+        toast.info('Upload de la photo en cours...', {
+          title: '📸 Upload photo',
+          duration: 3000
+        })
+        
         console.log('Upload de la photo en cours...')
         const photoUrl = await uploadPhotoToCloudinary(selectedFile.value)
         formData.value.photo_url = photoUrl
         console.log('Photo uploadée avec succès:', photoUrl)
       } catch (photoError) {
-        error.value = photoError.message
+        // Afficher un toast d'erreur pour l'upload de photo
+        toast.error(photoError.message, {
+          title: '📸 Erreur d\'upload photo',
+          duration: 5000
+        })
         return
       }
     }
@@ -499,8 +595,17 @@ function calculateAge(birthDate) {
 // === FONCTIONS GESTION PHOTO ===
 
 // Déclencher la sélection de fichier
-function triggerFileInput() {
-  fileInput.value?.click()
+function triggerFileInput(event) {
+  // Empêcher la propagation de l'événement
+  if (event) {
+    event.preventDefault()
+    event.stopPropagation()
+  }
+  
+  // S'assurer que l'input existe et déclencher le clic
+  if (fileInput.value) {
+    fileInput.value.click()
+  }
 }
 
 // Gérer la sélection de fichier
@@ -509,6 +614,9 @@ function handleFileSelect(event) {
   if (file) {
     validateAndPreviewFile(file)
   }
+  
+  // Réinitialiser l'input pour permettre de sélectionner le même fichier à nouveau
+  event.target.value = ''
 }
 
 // Gérer le drag & drop
@@ -598,7 +706,71 @@ async function uploadPhotoToCloudinary(file) {
   }
 }
 
+// Validation du formulaire étape 1
+function validateStep1() {
+  // Réinitialiser les erreurs
+  fieldErrors.value = {
+    name: '',
+    species: '',
+    race: '',
+    gender: '',
+    height: '',
+    weight: ''
+  }
+  
+  let hasErrors = false
+  
+  // Validation nom
+  if (!formData.value.name?.trim()) {
+    fieldErrors.value.name = 'Le nom de l\'animal est obligatoire'
+    hasErrors = true
+  }
+  
+  // Validation espèce
+  if (!formData.value.species) {
+    fieldErrors.value.species = 'L\'espèce est obligatoire'
+    hasErrors = true
+  }
+  
+  // Validation race
+  if (!formData.value.race) {
+    fieldErrors.value.race = 'La race est obligatoire'
+    hasErrors = true
+  }
+  
+  // Validation sexe
+  if (!formData.value.gender) {
+    fieldErrors.value.gender = 'Le sexe est obligatoire'
+    hasErrors = true
+  }
+  
+  // Validation taille pour les chiens
+  if (isDog.value && !formData.value.height) {
+    fieldErrors.value.height = 'La taille est obligatoire pour les chiens'
+    hasErrors = true
+  }
+  
+  // Validation poids si fourni
+  if (formData.value.weight && (formData.value.weight <= 0 || formData.value.weight > 200)) {
+    fieldErrors.value.weight = 'Le poids doit être entre 0 et 200 kg'
+    hasErrors = true
+  }
+  
+  return hasErrors
+}
+
 function nextStep() {
+  // Marquer qu'une tentative de validation a eu lieu
+  validationAttempted.value = true
+  
+  // Valider le formulaire
+  const hasErrors = validateStep1()
+  
+  if (hasErrors) {
+    return // Les erreurs sont maintenant affichées sous chaque champ
+  }
+  
+  // Si validation OK, passer à l'étape suivante
   step.value = 2
 }
 
@@ -614,8 +786,17 @@ function closeModal() {
 onMounted(() => {
   // Réinitialiser le formulaire à l'ouverture
   step.value = 1
-  error.value = ''
-  success.value = ''
+  validationAttempted.value = false
+  
+  // Réinitialiser les erreurs par champ
+  fieldErrors.value = {
+    name: '',
+    species: '',
+    race: '',
+    gender: '',
+    height: '',
+    weight: ''
+  }
   
   // Réinitialiser les variables de photo
   photoPreview.value = ''
@@ -925,5 +1106,25 @@ select:disabled {
   color: #666;
   text-align: center;
   margin: 0;
+}
+
+
+/* Amélioration des champs avec erreurs - seulement après tentative de validation */
+.form-content.validation-attempted input.field-error,
+.form-content.validation-attempted select.field-error {
+  border-color: #f87171;
+}
+
+.form-content.validation-attempted input.field-valid,
+.form-content.validation-attempted select.field-valid {
+  border-color: #10b981;
+}
+
+/* Messages d'erreur par champ */
+.field-error-message {
+  color: #dc2626;
+  font-size: 12px;
+  margin-top: 4px;
+  font-weight: 500;
 }
 </style>
