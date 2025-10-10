@@ -6,6 +6,7 @@ import {
   useAvailableSlots,
   useCreateAppointment,
   useUpdateAppointment,
+  useUpdateAppointmentTime,
   useDeleteAppointment,
   useUpdateAppointmentStatus,
   useConfirmAppointment,
@@ -77,6 +78,24 @@ export function useAppointments(options = {}) {
       isUpdating.value = false
       if (config.showToasts) {
         toast.error('Erreur lors de la modification du rendez-vous')
+      }
+    }
+  })
+
+  const updateTimeMutation = useUpdateAppointmentTime({
+    onMutate: () => {
+      isUpdating.value = true
+    },
+    onSuccess: (data) => {
+      isUpdating.value = false
+      if (config.showToasts) {
+        toast.success('Heures du rendez-vous modifiées avec succès')
+      }
+    },
+    onError: (error) => {
+      isUpdating.value = false
+      if (config.showToasts) {
+        toast.error('Erreur lors de la modification des heures')
       }
     }
   })
@@ -177,6 +196,15 @@ export function useAppointments(options = {}) {
   async function updateAppointment(id, appointmentData) {
     try {
       const result = await updateMutation.mutateAsync({ id, data: appointmentData })
+      return { success: true, data: result }
+    } catch (error) {
+      return { success: false, error }
+    }
+  }
+
+  async function updateAppointmentTime(id, timeData) {
+    try {
+      const result = await updateTimeMutation.mutateAsync({ id, timeData })
       return { success: true, data: result }
     } catch (error) {
       return { success: false, error }
@@ -342,6 +370,7 @@ export function useAppointments(options = {}) {
     // Actions CRUD
     createAppointment,
     updateAppointment,
+    updateAppointmentTime,
     deleteAppointment,
     
     // Actions de statut

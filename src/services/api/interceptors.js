@@ -92,7 +92,7 @@ export const timeoutInterceptor = {
   request: (config) => {
     // Timeout plus long pour les uploads
     if (config.data instanceof FormData) {
-      config.timeout = 30000 // 30 secondes
+      config.timeout = 500000 // 500 secondes (8 minutes 20 secondes)
     }
     return config
   }

@@ -130,8 +130,22 @@ const confirmDelete = async () => {
   isDeleting.value = true
   
   try {
+    // Déterminer le bon ID à utiliser
+    const specialityId = props.speciality.id || 
+                        props.speciality.user_specialty_id || 
+                        props.speciality.specialty_id ||
+                        props.speciality.pivot?.id
+    
+    console.log('🔍 Objet spécialité dans modal:', props.speciality)
+    console.log('🆔 ID utilisé pour suppression:', specialityId)
+    
+    if (!specialityId) {
+      console.error('❌ Aucun ID trouvé pour la spécialité:', props.speciality)
+      throw new Error('ID de spécialité introuvable')
+    }
+    
     // Émettre l'événement de confirmation
-    await emit('confirm-delete', props.speciality.id)
+    await emit('confirm-delete', specialityId)
     
     // Fermer le modal après succès
     closeModal()

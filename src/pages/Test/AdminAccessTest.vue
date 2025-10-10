@@ -131,7 +131,7 @@ const navigationLogs = ref([])
 const adminRoutes = [
   { name: 'Dashboard Admin', path: '/admin' },
   { name: 'Service Types', path: '/admin/test/service-types' },
-  { name: 'Coopération Admin', path: '/admin/coop-admin' }
+  { name: 'Gestion Annonces', path: '/admin/announcements' }
 ]
 
 // Computed

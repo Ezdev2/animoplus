@@ -75,11 +75,20 @@
       </label>
 
       <label class="flex flex-col gap-1 font-medium">
+        Bio / Description
+        <textarea 
+          v-model="form.bio"
+          rows="4"
+          placeholder="Parlez-nous de vous, votre expérience, vos centres d'intérêt..."
+          class="px-2 py-2 border border-neutral-200 rounded text-[14px] text-neutral-700 font-bold outline-none focus:border-accent-500 resize-vertical min-h-[100px]"></textarea>
+      </label>
+
+      <label class="flex flex-col gap-1 font-medium">
         Date de naissance
         <div class="flex items-center border border-[#E5E7EB] rounded bg-white pl-3 h-[42px] focus-within:border-accent-500">
           <img :src="calendarIcon" alt="calendrier" class="w-[16px] h-[16px]" />
-          <input type="text" v-model="form.birth_date"
-            class="flex-1 border-none outline-none text-[14px] pl-2 text-[#374151] font-league bg-transparent h-full" />
+          <input type="date" v-model="form.birth_date"
+            class="flex-1 border-none outline-none text-[14px] pl-2 text-[#374151] font-league bg-transparent h-full cursor-pointer" />
         </div>
       </label>
     </form>
@@ -95,8 +104,8 @@
 </template>
 
 <script setup>
-import ProfileImg from '@/assets/images/image1.svg'
-import DefaultAvatar from '@/assets/images/default-avatar.svg'
+import ProfileImg from '@/assets/images/default_avatar.svg'
+import DefaultAvatar from '@/assets/images/default_avatar.svg'
 import { getUserAvatar } from '@/utils/avatarUtils.js'
 import editIcon from '@/assets/icons/edit.svg'
 import calendarIcon from '@/assets/icons/small-calendar.svg'
@@ -123,6 +132,7 @@ const form = ref({
   email: '',
   phone: '',
   address: '',
+  bio: '',
   birth_date: ''
 })
 
@@ -148,6 +158,7 @@ const initializeForm = () => {
       email: userData.value.email || '',
       phone: userData.value.phone || '',
       address: userData.value.address || '',
+      bio: userData.value.bio || userData.value.description || '',
       birth_date: userData.value.birth_date ? formatDateForInput(userData.value.birth_date) : ''
     }
   }
@@ -155,12 +166,18 @@ const initializeForm = () => {
   initializeAvatar()
 }
 
-// Formater la date pour l'input
+// Formater la date pour l'input de type date (format YYYY-MM-DD)
 const formatDateForInput = (dateString) => {
   try {
     const date = new Date(dateString)
-    return date.toLocaleDateString('fr-FR')
+    // Vérifier que la date est valide
+    if (isNaN(date.getTime())) {
+      return ''
+    }
+    // Retourner au format ISO (YYYY-MM-DD) requis par input type="date"
+    return date.toISOString().split('T')[0]
   } catch (error) {
+    console.warn('Erreur formatage date:', error)
     return ''
   }
 }
@@ -228,7 +245,9 @@ const saveProfile = async () => {
   
   try {
     // Appeler l'API réelle pour sauvegarder le profil
-    console.log('Sauvegarde du profil vers API:', form.value)
+    console.log('📋 Données du formulaire avant envoi:', form.value)
+    console.log('📅 Date de naissance:', form.value.birth_date)
+    console.log('📝 Bio:', form.value.bio)
     
     // Importer le service utilisateur
     const { userService } = await import('@/services/users/userService.js')

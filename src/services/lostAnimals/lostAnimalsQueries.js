@@ -595,3 +595,103 @@ export const usePrefetchLostAnimal = () => {
     })
   }
 }
+
+/**
+ * Hook pour signaler qu'un animal a été trouvé (étape 1)
+ * @returns {Object} Mutation object
+ */
+export const useResolveLostAnimalMutation = () => {
+  const queryClient = useQueryClient()
+  const { showToast } = useToast()
+
+  return useMutation({
+    mutationFn: (animalId) => lostAnimalsService.resolveLostAnimal(animalId),
+    onSuccess: (data, animalId) => {
+      console.log('✅ Animal signalé comme trouvé:', data)
+      
+      // Invalider et refetch les queries liées
+      queryClient.invalidateQueries({ queryKey: LOST_ANIMALS_QUERY_KEYS.all })
+      queryClient.invalidateQueries({ queryKey: LOST_ANIMALS_QUERY_KEYS.detail(animalId) })
+      queryClient.invalidateQueries({ queryKey: LOST_ANIMALS_QUERY_KEYS.myAnimals() })
+      
+      // Afficher un toast de succès
+      showToast({
+        type: 'success',
+        title: 'Animal signalé comme trouvé !',
+        message: data.message || 'En attente de confirmation du propriétaire'
+      })
+    },
+    onError: (error) => {
+      console.error('❌ Erreur signalement:', error)
+      
+      // Afficher un toast d'erreur
+      showToast({
+        type: 'error',
+        title: 'Erreur',
+        message: error.error || error.message || 'Erreur lors du signalement'
+      })
+    }
+  })
+}
+
+/**
+ * Hook pour confirmer la récupération de l'animal (étape 2)
+ * @returns {Object} Mutation object
+ */
+export const useConfirmResolutionMutation = () => {
+  const queryClient = useQueryClient()
+  const { showToast } = useToast()
+
+  return useMutation({
+    mutationFn: (animalId) => lostAnimalsService.confirmResolution(animalId),
+    onSuccess: (data, animalId) => {
+      console.log('✅ Récupération confirmée:', data)
+      
+      // Invalider et refetch les queries liées
+      queryClient.invalidateQueries({ queryKey: LOST_ANIMALS_QUERY_KEYS.all })
+      queryClient.invalidateQueries({ queryKey: LOST_ANIMALS_QUERY_KEYS.detail(animalId) })
+      queryClient.invalidateQueries({ queryKey: LOST_ANIMALS_QUERY_KEYS.myAnimals() })
+      queryClient.invalidateQueries({ queryKey: LOST_ANIMALS_QUERY_KEYS.resolved() })
+      
+      // Afficher un toast de succès
+      showToast({
+        type: 'success',
+        title: 'Récupération confirmée !',
+        message: data.message || 'L\'annonce est maintenant fermée'
+      })
+    },
+    onError: (error) => {
+      console.error('❌ Erreur confirmation:', error)
+      
+      // Afficher un toast d'erreur
+      showToast({
+        type: 'error',
+        title: 'Erreur',
+        message: error.error || error.message || 'Erreur lors de la confirmation'
+      })
+    }
+  })
+}
+
+/**
+ * Hook pour récupérer les notifications
+ * @param {Object} options - Options de requête
+ * @returns {Object} Query result
+ */
+export const useNotificationsQuery = (options = {}) => {
+  return useQuery({
+    queryKey: [...LOST_ANIMALS_QUERY_KEYS.all, 'notifications', options],
+    queryFn: () => lostAnimalsService.getNotifications(options),
+    staleTime: 1 * 60 * 1000, // 1 minute
+    cacheTime: 3 * 60 * 1000, // 3 minutes
+    refetchOnWindowFocus: true,
+    refetchInterval: 2 * 60 * 1000, // Refresh toutes les 2 minutes
+    retry: 2,
+    select: (data) => {
+      if (!data.success) {
+        throw new Error(data.error)
+      }
+      return data
+    }
+  })
+}

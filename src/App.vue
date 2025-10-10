@@ -113,7 +113,7 @@ onMounted(async () => {
   <ToastContainer />
   
   <!-- Helper de test admin (dev uniquement) -->
-  <AdminTestHelper />
+  <!-- <AdminTestHelper /> -->
 </template>
 
 <style scoped>

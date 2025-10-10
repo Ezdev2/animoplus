@@ -49,6 +49,7 @@
       :duration="formData.duration"
       @close="closeAddModal"
       @add-appointment="addAppointment"
+      @refresh-data="handleRefreshData"
     />
   </div>
 </template>
@@ -255,7 +256,19 @@ const openAddModal = () => {
   showAddEventModal.value = true
 }
 
+const closeAddModal = () => {
+  console.log('🚪 Fermeture du modal AddAppointment')
+  showAddEventModal.value = false
+}
+
+const handleRefreshData = () => {
+  console.log('🔄 Rafraîchissement des données demandé par le modal')
+  refetch()
+}
+
 const onSlotsSelected = (selectionData) => {
+  console.log("Données reçues dans AppointmentPage:", selectionData)
+  
   // Remplir automatiquement le formulaire avec les créneaux sélectionnés
   formData.value = {
     date: selectionData.startDate.toISOString().split("T")[0],
@@ -267,23 +280,8 @@ const onSlotsSelected = (selectionData) => {
     address: ""
   }
   
+  console.log("FormData après mise à jour:", formData.value)
   showAddEventModal.value = true
-  console.log("Créneaux sélectionnés :", selectionData)
-}
-
-const closeAddModal = () => {
-  console.log('🔒 Fermeture du modal depuis le parent...')
-  showAddEventModal.value = false
-  // Réinitialiser les données
-  formData.value = {
-    date: "",
-    startTime: "",
-    endTime: "",
-    duration: 1,
-    selectedService: null,
-    animalType: "",
-    address: ""
-  }
 }
 
 const addAppointment = (newAppointment) => {
@@ -320,7 +318,12 @@ const addAppointment = (newAppointment) => {
     rendezVousList.value.push(appointment)
     console.log("✅ Nouveau rendez-vous ajouté:", appointment)
     
-    // Le modal se fermera via son propre mécanisme
+    // Rafraîchir les données de l'API pour synchroniser
+    console.log("🔄 Rafraîchissement des données API...")
+    refetch()
+    
+    // Fermer le modal après l'ajout réussi
+    closeAddModal()
   } catch (error) {
     console.error("❌ Erreur lors de l'ajout du rendez-vous:", error)
   }

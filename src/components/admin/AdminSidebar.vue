@@ -44,9 +44,6 @@ import { useSimpleAuth } from '@/composables/useSimpleAuth.js'
 // Icons
 import dashboardIcon from '@/assets/icons/sidebar/DasboardIcon.vue'
 import animalIcon from '@/assets/icons/sidebar/AnimalIcon.vue'
-import taskIcon from '@/assets/icons/sidebar/TaskIcon.vue'
-import userIcon from '@/assets/icons/sidebar/UserIcon.vue'
-import lostAnimalIcon from '@/assets/icons/sidebar/LostAnimalIcon.vue'
 import sheetIcon from '@/assets/icons/sidebar/SheetIcon.vue'
 
 import logoutIcon from '@/assets/icons/logout.svg'
@@ -62,34 +59,14 @@ const adminMenuItems = [
     link: "/admin"
   },
   {
-    label: "Gestion Utilisateurs", 
-    icon: userIcon,
-    link: "/admin/users"
-  },
-  {
     label: "Service Types",
     icon: animalIcon,
     link: "/admin/test/service-types"
   },
   {
-    label: "Coopération Admin",
-    icon: lostAnimalIcon,
-    link: "/admin/coop-admin"
-  },
-  {
     label: "Gestion Annonces",
     icon: sheetIcon,
     link: "/admin/announcements"
-  },
-  {
-    label: "Statistiques",
-    icon: sheetIcon,
-    link: "/admin/stats"
-  },
-  {
-    label: "Tâches Admin",
-    icon: taskIcon,
-    link: "/admin/tasks"
   }
 ]
 

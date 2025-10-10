@@ -138,15 +138,45 @@
 
         <!-- Actions -->
         <div class="form-actions">
-          <button type="button" @click="closeModal" class="cancel-btn">
-            Annuler
-          </button>
-          <button type="submit" :disabled="!isFormValid || isUpdating" class="submit-btn">
-            <span v-if="isUpdating">Modification...</span>
-            <span v-else>Modifier le rendez-vous</span>
-          </button>
+          <div class="left-actions">
+            <button type="button" @click="confirmDelete" :disabled="isUpdating || isDeleting" class="delete-btn">
+              <span v-if="isDeleting">Suppression...</span>
+              <span v-else>🗑️ Supprimer</span>
+            </button>
+          </div>
+          <div class="right-actions">
+            <button type="button" @click="closeModal" class="cancel-btn">
+              Annuler
+            </button>
+            <button type="submit" :disabled="!isFormValid || isUpdating || isDeleting" class="submit-btn">
+              <span v-if="isUpdating">Modification...</span>
+              <span v-else>Modifier le rendez-vous</span>
+            </button>
+          </div>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Modal de confirmation de suppression -->
+  <div v-if="showDeleteConfirmation" class="modal-overlay" @click="cancelDelete">
+    <div class="confirmation-modal" @click.stop>
+      <div class="confirmation-header">
+        <h3>⚠️ Confirmer la suppression</h3>
+      </div>
+      <div class="confirmation-body">
+        <p>Êtes-vous sûr de vouloir supprimer ce rendez-vous ?</p>
+        <p class="warning-text">Cette action est irréversible.</p>
+      </div>
+      <div class="confirmation-actions">
+        <button @click="cancelDelete" class="cancel-btn">
+          Annuler
+        </button>
+        <button @click="handleDelete" :disabled="isDeleting" class="confirm-delete-btn">
+          <span v-if="isDeleting">Suppression...</span>
+          <span v-else>Confirmer la suppression</span>
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -154,7 +184,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useToast } from '@/composables/useToast'
-import { useUpdateAppointment } from '@/services/appointments/appointmentQueries'
+import { useUpdateAppointment, useDeleteAppointment } from '@/services/appointments/appointmentQueries'
 
 const props = defineProps({
   appointment: {
@@ -178,6 +208,20 @@ const { mutate: updateAppointment, isPending: isUpdating } = useUpdateAppointmen
   onError: (error) => {
     console.error('❌ Erreur modification:', error)
     showError(error.error || 'Erreur lors de la modification du rendez-vous')
+  }
+})
+
+// Hook de mutation pour la suppression
+const { mutate: deleteAppointment, isPending: isDeleting } = useDeleteAppointment({
+  onSuccess: (data) => {
+    console.log('✅ Rendez-vous supprimé:', data)
+    showSuccess(data.message || 'Rendez-vous supprimé avec succès !')
+    emit('updated', null) // null indique une suppression
+    closeModal()
+  },
+  onError: (error) => {
+    console.error('❌ Erreur suppression:', error)
+    showError(error.error || 'Erreur lors de la suppression du rendez-vous')
   }
 })
 
@@ -351,6 +395,34 @@ const openServiceModal = () => {
 const openAnimalModal = () => {
   // TODO: Ouvrir modal de sélection d'animal
   console.log('🐕 Ouvrir modal animal')
+}
+
+// État pour la confirmation de suppression
+const showDeleteConfirmation = ref(false)
+
+const confirmDelete = () => {
+  showDeleteConfirmation.value = true
+}
+
+const cancelDelete = () => {
+  showDeleteConfirmation.value = false
+}
+
+const handleDelete = async () => {
+  if (!props.appointment?.id) {
+    console.error('❌ Aucun ID de rendez-vous pour la suppression')
+    showError('Impossible de supprimer : ID manquant')
+    return
+  }
+
+  try {
+    console.log('🗑️ Suppression du rendez-vous:', props.appointment.id)
+    await deleteAppointment(props.appointment.id)
+    showDeleteConfirmation.value = false
+  } catch (error) {
+    console.error('❌ Erreur lors de la suppression:', error)
+    showDeleteConfirmation.value = false
+  }
 }
 
 const submitAppointment = async () => {
@@ -600,11 +672,22 @@ const submitAppointment = async () => {
 
 .form-actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
   gap: 12px;
   margin-top: 24px;
   padding-top: 24px;
   border-top: 1px solid #e5e7eb;
+}
+
+.left-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.right-actions {
+  display: flex;
+  gap: 12px;
 }
 
 .cancel-btn {
@@ -643,6 +726,97 @@ const submitAppointment = async () => {
   cursor: not-allowed;
 }
 
+.delete-btn {
+  padding: 10px 20px;
+  border: 1px solid #dc2626;
+  border-radius: 6px;
+  background: white;
+  color: #dc2626;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.delete-btn:hover:not(:disabled) {
+  background: #dc2626;
+  color: white;
+}
+
+.delete-btn:disabled {
+  background: #f3f4f6;
+  color: #9ca3af;
+  border-color: #d1d5db;
+  cursor: not-allowed;
+}
+
+/* Styles pour la modal de confirmation */
+.confirmation-modal {
+  background: white;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.confirmation-header {
+  padding: 20px 24px 0;
+  text-align: center;
+}
+
+.confirmation-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #dc2626;
+}
+
+.confirmation-body {
+  padding: 16px 24px;
+  text-align: center;
+}
+
+.confirmation-body p {
+  margin: 0 0 8px 0;
+  color: #374151;
+  font-size: 14px;
+}
+
+.warning-text {
+  color: #dc2626 !important;
+  font-weight: 500;
+  font-size: 13px !important;
+}
+
+.confirmation-actions {
+  display: flex;
+  gap: 12px;
+  padding: 0 24px 24px;
+  justify-content: center;
+}
+
+.confirm-delete-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  background: #dc2626;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.confirm-delete-btn:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.confirm-delete-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
 @media (max-width: 768px) {
   .form-row {
     grid-template-columns: 1fr;
@@ -655,11 +829,21 @@ const submitAppointment = async () => {
   
   .form-actions {
     flex-direction: column;
+    gap: 16px;
+  }
+  
+  .left-actions, .right-actions {
+    justify-content: center;
   }
   
   .radio-group {
     flex-direction: column;
     gap: 8px;
+  }
+  
+  .confirmation-modal {
+    width: 95%;
+    margin: 20px;
   }
 }
 </style>

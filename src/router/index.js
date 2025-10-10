@@ -24,7 +24,6 @@ import CacheManagementPage from '@/pages/Admin/CacheManagementPage.vue'
 import AdminLayout from '@/pages/Admin/AdminLayout.vue'
 import AdminDashboard from '@/pages/Admin/AdminDashboard.vue'
 import ServiceTypes from '@/pages/Admin/ServiceTypes.vue'
-import CoopAdmin from '@/pages/Admin/CoopAdmin.vue'
 import AdminRedirect from '@/pages/Admin/AdminRedirect.vue'
 import AnnouncementsManagement from '@/pages/Admin/AnnouncementsManagement.vue'
 
@@ -35,6 +34,7 @@ import ResetPassword from '@/pages/Authentication/ResetPassword.vue'
 import VerifyEmail from '@/pages/Authentication/VerifyEmail.vue'
 import LostAnimal from '@/pages/LostAnimal/LostAnimal.vue'
 import ManagePatient from '@/pages/ManagePatient/ManagePatient.vue'
+import CheckDistance from '@/pages/CheckDistance/CheckDistance.vue'
 
 // Pages d'erreur
 import NotFound from '@/pages/Error/NotFound.vue'
@@ -228,12 +228,6 @@ const router = createRouter({
           meta: { requiresAuth: true, roles: ['admin'] }
         },
         {
-          path: 'coop-admin',
-          name: 'admin-coop',
-          component: CoopAdmin,
-          meta: { requiresAuth: true, roles: ['admin'] }
-        },
-        {
           path: 'announcements',
           name: 'admin-announcements',
           component: AnnouncementsManagement,
@@ -256,6 +250,12 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     // Pages de test (publiques)
+    {
+      path: '/check-distance',
+      name: 'check-distance',
+      component: CheckDistance,
+      meta: { requiresGuest: false, requiresAuth: false } // Accessible à tous
+    },
     {
       path: '/test/cloudinary',
       name: 'cloudinary-test',

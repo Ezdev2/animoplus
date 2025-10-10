@@ -55,6 +55,7 @@ export const API_ENDPOINTS = {
     UPDATE: (id) => `/lost-animals/${id}`,
     DELETE: (id) => `/lost-animals/${id}`,
     RESOLVE: (id) => `/lost-animals/${id}/resolve`,
+    CONFIRM_RESOLUTION: (id) => `/lost-animals/${id}/confirm-resolution`,
     
     // Photos
     ADD_PHOTOS: (id) => `/lost-animals/${id}/photos`,
@@ -75,6 +76,7 @@ export const API_ENDPOINTS = {
     
     // Notifications
     NOTIFY_AREA: (id) => `/lost-animals/${id}/notify-area`,
+    NOTIFICATIONS: '/lost-animals/notifications',
     
     // Recherche avancée
     SEARCH: '/lost-animals/search',
@@ -85,6 +87,16 @@ export const API_ENDPOINTS = {
     
     // Endpoints de base (compatibilité)
     BASE: '/lost-animals'
+  },
+
+  // Notifications généralisées
+  NOTIFICATIONS: {
+    LIST: '/notifications',
+    MARK_READ: (id) => `/notifications/${id}/read`,
+    MARK_UNREAD: (id) => `/notifications/${id}/unread`,
+    MARK_ALL_READ: '/notifications/mark-all-read',
+    DELETE: (id) => `/notifications/${id}`,
+    STATS: '/notifications/stats'
   },
 
   // Animals (basé sur la collection Postman)

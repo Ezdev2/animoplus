@@ -230,6 +230,91 @@
                 </div>
               </div>
               
+              <!-- Photos -->
+              <div class="mb-4">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="text-sm font-medium text-gray-700">📸 Photos:</span>
+                  <span v-if="announcement.photos && announcement.photos.length > 0" 
+                    class="text-xs text-gray-500">
+                    ({{ announcement.photos.length }} photo{{ announcement.photos.length > 1 ? 's' : '' }})
+                  </span>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                  <!-- Cas 1: Aucune photo - Image par défaut -->
+                  <div v-if="!announcement.photos || announcement.photos.length === 0" 
+                    class="relative w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    <div class="absolute -bottom-1 -right-1 bg-gray-300 text-gray-600 text-xs px-1 rounded">
+                      Aucune
+                    </div>
+                  </div>
+                  
+                  <!-- Cas 2: 1-3 photos - Affichage direct -->
+                  <template v-else-if="announcement.photos.length <= 3">
+                    <div v-for="(photo, index) in announcement.photos" :key="photo.id"
+                      class="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100 cursor-pointer hover:opacity-80 transition-opacity"
+                      @click="openPhotoModal(announcement.photos, index)">
+                      <img :src="photo.photo_url" :alt="`Photo ${index + 1} de ${announcement.name}`"
+                        class="w-full h-full object-cover" 
+                        @error="handleImageError($event)" />
+                      <div v-if="photo.is_primary" 
+                        class="absolute top-1 left-1 bg-blue-500 text-white text-xs px-1 rounded">
+                        ⭐
+                      </div>
+                    </div>
+                  </template>
+                  
+                  <!-- Cas 3: 4+ photos - Affichage avec compteur -->
+                  <template v-else>
+                    <!-- Première photo -->
+                    <div class="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100 cursor-pointer hover:opacity-80 transition-opacity"
+                      @click="openPhotoModal(announcement.photos, 0)">
+                      <img :src="announcement.photos[0].photo_url" :alt="`Photo 1 de ${announcement.name}`"
+                        class="w-full h-full object-cover" 
+                        @error="handleImageError($event)" />
+                      <div v-if="announcement.photos[0].is_primary" 
+                        class="absolute top-1 left-1 bg-blue-500 text-white text-xs px-1 rounded">
+                        ⭐
+                      </div>
+                    </div>
+                    
+                    <!-- Deuxième photo -->
+                    <div class="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100 cursor-pointer hover:opacity-80 transition-opacity"
+                      @click="openPhotoModal(announcement.photos, 1)">
+                      <img :src="announcement.photos[1].photo_url" :alt="`Photo 2 de ${announcement.name}`"
+                        class="w-full h-full object-cover" 
+                        @error="handleImageError($event)" />
+                      <div v-if="announcement.photos[1].is_primary" 
+                        class="absolute top-1 left-1 bg-blue-500 text-white text-xs px-1 rounded">
+                        ⭐
+                      </div>
+                    </div>
+                    
+                    <!-- Compteur pour les photos restantes -->
+                    <div class="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100 cursor-pointer hover:opacity-80 transition-opacity"
+                      @click="openPhotoModal(announcement.photos, 2)">
+                      <img :src="announcement.photos[2].photo_url" :alt="`Photo 3 de ${announcement.name}`"
+                        class="w-full h-full object-cover opacity-60" 
+                        @error="handleImageError($event)" />
+                      <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                        <span class="text-white font-bold text-sm">+{{ announcement.photos.length - 2 }}</span>
+                      </div>
+                    </div>
+                  </template>
+                  
+                  <!-- Bouton voir toutes les photos (si plus de 1 photo) -->
+                  <button v-if="announcement.photos && announcement.photos.length > 1"
+                    @click="openPhotoModal(announcement.photos, 0)"
+                    class="px-3 py-1 text-xs text-blue-600 hover:text-blue-800 border border-blue-200 hover:border-blue-300 rounded transition-colors">
+                    Voir tout
+                  </button>
+                </div>
+              </div>
+              
               <!-- Informations supplémentaires -->
               <div class="flex items-center gap-4 text-xs text-gray-500">
                 <span>Diffusion: {{ announcement.authorize_diffusion ? '✅ Autorisée' : '❌ Non autorisée' }}</span>
@@ -368,6 +453,73 @@
       </div>
     </div>
   </div>
+
+  <!-- Modal pour afficher les photos -->
+  <div v-if="photoModal.isOpen" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50" @click="closePhotoModal">
+    <div class="relative max-w-4xl max-h-full p-4" @click.stop>
+      <!-- Bouton fermer -->
+      <button @click="closePhotoModal" 
+        class="absolute top-2 right-2 z-10 bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-full p-2 transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+      
+      <!-- Navigation -->
+      <button v-if="photoModal.photos.length > 1" @click="previousPhoto"
+        class="absolute left-2 top-1/2 transform -translate-y-1/2 z-10 bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-full p-2 transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+      </button>
+      
+      <button v-if="photoModal.photos.length > 1" @click="nextPhoto"
+        class="absolute right-2 top-1/2 transform -translate-y-1/2 z-10 bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-full p-2 transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+      </button>
+      
+      <!-- Image principale -->
+      <div class="bg-white rounded-lg overflow-hidden shadow-2xl">
+        <img :src="photoModal.photos[photoModal.currentIndex]?.photo_url" 
+          :alt="`Photo ${photoModal.currentIndex + 1}`"
+          class="max-w-full max-h-[80vh] object-contain mx-auto" 
+          @error="handleImageError($event)" />
+        
+        <!-- Informations de la photo -->
+        <div class="p-4 bg-gray-50">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-medium text-gray-700">
+                Photo {{ photoModal.currentIndex + 1 }} sur {{ photoModal.photos.length }}
+              </span>
+              <span v-if="photoModal.photos[photoModal.currentIndex]?.is_primary" 
+                class="bg-blue-500 text-white text-xs px-2 py-1 rounded">
+                ⭐ Photo principale
+              </span>
+            </div>
+            
+            <!-- Miniatures -->
+            <div v-if="photoModal.photos.length > 1" class="flex gap-1">
+              <button v-for="(photo, index) in photoModal.photos" :key="photo.id"
+                @click="photoModal.currentIndex = index"
+                :class="[
+                  'w-8 h-8 rounded overflow-hidden border-2 transition-colors',
+                  index === photoModal.currentIndex 
+                    ? 'border-blue-500' 
+                    : 'border-gray-300 hover:border-gray-400'
+                ]">
+                <img :src="photo.photo_url" :alt="`Miniature ${index + 1}`"
+                  class="w-full h-full object-cover" 
+                  @error="handleImageError($event)" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -388,6 +540,13 @@ const pagination = ref({
 const isLoading = ref(false)
 const error = ref(null)
 const selectedAnnouncement = ref(null)
+
+// État pour le modal photo
+const photoModal = ref({
+  isOpen: false,
+  photos: [],
+  currentIndex: 0
+})
 
 // Filtres
 const filters = ref({
@@ -645,6 +804,46 @@ const getStatusLabel = (status) => {
     resolved: 'Résolue'
   }
   return labels[status] || status
+}
+
+// Fonctions pour le modal photo
+const openPhotoModal = (photos, startIndex = 0) => {
+  photoModal.value = {
+    isOpen: true,
+    photos: photos || [],
+    currentIndex: startIndex
+  }
+  console.log('📸 Ouverture modal photo:', photos.length, 'photos, index:', startIndex)
+}
+
+const closePhotoModal = () => {
+  photoModal.value = {
+    isOpen: false,
+    photos: [],
+    currentIndex: 0
+  }
+}
+
+const nextPhoto = () => {
+  if (photoModal.value.currentIndex < photoModal.value.photos.length - 1) {
+    photoModal.value.currentIndex++
+  } else {
+    photoModal.value.currentIndex = 0 // Boucle vers la première photo
+  }
+}
+
+const previousPhoto = () => {
+  if (photoModal.value.currentIndex > 0) {
+    photoModal.value.currentIndex--
+  } else {
+    photoModal.value.currentIndex = photoModal.value.photos.length - 1 // Boucle vers la dernière photo
+  }
+}
+
+const handleImageError = (event) => {
+  console.error('❌ Erreur chargement image:', event.target.src)
+  // Remplacer par une image par défaut
+  event.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTQgMTZMNC41ODYgMTUuNDE0QTIgMiAwIDAgMSA3LjQxNCAxNS40MTRMOSA5TDE2IDE2TTEwIDEwSDEwLjAxTTYgMjBIMThBMiAyIDAgMCAwIDIwIDE4VjZBMiAyIDAgMCAwIDE4IDRINkEyIDIgMCAwIDAgNCA2VjE4QTIgMiAwIDAgMCA2IDIwWiIgc3Ryb2tlPSIjOTk5IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K'
 }
 
 const formatDate = (dateString) => {

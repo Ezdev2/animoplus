@@ -171,7 +171,7 @@ import { useConversationQuery, useMessagesQuery, useSendMessage, useStartOrFindC
 import NewMessageModal from '@/components/NewMessageModal.vue'
 import searchIcon from '@/assets/icons/breeder-search-black.svg'
 import refreshIcon from '@/assets/icons/refresh.svg'
-import defaultAvatar from '@/assets/images/image1.svg'
+import defaultAvatar from '@/assets/images/default_avatar.svg'
 
 import image1 from '@/assets/images/image1.svg'
 import ellipse from '@/assets/layers/Ellipse.svg'

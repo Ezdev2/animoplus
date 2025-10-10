@@ -164,8 +164,8 @@ export const appointmentService = {
       if (appointmentData.emergency !== undefined) data.emergency = appointmentData.emergency
       if (appointmentData.status !== undefined) data.status = appointmentData.status
 
-      console.log('✏️ Mise à jour du rendez-vous:', id, data)
-      const response = await apiClient.put(`/appointments/${id}`, data)
+      console.log('✏️ Mise à jour partielle du rendez-vous (PATCH):', id, data)
+      const response = await apiClient.patch(`/appointments/${id}`, data)
       
       return {
         success: true,
@@ -176,6 +176,39 @@ export const appointmentService = {
       return {
         success: false,
         error: error.response?.data?.message || error.message || 'Erreur lors de la mise à jour du rendez-vous'
+      }
+    }
+  },
+
+  /**
+   * Mettre à jour les heures d'un rendez-vous (PATCH)
+   * @param {string} id - ID du rendez-vous
+   * @param {Object} timeData - Nouvelles heures { start_time, end_time }
+   * @returns {Promise<Object>} Réponse de l'API
+   */
+  async updateAppointmentTime(id, timeData) {
+    try {
+      // Préparer les données pour l'API (seulement les heures)
+      const data = {}
+      
+      if (timeData.start_time !== undefined) data.start_time = timeData.start_time
+      if (timeData.end_time !== undefined) data.end_time = timeData.end_time
+      
+      console.log('⏰ Mise à jour des heures du rendez-vous (PATCH):', id, data)
+      const response = await apiClient.patch(`/appointments/${id}`, data)
+      
+      console.log('✅ Réponse API mise à jour heures:', response.data)
+      
+      return {
+        success: response.data.success || true,
+        data: response.data.data || response.data,
+        message: response.data.message || 'Heures du rendez-vous mises à jour avec succès'
+      }
+    } catch (error) {
+      console.error('❌ Erreur mise à jour heures rendez-vous:', error)
+      return {
+        success: false,
+        error: error.response?.data?.message || error.message || 'Erreur lors de la mise à jour des heures du rendez-vous'
       }
     }
   },
