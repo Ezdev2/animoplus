@@ -42,7 +42,7 @@
         </div>
         
         <div class="border-b border-gray-200 pb-4">
-          <h3 class="text-xl font-semibold mb-3 text-pink-600">Agathe en quelques mots</h3>
+          <h3 class="text-xl font-semibold mb-3 text-accent-500">Agathe en quelques mots</h3>
           <p class="text-gray-700 leading-relaxed">
             Ostéopathe animalier biomécaniciste depuis 2022, je réalise des consultations canines, félines et Nacs au cabinet. Je me déplace également à domicile pour les animaux stressés ou les personnes ayant des difficultés de transport.<br>
             Il me tient à cœur de me former régulièrement, tant sur l'ostéopathie, la santé animale ou que sur le comportement, pour m'adapter au mieux à vos poils ! 😻
@@ -61,7 +61,7 @@
               <span class="font-semibold">Prix : <span class="text-gray-900 font-bold">0.00 €</span></span>
               <span class="font-semibold">Durée : <span class="text-gray-900 font-bold">60 minutes</span></span>
             </div>
-            <button class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition w-full md:w-auto">
+            <button class="bg-primary-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition w-full md:w-auto">
               Prendre rendez-vous
             </button>
           </div>
@@ -73,16 +73,16 @@
           <h3 class="text-xl font-bold text-blue-800 mb-4">En résumé</h3>
           <ul class="space-y-3 text-gray-700">
             <li class="flex items-center">
-              <span class="mr-3 text-blue-600">👤</span>
+              <span class="mr-3 text-primary-600">👤</span>
               Accepte les nouveaux patients sur Doctolib
             </li>
             <li class="flex items-center">
-              <span class="mr-3 text-blue-600">🏥</span>
+              <span class="mr-3 text-primary-600">🏥</span>
               Centre dentaire Saint-Ouen Dentelia
             </li>
             <li class="ml-6 text-sm">132 Avenue Gabriel Péri, 93400 Saint-Ouen</li>
           </ul>
-          <button class="mt-4 bg-blue-600 text-white px-4 py-3 rounded-lg font-semibold flex items-center justify-center w-full hover:bg-blue-700 transition">
+          <button class="mt-4 bg-primary-600 text-white px-4 py-3 rounded-lg font-semibold flex items-center justify-center w-full hover:bg-blue-700 transition">
             <span class="mr-2">📅</span> PRENDRE RENDEZ-VOUS
           </button>
         </div>
@@ -98,20 +98,20 @@
 
           <div class="mb-4">
             <h4 class="font-semibold text-gray-700">Téléphone & Email</h4>
-            <button class="bg-orange-500 text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-orange-600 transition">
+            <button class="bg-accent-500 text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-orange-600 transition">
               Révéler les coordonnées
             </button>
           </div>
 
           <div class="mb-4">
             <h4 class="font-semibold text-gray-700">Site web</h4>
-            <a href="http://osteopathieanimalel..." target="_blank" class="text-blue-600 hover:underline">http://osteopathieanimalel...</a>
+            <a href="http://osteopathieanimalel..." target="_blank" class="text-primary-600 hover:underline">http://osteopathieanimalel...</a>
           </div>
 
           <div>
             <h4 class="font-semibold text-gray-700">Réseaux sociaux</h4>
             <div class="flex space-x-3 text-2xl mt-1">
-              <a href="#" class="text-gray-500 hover:text-pink-600">📷</a> <a href="#" class="text-gray-500 hover:text-blue-600">🇫</a> </div>
+              <a href="#" class="text-gray-500 hover:text-pink-600">📷</a> <a href="#" class="text-gray-500 hover:text-primary-600">🇫</a> </div>
           </div>
         </div>
       </div>
