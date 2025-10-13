@@ -1,9 +1,9 @@
 <template>
   <div class="max-w-6xl mx-auto my-8 bg-white rounded-xl shadow-xl overflow-hidden">
     <div class="relative h-64 bg-gray-300">
-      <img src="https://picsum.photos/1200/400?random=1" alt="Bannière" class="w-full h-full object-cover" />
+      <img src="https://images.pexels.com/photos/1108099/pexels-photo-1108099.jpeg" alt="Bannière" class="w-full h-full object-cover" />
       
-      <div class="absolute inset-0 bg-black bg-opacity-30 flex items-end p-8">
+      <div class="absolute inset-0 bg-black/10 bg-opacity-30 flex items-end p-8">
         <div class="flex items-end w-full">
           <div class="w-32 h-32 rounded-full border-4 border-white shadow-lg -mb-16 bg-gray-100 flex-shrink-0">
             <img :src="professional.avatar" :alt="professional.name" class="w-full h-full object-cover rounded-full" />
