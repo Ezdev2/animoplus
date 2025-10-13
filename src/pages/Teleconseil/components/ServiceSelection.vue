@@ -58,7 +58,7 @@ const services = [
     description:
       "Conseils pour améliorer la mobilité et soulager les douleurs à distance",
     image: "https://picsum.photos/200",
-    active: true, // pour la carte mise en avant (fond bleu)
+    active: true,
   },
   {
     title: "NUTRITIONNISTE VÉTÉRINAIRE",

@@ -48,6 +48,10 @@ import AdminAccessTest from '@/pages/Test/AdminAccessTest.vue'
 
 // Pages de debug
 import AuthDebugPage from '@/pages/Debug/AuthDebugPage.vue'
+import Offer from '@/pages/Offer/Offer.vue'
+import AlertIndex from '@/pages/Homepage/AlertIndex.vue'
+import LostAnimalIndex from '@/pages/Homepage/LostAnimalIndex.vue'
+import RendezVous from '@/pages/RendezVous/RendezVous.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -62,31 +66,55 @@ const router = createRouter({
       path: '/urgence',
       name: 'urgence',
       component: Urgence,
-      meta: { requiresGuest: true } // accessible seulement si NON connecté
+      meta: { requiresGuest: true } 
     },
     {
       path: '/doute',
       name: 'doute',
       component: Doute,
-      meta: { requiresGuest: true } // accessible seulement si NON connecté
+      meta: { requiresGuest: true } 
     },
     {
       path: '/professionnel',
       name: 'professionnel',
       component: Professionnel,
-      meta: { requiresGuest: true } // accessible seulement si NON connecté
+      meta: { requiresGuest: true } 
     },
     {
       path: '/actu',
       name: 'actu',
       component: Actu,
-      meta: { requiresGuest: true } // accessible seulement si NON connecté
+      meta: { requiresGuest: true } 
     },
     {
       path: '/teleconseil',
       name: 'teleconseil',
       component: Teleconseil,
-      meta: { requiresGuest: true } // accessible seulement si NON connecté
+      meta: { requiresGuest: true } 
+    },
+    {
+      path: '/offre',
+      name: 'offre',
+      component: Offer,
+      meta: { requiresGuest: true } 
+    },
+    {
+      path: '/post',
+      name: 'post',
+      component: LostAnimalIndex,
+      meta: { requiresGuest: true } 
+    },
+    {
+      path: '/alert',
+      name: 'alert',
+      component: AlertIndex,
+      meta: { requiresGuest: true } 
+    },
+    {
+      path: '/rendez-vous',
+      name: 'rendez-vous',
+      component: RendezVous,
+      meta: { requiresGuest: true } 
     },
     {
       path: '/specialist',

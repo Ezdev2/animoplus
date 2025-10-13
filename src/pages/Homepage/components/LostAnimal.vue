@@ -26,16 +26,16 @@
                 <div class="rounded-4xl p-8 bg-white flex flex-col justify-between gap-6">
                     <h2 class="text-neutral-900 text-3xl font-bold">J'AI PERDU MON ANIMAL</h2>
                     <p class="text-neutral-600">VOUS AVEZ PERDUS VOTRE COMPAGNON ? CRÉEZ UNE ALERTE EN QUELQUES SECONDES ET DIFFUSEZ-LA AUTOMATIQUEMENT AUPRÈS DE LA COMMUNAUTÉ ANIMO+ ET DE VOS PROCHES</p>
-                    <a href="#"
-                        class="px-10 py-4 bg-primary-600 text-white font-bold rounded-full shadow-lg hover:bg-primary-500 transition-colors duration-300">J’ai
+                    <a href="/post"
+                        class="px-10 py-4 bg-primary-600 text-white font-bold rounded-full shadow-lg hover:bg-primary-500 transition-colors duration-300">
                         Créer une alerte</a>
                 </div>
                 <div class="rounded-4xl p-8 bg-white flex flex-col justify-between gap-6">
                     <h2 class="text-neutral-900 text-3xl font-bold">J'AI TROUVÉ UN ANIMAL</h2>
                     <p class="text-neutral-600">VOUS AVEZ TROUNÉ UN ANIMAL ERRANT , SIGNALEZ-LE ET CONTRIBUEZ À RÉUNIR UNE FAMILLE EN PERMETTANT AU PROPRIÉTAIRE DE LE RETROUVER RAPIDEMENT.</p>
-                    <a href="#"
-                        class="px-10 py-4 bg-primary-600 text-white font-bold rounded-full shadow-lg hover:bg-primary-500 transition-colors duration-300">J’ai
-                        Créer une alerte</a>
+                    <a href="/alert"
+                        class="px-10 py-4 bg-primary-600 text-white font-bold rounded-full shadow-lg hover:bg-primary-500 transition-colors duration-300">
+                        Voir les alertes</a>
                 </div>
             </div>
         </div>

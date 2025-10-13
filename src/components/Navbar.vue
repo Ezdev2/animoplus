@@ -10,6 +10,7 @@
                 <a href="/teleconseil" class="text-white text-lg font-medium">Téléconseil</a>
                 <a href="/professionnel" class="text-white text-lg font-medium">Vous êtes un pro</a>
                 <a href="/actu" class="text-white text-lg font-medium">Animo + X</a>
+                <a href="/offre" class="text-white text-lg font-medium">Nos offres</a>
             </div>
             <div class="flex justify-start items-center gap-6">
                 <router-link to="/register"

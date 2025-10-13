@@ -1,5 +1,5 @@
 <template>
-  <section class="w-full min-h-[90vh] px-40 flex items-center justify-center">
+  <section class="mt-12 w-full min-h-[90vh] px-40 flex items-center justify-center">
     <div class="mx-auto flex flex-col items-center gap-8">
       <div class="flex gap-[44px] flex-col items-center">
         <div class="relative flex flex-col items-center">
@@ -34,12 +34,12 @@
               class="flex-1 text-sm border-none outline-none text-primary-600 font-montserrat cursor-default" />
           </div>
           <!-- Bouton avec flèche -->
-          <button
+          <router-link to="/rendez-vous"
             class="flex items-center bg-primary-600 text-white px-5 py-4 rounded-[50px] text-base font-semibold font-montserrat gap-2 hover:bg-primary-500"
-            @click="() => console.log('Prendre rendez-vous')">
+            >
             Prendre un rendez-vous
             <img :src="arrowIcon" alt="arrow icon" class="w-4 h-4" />
-          </button>
+          </router-link>
         </div>
         <ActionCards />
       </div>
